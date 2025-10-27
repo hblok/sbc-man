@@ -1,0 +1,163 @@
+ADDING NEW DEVICE SUPPORT
+=========================
+
+Process to add support for a new handheld device:
+
+Step 1: Identify Device Characteristics
+---------------------------------------
+Research and document:
+├─ Device name and model
+├─ Screen resolution
+├─ Input button layout
+├─ Operating system (if custom)
+├─ File system structure
+├─ Hardware identifiers (in /sys/firmware/devicetree/base/model)
+├─ CPU architecture
+└─ Default paths for games/roms
+
+Step 2: Create Device Configuration
+-----------------------------------
+Create: config/devices/{device_name}.json
+
+Example for new "gamebox_mini" device:
+{
+  "device": {
+    "name": "GameBox Mini",
+    "type": "gamebox",
+    "manufacturer": "GameBox Inc"
+  },
+  "display": {
+    "resolution": [480, 320],
+    "fullscreen": true,
+    "orientation": "landscape"
+  },
+  "input": {
+    "type": "gamepad",
+    "has_analog": false,
+    "button_layout": "snes"
+  },
+  "performance": {
+    "target_fps": 30,
+    "vsync": true
+  },
+  "paths": {
+    "games": "/mnt/sdcard/games",
+    "roms": "/mnt/sdcard/roms"
+  }
+}
+
+Step 3: Create Input Mapping
+----------------------------
+Create: config/input_mappings/gamebox.json
+
+{
+  "confirm": ["BUTTON_1", "BUTTON_A"],
+  "cancel": ["BUTTON_2", "BUTTON_B"],
+  "menu": ["BUTTON_START"],
+  "up": ["DPAD_UP"],
+  "down": ["DPAD_DOWN"],
+  "left": ["DPAD_LEFT"],
+  "right": ["DPAD_RIGHT"],
+  "shoulder_l": ["BUTTON_L"],
+  "shoulder_r": ["BUTTON_R"]
+}
+
+Step 4: Add Hardware Detection
+------------------------------
+Update: src/core/hardware_detector.py
+
+Add detection logic in _detect_device():
+
+def _detect_device(self) -> str:
+    # Existing detection code...
+    
+    # Add GameBox detection
+    if self._check_file_contains(
+        Path("/sys/firmware/devicetree/base/model"),
+        "gamebox"
+    ):
+        return "gamebox"
+    
+    # Check for GameBox-specific files
+    if Path("/mnt/sdcard/.gamebox").exists():
+        return "gamebox"
+    
+    # Continue with other detection...
+
+Step 5: Test on Device
+----------------------
+1. Copy launcher to device
+2. Run and verify:
+   ├─ Correct device detected
+   ├─ Display resolution correct
+   ├─ All buttons mapped correctly
+   ├─ Performance acceptable
+   └─ Games launch successfully
+
+3. Adjust configuration as needed based on testing
+
+Step 6: Create OS-Specific Config (if needed)
+---------------------------------------------
+If device uses custom OS:
+Create: config/os_types/gamebox_os.json
+
+{
+  "os": {
+    "name": "GameBox OS",
+    "type": "gamebox_os",
+    "version_file": "/etc/gamebox-release"
+  },
+  "paths": {
+    "games": "/mnt/sdcard/games",
+    "data": "/mnt/data/launcher",
+    "config": "/mnt/config/launcher"
+  },
+  "launcher": {
+    "python_command": "python3",
+    "pre_launch_commands": [
+      "killall gamebox_ui"
+    ],
+    "post_launch_commands": [
+      "gamebox_ui &"
+    ]
+  }
+}
+
+Step 7: Document Device Support
+-------------------------------
+Update: docs/DEVICES.md
+
+Add section:
+## GameBox Mini
+
+- **Status**: Supported
+- **Tested Versions**: GameBox OS 1.5
+- **Screen**: 480x320
+- **Installation**: Copy OPK to /mnt/sdcard/Apps/
+- **Known Issues**: None
+- **Special Notes**: Requires GameBox OS 1.5 or later
+
+Step 8: Submit Changes
+----------------------
+If contributing to project:
+1. Create feature branch
+2. Commit all new files
+3. Test thoroughly
+4. Submit pull request with:
+   - Device config files
+   - Hardware detection code
+   - Documentation
+   - Test results
+
+Device Support Checklist:
+☐ Device config created
+☐ Input mapping created
+☐ Hardware detection added
+☐ OS config created (if needed)
+☐ Tested on physical device
+☐ All inputs work correctly
+☐ Display renders properly
+☐ Games launch successfully
+☐ Pre/post launch commands work
+☐ Documentation updated
+☐ Changes committed

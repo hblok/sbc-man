@@ -1,0 +1,184 @@
+ADDING NEW UI THEMES
+====================
+
+Theme System Architecture:
+-------------------------
+Themes control visual appearance:
+- Colors
+- Fonts
+- Spacing
+- Background images
+- UI element styles
+
+Step 1: Create Theme File
+-------------------------
+Create: assets/themes/{theme_name}.json
+
+Example "cyberpunk" theme:
+{
+  "name": "Cyberpunk",
+  "author": "Your Name",
+  "version": "1.0",
+  "colors": {
+    "primary": [0, 255, 255],       # Cyan
+    "secondary": [255, 0, 255],     # Magenta
+    "background": [10, 10, 25],     # Dark blue
+    "surface": [25, 25, 50],        # Lighter blue
+    "text": [255, 255, 255],        # White
+    "text_secondary": [180, 180, 200],
+    "accent": [255, 50, 255],       # Hot pink
+    "success": [0, 255, 128],       # Green
+    "warning": [255, 200, 0],       # Yellow
+    "error": [255, 50, 50],         # Red
+    "selection": [100, 255, 255],   # Bright cyan
+    "hover": [50, 50, 100]          # Dim blue
+  },
+  "fonts": {
+    "default": "assets/fonts/cyberpunk.ttf",
+    "title": "assets/fonts/cyberpunk-bold.ttf",
+    "mono": "assets/fonts/mono.ttf"
+  },
+  "font_sizes": {
+    "small": 14,
+    "normal": 18,
+    "large": 24,
+    "title": 32
+  },
+  "spacing": {
+    "small": 5,
+    "medium": 10,
+    "large": 20
+  },
+  "borders": {
+    "width": 2,
+    "radius": 5,
+    "color": [0, 255, 255]
+  },
+  "effects": {
+    "shadow": true,
+    "glow": true,
+    "animation_speed": 1.5
+  }
+}
+
+Step 2: Add Theme Assets
+------------------------
+If theme includes custom fonts/images:
+
+assets/themes/cyberpunk/
+├── cyberpunk.json
+├── background.png
+├── fonts/
+│   ├── cyberpunk.ttf
+│   └── cyberpunk-bold.ttf
+└── icons/
+    ├── game.png
+    ├── download.png
+    └── settings.png
+
+Step 3: Update Theme Loader
+---------------------------
+Ensure ThemeLoader supports new theme:
+
+src/ui/theme_loader.py already handles:
+- Loading JSON theme files
+- Font loading with fallbacks
+- Color parsing
+- Default value handling
+
+No code changes needed if following standard format.
+
+Step 4: Test Theme
+------------------
+1. Copy theme to assets/themes/
+2. Edit config to use new theme:
+   ~/.config/game-launcher/user_config.json:
+   {
+     "theme": "cyberpunk"
+   }
+3. Launch and verify all screens
+4. Check contrast and readability
+5. Test on target device screen
+
+Step 5: Create Theme Preview
+----------------------------
+Create preview image showing theme:
+assets/themes/previews/cyberpunk.png
+- Screenshot of main menu
+- Screenshot of game list
+- Color palette reference
+
+Step 6: Document Theme
+---------------------
+Update: docs/THEMES.md
+
+Add section:
+### Cyberpunk
+- **Colors**: Cyan and magenta neon aesthetic
+- **Best For**: OLED screens, dark environments
+- **Fonts**: Custom cyberpunk-style fonts included
+- **Author**: Your Name
+
+Theme Design Guidelines:
+-----------------------
+1. Contrast:
+   - Text must be readable on backgrounds
+   - Minimum contrast ratio: 4.5:1
+   - Test on actual device screens
+
+2. Colors:
+   - Use theme colors consistently
+   - Provide all required color keys
+   - Test with colorblind simulators
+
+3. Fonts:
+   - Include fallback fonts
+   - Test readability at all sizes
+   - Ensure license allows distribution
+
+4. Performance:
+   - Avoid very large background images
+   - Optimize images for target resolution
+   - Test animation performance
+
+5. Accessibility:
+   - High contrast for text
+   - Don't rely solely on color to convey info
+   - Support different font sizes
+
+Built-in Theme Reference:
+------------------------
+Required color keys:
+- primary: Main brand color
+- secondary: Secondary brand color
+- background: Main background
+- surface: Card/panel backgrounds
+- text: Primary text color
+- text_secondary: Less important text
+- accent: Highlights and focus
+- success: Positive actions
+- warning: Caution indicators
+- error: Error messages
+- selection: Selected items
+- hover: Hover state
+
+Optional color keys:
+- border: Border colors
+- shadow: Shadow effects
+- disabled: Disabled elements
+
+Theme Variants:
+--------------
+Create related themes with variants:
+- theme_name-dark.json
+- theme_name-light.json
+- theme_name-high-contrast.json
+
+Dynamic Theme Switching:
+-----------------------
+Support runtime theme changes:
+
+config_manager.set('theme', 'cyberpunk')
+state_manager.reload_theme()
+
+All views automatically update with new theme.

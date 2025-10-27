@@ -1,0 +1,214 @@
+9.2 CONFIGURATION LOADING ERRORS (FULL)
+========================================
+
+CONFIGURATION LOADING ERROR HANDLING
+=====================================
+
+Scenario 1: Missing Configuration File
+├─ Condition: config/devices/anbernic.json not found
+├─ Behavior:
+│  ├─ Log warning: "Device config not found: anbernic.json"
+│  ├─ Skip merging that layer
+│  └─ Continue with previous layers
+├─ Impact:
+│  └─ Uses default.json without device-specific overrides
+└─ Recovery: Fully functional with generic settings
+
+Scenario 2: Malformed JSON
+├─ Condition: JSON parsing fails (syntax error)
+├─ Behavior:
+│  ├─ Catch json.JSONDecodeError
+│  ├─ Log error with file path and line number
+│  ├─ Skip corrupted file
+│  └─ Continue with other layers
+├─ Impact:
+│  └─ Missing customizations from that config file
+└─ Recovery: Uses valid configuration layers
+
+Scenario 3: Invalid Configuration Values
+├─ Condition: Config has invalid data types or values
+│  Examples:
+│  - resolution: "abc" (should be [int, int] or "auto")
+│  - target_fps: -10 (should be positive integer)
+│  - paths: 123 (should be string)
+├─ Behavior:
+│  ├─ Validation during merge process
+│  ├─ Log warning for each invalid value
+│  ├─ Discard invalid values
+│  └─ Use value from previous layer or default
+├─ Impact:
+│  └─ Specific invalid settings ignored, rest work
+└─ Recovery: Safe fallback values used
+
+Scenario 4: Missing Required Paths
+├─ Condition: Merged config missing paths.games or other required
+├─ Behavior:
+│  ├─ Detect missing required fields after merge
+│  ├─ Apply hardcoded emergency defaults:
+│  │  ├─ paths.games = "~/games"
+│  │  ├─ paths.data = "~/.local/share/game-launcher"
+│  │  └─ paths.config = "~/.config/game-launcher"
+│  ├─ Log warning: "Using emergency defaults for paths"
+│  └─ Continue with emergency defaults
+├─ Impact:
+│  └─ May create directories in unexpected locations
+└─ Recovery: Functional but may confuse users
+
+Scenario 5: Path Expansion Failures
+├─ Condition: Cannot expand environment variables in paths
+│  Example: "$UNKNOWN_VAR/games"
+├─ Behavior:
+│  ├─ Attempt Path.expanduser() and environ expansion
+│  ├─ If variable not found:
+│  │  ├─ Log error: "Cannot expand variable: $UNKNOWN_VAR"
+│  │  ├─ Leave path as-is (literal string)
+│  │  └─ Will fail later when trying to access
+│  └─ Continue loading
+├─ Impact:
+│  └─ Feature using that path will fail
+└─ Recovery: Must be fixed manually or fallback used
+
+Scenario 6: Non-existent Paths
+├─ Condition: Config specifies paths that don't exist
+├─ Behavior:
+│  ├─ Configuration loads successfully
+│  ├─ When path first accessed:
+│  │  ├─ Try to create directory structure
+│  │  ├─ If creation succeeds: continue normally
+│  │  ├─ If creation fails: log error and use temp path
+│  └─ FileOps.ensure_dir() handles creation
+├─ Impact:
+│  └─ Directories auto-created on first use
+└─ Recovery: Transparent to user
+
+Scenario 7: Circular Configuration References
+├─ Condition: Config file tries to reference itself
+│  Example: os_types/custom.json inherits from self
+├─ Behavior:
+│  ├─ Merge algorithm doesn't support inheritance
+│  ├─ Each file loaded independently
+│  └─ Not possible with current architecture
+├─ Impact:
+│  └─ Not applicable (architecture prevents this)
+└─ Recovery: N/A
+
+Scenario 8: Permission Errors
+├─ Condition: Cannot read config file due to permissions
+├─ Behavior:
+│  ├─ Catch PermissionError
+│  ├─ Log error: "Cannot read config: permission denied"
+│  ├─ Skip that configuration layer
+│  └─ Continue with accessible configs
+├─ Impact:
+│  └─ Missing customizations from inaccessible file
+└─ Recovery: Works with reduced functionality
+
+Scenario 9: User Config Corruption
+├─ Condition: data/user_config.json is corrupted
+├─ Behavior:
+│  ├─ Catch exception during load
+│  ├─ Log error: "User config corrupted, backing up"
+│  ├─ Rename to user_config.json.backup
+│  ├─ Create new empty user_config.json
+│  └─ Continue with defaults
+├─ Impact:
+│  └─ User customizations lost (but backed up)
+└─ Recovery: User can restore from backup or reconfigure
+
+Scenario 10: Theme File Missing
+├─ Condition: Selected theme doesn't exist
+│  Example: config.theme = "ocean" but no ocean theme
+├─ Behavior:
+│  ├─ Attempt to load theme file
+│  ├─ If not found:
+│  │  ├─ Log warning: "Theme not found: ocean"
+│  │  ├─ Fall back to "default" theme
+│  │  └─ If default also missing: use hardcoded colors
+│  └─ Update config.theme to fallback used
+├─ Impact:
+│  └─ Visual appearance differs from expected
+└─ Recovery: Uses working theme instead
+
+Configuration Validation Function:
+def validate_config(config):
+    """
+    Validate merged configuration has required fields
+    and sensible values.
+    """
+    errors = []
+    
+    # Validate display
+    if 'display' not in config:
+        errors.append("Missing display section")
+    else:
+        res = config['display'].get('resolution')
+        if res != "auto" and not (isinstance(res, list) and len(res) == 2):
+            errors.append("Invalid resolution format")
+    
+    # Validate paths
+    required_paths = ['games', 'data', 'config', 'cache']
+    if 'paths' not in config:
+        errors.append("Missing paths section")
+    else:
+        for path_key in required_paths:
+            if path_key not in config['paths']:
+                errors.append(f"Missing required path: {path_key}")
+    
+    # Validate performance
+    if 'performance' in config:
+        fps = config['performance'].get('target_fps')
+        if fps is not None and (not isinstance(fps, int) or fps <= 0):
+            errors.append("Invalid target_fps value")
+    
+    return errors
+
+Load Strategy with Error Handling:
+def safe_load_config():
+    try:
+        # Load configuration layers
+        config = ConfigLoader.load_config()
+        
+        # Validate
+        errors = validate_config(config)
+        if errors:
+            for error in errors:
+                log_warning(f"Config validation: {error}")
+            # Apply fixes
+            config = apply_emergency_defaults(config)
+        
+        return config
+        
+    except Exception as e:
+        log_error(f"Critical config error: {e}")
+        log_error("Using minimal emergency configuration")
+        return get_minimal_emergency_config()
+
+Emergency Minimal Config:
+def get_minimal_emergency_config():
+    """
+    Absolute minimum config to start application.
+    Used only when all config loading fails.
+    """
+    return {
+        "device": {
+            "name": "Unknown Device",
+            "type": "desktop"
+        },
+        "display": {
+            "resolution": [640, 480],
+            "fullscreen": False
+        },
+        "paths": {
+            "games": str(Path.home() / "games"),
+            "data": str(Path.home() / ".local/share/game-launcher"),
+            "config": str(Path.home() / ".config/game-launcher"),
+            "cache": str(Path.home() / ".cache/game-launcher")
+        },
+        "performance": {
+            "target_fps": 60,
+            "vsync": True
+        },
+        "launcher": {
+            "python_command": "python3"
+        }
+    }

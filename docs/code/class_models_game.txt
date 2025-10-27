@@ -1,0 +1,60 @@
+FILE: models/game.py
+====================
+
+CLASS: Game
+-----------
+
+ATTRIBUTES:
+- id (str): Unique game identifier
+- name (str): Display name of game
+- version (str): Game version string
+- description (str): Game description text
+- author (str): Game author/developer name
+- install_path (Path): Path to game installation directory
+- entry_point (str): Name of main Python file to execute
+- installed (bool): Whether game is currently installed
+- download_url (str): URL to download game package
+- custom_input_mappings (dict): Per-game input overrides
+- custom_resolution (tuple or None): Per-game resolution override
+- custom_fps (int or None): Per-game FPS target override
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize game instance with metadata
+Parameters:
+  - game_id (str): Unique identifier for game
+  - name (str): Display name
+  - **kwargs: Additional optional attributes
+    * version (str): defaults to '1.0.0'
+    * description (str): defaults to empty string
+    * author (str): defaults to empty string
+    * install_path (str): defaults to empty string, converted to Path
+    * entry_point (str): defaults to 'main.py'
+    * installed (bool): defaults to False
+    * download_url (str): defaults to empty string
+    * custom_input_mappings (dict): defaults to empty dict
+    * custom_resolution (tuple): defaults to None
+    * custom_fps (int): defaults to None
+Returns: None
+Behavior:
+  - Sets all attributes from parameters and kwargs
+  - Converts install_path string to Path object
+
+Method: to_dict
+Purpose: Serialize game instance to dictionary for persistence
+Parameters: None
+Returns: dict - Game data as dictionary
+Behavior:
+  - Creates dictionary with all game attributes
+  - Converts install_path from Path to string
+  - Returns serializable dictionary
+
+Method: from_dict (STATIC)
+Purpose: Deserialize game instance from dictionary
+Parameters:
+  - data (dict): Game data dictionary
+Returns: Game - New Game instance
+Behavior:
+  - Unpacks data dictionary as kwargs
+  - Creates and returns new Game instance

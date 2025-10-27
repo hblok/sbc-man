@@ -1,0 +1,56 @@
+FILE: hardware/detector.py
+==========================
+
+CLASS: HardwareDetector
+-----------------------
+
+METHODS (ALL STATIC):
+
+Method: get_config
+Purpose: Main entry point for hardware detection and config loading
+Parameters: None
+Returns: dict - Complete merged hardware configuration
+Behavior:
+  - Calls _detect_device() to identify device type
+  - Calls _detect_os() to identify OS/distribution
+  - Calls HardwareProber.probe_all() to get hardware capabilities
+  - Creates ConfigLoader with device_type, os_type, probed_hardware
+  - Calls load_config() on ConfigLoader to get merged config
+  - Adds detected_type and detected_os to config metadata
+  - Calls _expand_paths() to resolve path variables
+  - Returns complete configuration dictionary
+
+Method: _detect_device
+Purpose: Detect device type from hardware identifiers
+Parameters: None
+Returns: str - Device type identifier
+Behavior:
+  - Checks /sys/firmware/devicetree/base/model file (ARM devices)
+  - Looks for keywords: anbernic, rg, miyoo, retroid
+  - Checks for device-specific mount points (/mnt/SDCARD/.system for Miyoo)
+  - Checks for Android build.prop file
+  - Checks DEVICE_TYPE environment variable
+  - Returns 'desktop' as fallback
+
+Method: _detect_os
+Purpose: Detect OS distribution type
+Parameters: None
+Returns: str - OS type identifier
+Behavior:
+  - Reads /etc/os-release file
+  - Searches for keywords: arkos, jelos, batocera
+  - Checks for Android build.prop
+  - Checks OS_TYPE environment variable
+  - Returns 'standard_linux' as fallback
+
+Method: _expand_paths
+Purpose: Expand environment variables and user home in path strings
+Parameters:
+  - config (dict): Configuration dictionary to modify
+Returns: None
+Side Effects: Modifies config['paths'] in place
+Behavior:
+  - Recursively processes config dictionary
+  - For string values: calls os.path.expandvars() and Path.expanduser()
+  - Converts Path objects back to strings
+  - Only processes 'paths' section of config

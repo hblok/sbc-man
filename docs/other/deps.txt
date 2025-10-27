@@ -1,0 +1,130 @@
+DEPENDENCY MANAGEMENT
+=====================
+
+Python Dependencies (requirements.txt):
+--------------------------------------
+# Core dependencies
+pygame>=2.1.0           # Game framework and rendering
+requests>=2.28.0        # HTTP client for downloads
+Pillow>=9.0.0          # Image processing (optional)
+
+# Development dependencies (requirements-dev.txt)
+pytest>=7.0.0          # Testing framework
+pytest-cov>=3.0.0      # Coverage reporting
+pytest-mock>=3.6.0     # Mocking utilities
+black>=22.0.0          # Code formatter
+flake8>=4.0.0          # Linter
+mypy>=0.950            # Type checker
+
+System Dependencies:
+-------------------
+Linux (Ubuntu/Debian):
+$ sudo apt-get install python3-dev python3-pip
+$ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+$ sudo apt-get install libjpeg-dev libpng-dev
+
+Arch Linux:
+$ sudo pacman -S python python-pip
+$ sudo pacman -S sdl2 sdl2_image sdl2_mixer sdl2_ttf
+
+Handheld Devices:
+Most custom OS distributions include SDL2
+No additional installation needed
+
+Dependency Installation Scripts:
+--------------------------------
+install_deps.sh (Linux):
+#!/bin/bash
+set -e
+
+echo "Installing system dependencies..."
+if command -v apt-get &> /dev/null; then
+    sudo apt-get update
+    sudo apt-get install -y python3-dev python3-pip \
+        libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+elif command -v pacman &> /dev/null; then
+    sudo pacman -Sy python python-pip \
+        sdl2 sdl2_image sdl2_mixer sdl2_ttf
+else
+    echo "Unsupported package manager. Please install dependencies manually."
+    exit 1
+fi
+
+echo "Installing Python dependencies..."
+pip3 install --user -r requirements.txt
+
+echo "Dependencies installed successfully!"
+
+Dependency Locking:
+------------------
+Generate lock file with exact versions:
+$ pip freeze > requirements.lock
+
+Install from lock file:
+$ pip install -r requirements.lock
+
+Virtual Environment Best Practices:
+-----------------------------------
+1. Always use virtual environment for development
+2. Don't commit venv/ directory to git
+3. Keep requirements.txt minimal (only direct deps)
+4. Use requirements-dev.txt for dev tools
+5. Update dependencies regularly:
+   $ pip list --outdated
+   $ pip install --upgrade pygame requests
+
+Bundling Dependencies (for standalone):
+---------------------------------------
+Using PyInstaller:
+$ pip install pyinstaller
+$ pyinstaller --onefile \
+              --add-data "assets:assets" \
+              --add-data "config:config" \
+              --hidden-import=pygame \
+              src/main.py
+
+Using cx_Freeze:
+from cx_Freeze import setup, Executable
+
+setup(
+    name="game-launcher",
+    version="1.0.0",
+    executables=[Executable("src/main.py")],
+    options={
+        "build_exe": {
+            "packages": ["pygame", "requests"],
+            "include_files": ["assets/", "config/"]
+        }
+    }
+)
+
+$ python setup_freeze.py build
+
+Dependency Checking Script:
+---------------------------
+check_deps.py:
+import sys
+import importlib
+
+required = {
+    'pygame': '2.1.0',
+    'requests': '2.28.0'
+}
+
+def check_version(package, required_version):
+    try:
+        mod = importlib.import_module(package)
+        version = mod.__version__
+        print(f"✓ {package} {version} (>= {required_version} required)")
+        return True
+    except ImportError:
+        print(f"✗ {package} not found (>= {required_version} required)")
+        return False
+    except AttributeError:
+        print(f"? {package} installed but version unknown")
+        return True
+
+if __name__ == "__main__":
+    print("Checking dependencies...")
+    all_ok = all(check_version(pkg, ver) for pkg, ver in required.items())
+    sys.exit(0 if all_ok else 1)

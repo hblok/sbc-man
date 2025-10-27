@@ -1,0 +1,211 @@
+13.1 SYSTEM OVERVIEW SUMMARY (FULL)
+====================================
+
+GAME LAUNCHER SYSTEM SUMMARY
+============================
+
+Core Purpose:
+A cross-platform Python game launcher designed for handheld gaming devices,
+with adaptive hardware detection, customizable UI, and game management.
+
+Key Features:
+├─ Multi-device support (Anbernic, Miyoo, desktop)
+├─ Automatic hardware detection and configuration
+├─ Hierarchical input mapping system
+├─ Game download and installation
+├─ Customizable themes
+├─ State-based navigation
+└─ Extensible architecture
+
+Architecture Layers:
+1. Hardware Layer
+   └─ Detection, probing, device-specific configurations
+
+2. Core Layer
+   └─ State management, configuration, game library
+
+3. Service Layer
+   └─ Input handling, file operations, network services
+
+4. UI Layer
+   └─ Views, widgets, rendering
+
+5. Application Layer
+   └─ Main loop, initialization, coordination
+
+Data Flow Summary:
+User Input → InputHandler → State → View → Display
+      ↓
+Configuration ← ConfigLoader ← Device Detection
+      ↓
+Game Library ← FileOps ← NetworkService
+
+Critical Algorithms:
+1. Hardware Detection
+   - File-based device identification
+   - Capability probing
+   - Fallback to safe defaults
+
+2. Configuration Merging
+   - 4-layer hierarchy (default → device → user → game)
+   - Deep merge preserving nested structures
+   - Validation and error handling
+
+3. Input Mapping Resolution
+   - Action-based abstraction
+   - Multi-layer override system
+   - Context-aware (per-game overrides)
+
+4. State Management
+   - Lifecycle management (on_enter/on_exit)
+   - Event routing
+   - Safe error handling
+
+5. Download & Installation
+   - Progress tracking via observer pattern
+   - Archive extraction
+   - Library integration
+
+File Structure:
+src/
+├── core/              # Core systems
+├── states/            # Application states
+├── ui/                # UI components
+├── services/          # Service layer
+├── models/            # Data models
+└── utils/             # Utilities
+
+config/
+├── devices/           # Device configs
+├── os_types/          # OS configs
+└── input_mappings/    # Input maps
+
+data/                  # Runtime data (created)
+assets/               # Static resources
+tests/                # Test suite
+
+Configuration Cascade:
+1. config/default.json (base)
+2. config/devices/{device}.json (device-specific)
+3. config/os_types/{os}.json (OS-specific)
+4. data/user_config.json (user overrides)
+5. data/input_overrides/games/{game_id}.json (per-game)
+
+State Machine:
+┌──────┐     ┌───────────┐     ┌────────┐
+│ Menu │────→│ Game List │────→│Playing │
+└──────┘     └───────────┘     └────────┘
+   │              │                  │
+   │         ┌────────┐              │
+   └────────→│Download│←─────────────┘
+   │         └────────┘              │
+   │         ┌────────┐              │
+   └────────→│Settings│←─────────────┘
+             └────────┘
+
+Input System:
+Physical Input → pygame Events → InputHandler
+                                      ↓
+                           Action Resolution
+                                      ↓
+                        Layer Hierarchy Check
+                                      ↓
+                         State Event Handler
+
+Rendering Pipeline:
+State.render() → View.render() → Widget.render() → pygame.display.flip()
+                                        ↓
+                                 Theme Colors/Fonts
+                                        ↓
+                                   Surface Drawing
+
+Error Handling Strategy:
+1. Never crash - always provide fallback
+2. Log all errors with context
+3. Inform user when appropriate
+4. Degrade gracefully
+5. Maintain data integrity
+
+Extension Points:
+├─ New devices: Add config files + detection logic
+├─ New themes: Add theme JSON + assets
+├─ New states: Create state + view classes
+├─ New widgets: Extend BaseWidget
+└─ New input actions: Add to mappings
+
+Performance Characteristics:
+├─ Target FPS: 30-60 (device-dependent)
+├─ Memory: ~50-100MB typical usage
+├─ Storage: ~20MB application + games
+├─ Network: Async downloads, no blocking
+└─ Startup: <2 seconds typical
+
+Security Considerations:
+├─ Games run with same permissions as launcher
+├─ No sandboxing implemented
+├─ Trust required for downloaded games
+├─ Config files can be user-edited
+└─ No encryption of stored data
+
+Compatibility:
+├─ Python: 3.7+
+├─ pygame: 2.1.0+
+├─ OS: Linux (primary), Windows (possible)
+├─ Devices: Anbernic, Miyoo, generic handhelds
+└─ Architecture: ARM, x86, x86_64
+
+Dependencies:
+├─ pygame (rendering, input, audio)
+├─ requests (HTTP downloads)
+├─ pathlib (file operations)
+├─ json (configuration)
+└─ subprocess (game launching)
+
+Testing Coverage:
+├─ Unit tests: Core logic
+├─ Integration tests: Component interaction
+├─ Manual tests: Hardware-specific features
+└─ Target: 85%+ code coverage
+
+Deployment:
+├─ pip package (development)
+├─ Standalone archive (Linux)
+├─ OPK package (OpenDingux devices)
+└─ PyInstaller binary (optional)
+
+Documentation:
+├─ README: Quick start
+├─ ARCHITECTURE: This document
+├─ DEVICES: Device support details
+├─ THEMES: Theme creation guide
+└─ API: Code documentation
+
+Version Control:
+├─ Git repository
+├─ Semantic versioning (MAJOR.MINOR.PATCH)
+├─ Tagged releases
+└─ Changelog maintained
+
+Future Enhancement Areas:
+├─ Cloud save sync
+├─ Achievement system
+├─ Friend/multiplayer support
+├─ Game screenshots/videos
+├─ Performance monitoring
+├─ Automatic updates
+├─ Plugin system
+└─ Remote control via mobile app
+
+Known Limitations:
+├─ Single-instance not enforced
+├─ No multi-user support
+├─ Limited network error recovery
+├─ Manual theme switching only
+├─ No game sandboxing
+└─ English-only UI (currently)
+
+Support Resources:
+├─ GitHub Issues: Bug reports
+├─ Wiki: Community documentation
+├─ Discord: Community support
+└─ Email: Direct developer contact

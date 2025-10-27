@@ -1,0 +1,41 @@
+INPUT MAPPING RESOLUTION
+========================
+
+When user presses a button, the system resolves the action through layers:
+
+Layer Priority (highest to lowest):
+4. Per-Game User Override (data/input_overrides/games/{game_id}.json)
+3. Device User Override (data/input_overrides/device.json)
+2. Device Default (config/input_mappings/{device_type}.json)
+1. Global Default (config/input_mappings/default.json)
+
+Resolution Flow:
+│
+├─> User presses button (e.g., BUTTON_0)
+│
+├─> Event propagates to current_state.handle_events()
+│
+├─> State checks action: input_handler.is_action_pressed('confirm', events)
+│
+├─> InputHandler resolution:
+│   ├─> Get mappings for 'confirm' action
+│   │   └─> E.g., ["K_RETURN", "BUTTON_A", "BUTTON_0"]
+│   │
+│   ├─> For each event:
+│   │   ├─> If KEYDOWN: compare event.key to K_* mappings
+│   │   ├─> If JOYBUTTONDOWN: 
+│   │   │   ├─> Convert button index to semantic names
+│   │   │   │   └─> button 0 -> ["BUTTON_A", "BUTTON_SOUTH", "BUTTON_0"]
+│   │   │   └─> Check if any name in mappings
+│   │   └─> If JOYHATMOTION: convert to DPAD_* and check
+│   │
+│   └─> Return True if match found
+
+Example Hierarchy Resolution:
+├─> Global Default: "confirm" = ["K_RETURN", "BUTTON_A"]
+├─> Device (Anbernic): "confirm" = ["K_RETURN", "BUTTON_1"]  # Override
+├─> User Device: (no override)
+└─> Per-Game (snake): "confirm" = ["BUTTON_0"]  # Final override
+
+Result: When in snake game, BUTTON_0 triggers 'confirm'
+Result: When in launcher, BUTTON_1 triggers 'confirm' (device layer)

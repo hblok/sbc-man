@@ -1,0 +1,62 @@
+GAME DOWNLOAD FLOW
+==================
+
+1. User Initiates Download
+   ├─> User navigates download_state
+   ├─> Selects game from available_games list
+   └─> Presses "confirm"
+
+2. Start Download
+   └─> download_state.handle_events()
+       └─> download_manager.start_download(game_info, destination)
+
+3. Download Manager Processing
+   ├─> Generate unique download_id
+   ├─> Create download entry in self.downloads
+   ├─> Start download thread
+   └─> Return download_id to caller
+
+4. Download Thread Execution
+   ├─> NetworkService.download_file(url, temp_path, progress_callback)
+   │   ├─> Open HTTP connection
+   │   ├─> Get file size from Content-Length
+   │   │
+   │   └─> For each chunk:
+   │       ├─> Write chunk to file
+   │       ├─> Update bytes_downloaded
+   │       └─> Call progress_callback(bytes_downloaded, total_bytes)
+   │
+   └─> progress_callback triggers:
+       └─> download_manager.notify_progress(download_id, progress_data)
+           └─> For each observer:
+               └─> observer.on_progress_update(download_id, progress_data)
+                   └─> download_state.on_progress_update()
+                       └─> view.update_progress(download_id, progress_data)
+
+5. Download Complete
+   ├─> Update status to 'extracting'
+   ├─> FileOps.extract_archive(temp_path, install_path)
+   │   ├─> Detect archive type (zip/tar)
+   │   ├─> Extract contents
+   │   └─> Delete archive file
+   │
+   ├─> FileOps.set_executable(install_path / entry_point)
+   │
+   └─> download_manager.notify_complete(download_id)
+       └─> For each observer:
+           └─> observer.on_download_complete(download_id)
+               └─> download_state.on_download_complete()
+                   ├─> Create Game instance
+                   ├─> game_library.add_game(game)
+                   ├─> view.remove_download(download_id)
+                   └─> Show "Download complete!" notification
+
+6. Error Handling (if error occurs)
+   └─> download_manager.notify_error(download_id, error)
+       └─> For each observer:
+           └─> observer.on_download_error(download_id, error)
+               └─> download_state.on_download_error()
+                   ├─> Log error message
+                   ├─> view.remove_download(download_id)
+                   ├─> Show error notification
+                   └─> Clean up partial files if needed

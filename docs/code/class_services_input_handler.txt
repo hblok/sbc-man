@@ -1,0 +1,123 @@
+FILE: services/input_handler.py
+================================
+
+CLASS: InputHandler
+-------------------
+
+ATTRIBUTES:
+- hw_config (dict): Hardware configuration
+- config_dir (Path): Path to config/input_mappings directory
+- data_dir (Path): Path to data/input_overrides directory
+- current_game_id (str or None): Current game ID for per-game mappings
+- mappings (dict): Current active input mappings
+- joysticks (list): List of initialized pygame.joystick.Joystick objects
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize input handler with hierarchical mappings
+Parameters:
+  - hw_config (dict): Hardware configuration
+Returns: None
+Behavior:
+  - Stores hw_config
+  - Sets config_dir and data_dir from paths
+  - Sets current_game_id to None
+  - Calls _load_mapping_hierarchy() to load mappings
+  - Initializes all detected joysticks
+
+Method: _load_mapping_hierarchy
+Purpose: Load input mappings with proper hierarchy
+Parameters: None
+Returns: dict - Merged input mappings
+Behavior:
+  - Layer 1: Loads config/input_mappings/default.json
+  - Layer 2: Loads config/input_mappings/{device_type}.json and merges
+  - Layer 3: Loads data/input_overrides/device.json (user overrides) and merges
+  - Returns merged mappings dictionary
+
+Method: _load_mapping_file
+Purpose: Load a single mapping JSON file
+Parameters:
+  - path (Path): Path to mapping file
+Returns: dict - Mapping dictionary or empty dict
+Behavior:
+  - Checks if file exists
+  - Opens and parses JSON
+  - Returns empty dict on error
+
+Method: set_game_context
+Purpose: Set current game for per-game mappings
+Parameters:
+  - game_id (str): Game identifier
+Returns: None
+Side Effects: Reloads mappings with game-specific layer
+Behavior:
+  - Sets current_game_id
+  - Reloads base mapping hierarchy
+  - Layer 4: Loads data/input_overrides/games/{game_id}.json and merges
+  - Updates self.mappings
+
+Method: clear_game_context
+Purpose: Clear game context (return to launcher)
+Parameters: None
+Returns: None
+Behavior: Calls set_game_context(None)
+
+Method: is_action_pressed
+Purpose: Check if action was triggered in event list
+Parameters:
+  - action (str): Action name (e.g., 'confirm', 'cancel')
+  - events (list): List of pygame events
+Returns: bool - True if action was triggered
+Behavior:
+  - Gets action_keys from self.mappings[action]
+  - For each event:
+    * Checks KEYDOWN events against keyboard mappings
+    * Checks JOYBUTTONDOWN against button mappings
+    * Checks JOYHATMOTION against d-pad mappings
+    * Uses _get_button_names() for semantic button names
+  - Returns True if any mapping matches
+
+Method: _get_button_names
+Purpose: Map button index to common semantic names
+Parameters:
+  - button_index (int): Physical button index
+Returns: list - List of possible button names
+Behavior:
+  - Maps indices to standard names:
+    * 0 -> ["BUTTON_A", "BUTTON_SOUTH"]
+    * 1 -> ["BUTTON_B", "BUTTON_EAST"]
+    * 2 -> ["BUTTON_X", "BUTTON_WEST"]
+    * 3 -> ["BUTTON_Y", "BUTTON_NORTH"]
+    * 4 -> ["BUTTON_L1", "BUTTON_LB"]
+    * 5 -> ["BUTTON_R1", "BUTTON_RB"]
+    * 6 -> ["BUTTON_SELECT", "BUTTON_BACK"]
+    * 7 -> ["BUTTON_START"]
+    * 8 -> ["BUTTON_L3"]
+    * 9 -> ["BUTTON_R3"]
+  - Returns list with both semantic and numeric names
+
+Method: save_mapping
+Purpose: Save custom input mapping
+Parameters:
+  - action (str): Action name
+  - keys (list): List of key identifiers
+  - scope (str): 'device' or 'game'
+Returns: None
+Side Effects: Writes mapping to JSON file
+Behavior:
+  - Updates self.mappings[action]
+  - Determines save path based on scope:
+    * 'device': data/input_overrides/device.json
+    * 'game': data/input_overrides/games/{current_game_id}.json
+  - Creates directory if needed
+  - Loads existing mappings from file
+  - Merges new mapping
+  - Writes back to file with indent=2
+
+Method: get_current_mappings
+Purpose: Get current active mappings for display
+Parameters: None
+Returns: dict - Copy of current mappings
+Behavior: Returns copy of self.mappings

@@ -1,0 +1,58 @@
+FILE: views/widgets/game_card.py
+=================================
+
+CLASS: GameCard
+---------------
+
+ATTRIBUTES:
+- game (Game): Game instance to display
+- rect (pygame.Rect): Card position and size
+- icon (pygame.Surface): Game icon image
+- focused (bool): Whether card is currently selected
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize game card widget
+Parameters:
+  - game (Game): Game instance
+  - size (tuple): (width, height) of card
+Returns: None
+Behavior:
+  - Stores game and size
+  - Creates rect with size
+  - Attempts to load game icon from cache or default
+  - Scales icon to fit card
+  - Sets focused to False
+
+Method: render
+Purpose: Draw game card to surface
+Parameters:
+  - surface (pygame.Surface): Target surface
+  - position (tuple): (x, y) where to draw card
+Returns: None
+Behavior:
+  - Updates rect position
+  - Draws card background (highlighted if focused)
+  - Blits game icon centered in card
+  - Draws game name below icon
+  - If installed: draws checkmark indicator
+  - Draws border around card
+
+Method: set_focus
+Purpose: Set focus state
+Parameters:
+  - focused (bool): New focus state
+Returns: None
+Side Effects: Updates visual appearance
+Behavior: Sets self.focused to parameter value
+
+Method: load_icon
+Purpose: Load game icon from disk or use default
+Parameters: None
+Returns: pygame.Surface - Icon image
+Behavior:
+  - Checks cache directory for game icon
+  - If found: loads and returns
+  - If not found: returns default icon
+  - Scales to appropriate size for card

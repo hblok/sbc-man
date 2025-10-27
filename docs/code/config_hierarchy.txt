@@ -1,0 +1,63 @@
+CONFIGURATION LOADING AND MERGING
+==================================
+
+Configuration builds up through layers, each overriding previous:
+
+1. Base Layer
+   └─> Load config/devices/default.json
+       ├─> Provides all required fields
+       └─> Sets conservative defaults
+
+2. Device Layer
+   └─> Load config/devices/{device_type}.json
+       ├─> Overrides device-specific settings
+       └─> Example: Anbernic sets specific button layouts
+
+3. OS Layer
+   └─> Load config/os_types/{os_type}.json
+       ├─> Overrides OS-specific paths
+       └─> Example: ArkOS sets /roms paths
+
+4. Hardware Probe Layer
+   └─> Apply probed hardware
+       ├─> If display.resolution == "auto": use probed resolution
+       ├─> If performance.target_fps not set: calculate from CPU
+       └─> Add hardware_probed section with full probe results
+
+5. User Override Layer
+   └─> Load data/user_config.json
+       ├─> User customizations
+       └─> Highest priority overrides
+
+Merge Algorithm (Deep Merge):
+├─> For each key in override:
+│   ├─> If value is dict AND base[key] is dict:
+│   │   └─> Recursively merge
+│   │
+│   └─> Else: override[key] replaces base[key]
+│
+└─> Return merged result
+
+Example:
+Base (default.json):
+{
+  "display": {"resolution": [640, 480], "fullscreen": false},
+  "performance": {"target_fps": 60}
+}
+
+Device (anbernic.json):
+{
+  "display": {"resolution": "auto", "fullscreen": true}
+}
+
+Probed:
+{
+  "display": {"resolution": [640, 480]},  # Auto-detected
+  "performance": {"target_fps": 30}       # Calculated from ARM CPU
+}
+
+Final Result:
+{
+  "display": {"resolution": [640, 480], "fullscreen": true},
+  "performance": {"target_fps": 30}
+}

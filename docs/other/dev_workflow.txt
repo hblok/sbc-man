@@ -1,0 +1,216 @@
+RECOMMENDED DEVELOPMENT WORKFLOW
+=================================
+
+Setting Up Development Environment:
+-----------------------------------
+1. Clone repository:
+   $ git clone https://github.com/username/game-launcher.git
+   $ cd game-launcher
+
+2. Create virtual environment:
+   $ python3 -m venv venv
+   $ source venv/bin/activate
+
+3. Install dependencies:
+   $ pip install -r requirements.txt
+   $ pip install -r requirements-dev.txt
+
+4. Run tests to verify setup:
+   $ pytest tests/
+
+5. Run application:
+   $ python -m src.main
+
+Daily Development Cycle:
+------------------------
+1. Activate virtual environment:
+   $ source venv/bin/activate
+
+2. Pull latest changes:
+   $ git pull origin main
+
+3. Create feature branch:
+   $ git checkout -b feature/my-feature
+
+4. Make changes with TDD:
+   - Write test first
+   - Implement feature
+   - Run tests: pytest tests/
+   - Refactor if needed
+
+5. Run linter:
+   $ flake8 src/
+
+6. Format code:
+   $ black src/
+
+7. Type check (optional):
+   $ mypy src/
+
+8. Run full test suite:
+   $ pytest tests/ --cov=src
+
+9. Commit changes:
+   $ git add .
+   $ git commit -m "Add feature: description"
+
+10. Push to remote:
+    $ git push origin feature/my-feature
+
+11. Create pull request
+
+Code Review Checklist:
+---------------------
+☐ Code follows project style
+☐ Tests added/updated
+☐ Documentation updated
+☐ No debug prints left
+☐ Error handling included
+☐ Type hints added (Python 3.7+)
+☐ No hardcoded values
+☐ Config changes documented
+☐ Backwards compatible
+☐ Performance acceptable
+
+Testing Strategy:
+----------------
+Before commit:
+$ pytest tests/unit/test_myfeature.py  # Unit test
+
+Before push:
+$ pytest tests/                         # All tests
+
+Before release:
+$ pytest tests/ --cov=src --cov-report=html
+$ # Review coverage report
+$ # Run manual tests on target device
+
+Release Process:
+---------------
+1. Update version in src/__init__.py
+2. Update CHANGELOG.md
+3. Run full test suite
+4. Build packages:
+   $ python setup.py sdist
+   $ # Build OPK if needed
+5. Tag release:
+   $ git tag -a v1.0.0 -m "Release 1.0.0"
+   $ git push origin v1.0.0
+6. Create GitHub release
+7. Upload packages
+8. Announce release
+
+Debugging Tips:
+--------------
+1. Enable debug logging:
+   Add to main.py:
+   logging.basicConfig(level=logging.DEBUG)
+
+2. Use pygame debug mode:
+   Set environment variable:
+   $ SDL_VIDEODRIVER=dummy python -m src.main
+
+3. Profile performance:
+   $ python -m cProfile -o profile.stats src/main.py
+   $ python -m pstats profile.stats
+
+4. Memory profiling:
+   $ pip install memory_profiler
+   $ python -m memory_profiler src/main.py
+
+5. Remote debugging on device:
+   $ pip install debugpy
+   Add to code:
+   import debugpy
+   debugpy.listen(5678)
+   debugpy.wait_for_client()
+
+Common Issues and Solutions:
+---------------------------
+Issue: Import errors
+Solution: Check PYTHONPATH, run from project root
+
+Issue: pygame initialization fails
+Solution: Check SDL2 libraries installed
+
+Issue: Tests fail on import
+Solution: Install package in editable mode: pip install -e .
+
+Issue: Coverage not showing all files
+Solution: Ensure __init__.py in all packages
+
+Issue: Type hints causing errors
+Solution: Use TYPE_CHECKING guard for circular imports
+
+Git Workflow:
+------------
+Main branches:
+- main: Stable, production-ready
+- develop: Integration branch for features
+
+Feature branches:
+- feature/feature-name
+- bugfix/bug-name
+- hotfix/critical-fix
+
+Merge strategy:
+- Feature → develop → main
+- Hotfix → main + develop
+- Use pull requests for review
+- Squash commits when merging
+
+Documentation:
+-------------
+Update when changing:
+├─ Code: Add docstrings
+├─ Config: Update config docs
+├─ API: Update API reference
+├─ Features: Update README
+├─ Architecture: Update this doc
+└─ Breaking changes: Update CHANGELOG
+
+Tools:
+-----
+Development:
+- Editor: VSCode, PyCharm, vim
+- Debugger: pdb, debugpy
+- Profiler: cProfile, py-spy
+
+Testing:
+- pytest: Test runner
+- coverage: Code coverage
+- tox: Multi-env testing
+
+Quality:
+- black: Code formatter
+- flake8: Linter
+- mypy: Type checker
+- pylint: Additional linting
+
+Version Control:
+- git: Source control
+- GitHub: Hosting + CI/CD
+- pre-commit: Git hooks
+
+Environment Variables:
+---------------------
+For development:
+export GAME_LAUNCHER_DEBUG=1
+export GAME_LAUNCHER_CONFIG=/path/to/test/config
+export GAME_LAUNCHER_DATA=/tmp/game-launcher-test
+
+CI/CD Pipeline:
+--------------
+On push:
+1. Run linter
+2. Run tests
+3. Check coverage
+4. Build packages
+5. Run integration tests
+
+On tag:
+1. All above steps
+2. Build release packages
+3. Generate documentation
+4. Create GitHub release
+5. Upload to package registry

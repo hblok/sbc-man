@@ -1,0 +1,197 @@
+DOWNLOAD PROGRESS TRACKING SYSTEM
+==================================
+
+Architecture: Observer Pattern with Threading
+
+Components:
+1. DownloadManager (Subject)
+   - Manages downloads
+   - Notifies observers of changes
+
+2. DownloadState (Observer)
+   - Observes download progress
+   - Updates UI accordingly
+
+3. Download Thread
+   - Performs actual download
+   - Reports progress to manager
+
+Flow:
+
+1. Initiate Download
+   ┌─────────────────────────────────────────────────┐
+   │ User Action                                     │
+   ├─────────────────────────────────────────────────┤
+   │ User selects game in download_state             │
+   │ Presses "confirm" to start download             │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ download_manager.start_download(game_info, dest)│
+   ├─────────────────────────────────────────────────┤
+   │ 1. Generate unique download_id (UUID)           │
+   │ 2. Create download entry:                       │
+   │    downloads[download_id] = {                   │
+   │      'status': 'downloading',                   │
+   │      'bytes_downloaded': 0,                     │
+   │      'total_bytes': 0,                          │
+   │      'percent': 0,                              │
+   │      'game_info': game_info,                    │
+   │      'destination': dest                        │
+   │    }                                            │
+   │ 3. Start download thread                        │
+   │ 4. Return download_id                           │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+2. Download Thread Execution
+   ┌─────────────────────────────────────────────────┐
+   │ Thread: _download_and_install()                 │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ NetworkService.download_file()                  │
+   │   with progress_callback                        │
+   ├─────────────────────────────────────────────────┤
+   │ Parameters:                                     │
+   │ - url: game_info['download_url']                │
+   │ - destination: temp file path                   │
+   │ - progress_callback: lambda for progress        │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [For each chunk]
+   ┌─────────────────────────────────────────────────┐
+   │ Progress Callback Invoked                       │
+   ├─────────────────────────────────────────────────┤
+   │ def progress_callback(bytes_down, total_bytes): │
+   │   progress_data = {                             │
+   │     'bytes_downloaded': bytes_down,             │
+   │     'total_bytes': total_bytes,                 │
+   │     'percent': (bytes_down/total_bytes) * 100   │
+   │   }                                             │
+   │   download_manager.notify_progress(             │
+   │     download_id, progress_data)                 │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+3. Notify Observers
+   ┌─────────────────────────────────────────────────┐
+   │ download_manager.notify_progress()              │
+   ├─────────────────────────────────────────────────┤
+   │ 1. Update internal tracking:                    │
+   │    downloads[download_id].update(progress_data) │
+   │                                                 │
+   │ 2. For each observer in self.observers:         │
+   │    observer.on_progress_update(                 │
+   │      download_id, progress_data)                │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+4. Observer Updates UI
+   ┌─────────────────────────────────────────────────┐
+   │ download_state.on_progress_update()             │
+   ├─────────────────────────────────────────────────┤
+   │ 1. Receive progress_data                        │
+   │ 2. Update view:                                 │
+   │    view.update_progress(download_id,            │
+   │                         progress_data)          │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+5. View Updates Display
+   ┌─────────────────────────────────────────────────┐
+   │ download_view.update_progress()                 │
+   ├─────────────────────────────────────────────────┤
+   │ 1. Find progress bar for download_id            │
+   │ 2. Update progress bar value:                   │
+   │    progress_bar.set_value(                      │
+   │      progress_data['percent'] / 100)            │
+   │ 3. Update status text:                          │
+   │    "{bytes_down}/{total} ({percent}%)"          │
+   │ 4. Next render() will show updated progress     │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [Repeats for each chunk]
+                    │
+                    ▼ [Download complete]
+
+6. Download Complete
+   ┌─────────────────────────────────────────────────┐
+   │ Thread: Extract and Finalize                    │
+   ├─────────────────────────────────────────────────┤
+   │ 1. Update status to 'extracting'                │
+   │    download_manager.notify_progress(            │
+   │      download_id,                               │
+   │      {'status': 'extracting', 'percent': 100})  │
+   │                                                 │
+   │ 2. Extract archive                              │
+   │    FileOps.extract_archive(archive, dest)       │
+   │                                                 │
+   │ 3. Cleanup temp files                           │
+   │                                                 │
+   │ 4. Notify completion                            │
+   │    download_manager.notify_complete(            │
+   │      download_id)                               │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+7. Completion Handling
+   ┌─────────────────────────────────────────────────┐
+   │ download_state.on_download_complete()           │
+   ├─────────────────────────────────────────────────┤
+   │ 1. Get game_info from download                  │
+   │ 2. Create Game instance                         │
+   │ 3. Add to library:                              │
+   │    game_library.add_game(game)                  │
+   │ 4. Remove from download view:                   │
+   │    view.remove_download(download_id)            │
+   │ 5. Show success notification                    │
+   └─────────────────────────────────────────────────┘
+
+8. Error Handling
+   If error occurs at any point in thread:
+   
+   ┌─────────────────────────────────────────────────┐
+   │ Thread: Exception Handler                      │
+   ├─────────────────────────────────────────────────┤
+   │ try:                                            │
+   │   # download and extract                        │
+   │ except Exception as e:                          │
+   │   download_manager.notify_error(                │
+   │     download_id, e)                             │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼
+   ┌─────────────────────────────────────────────────┐
+   │ download_state.on_download_error()              │
+   ├─────────────────────────────────────────────────┤
+   │ 1. Log error details                            │
+   │ 2. Update UI with error message                 │
+   │ 3. Remove failed download from view             │
+   │ 4. Clean up partial files                       │
+   │ 5. Optionally offer retry                       │
+   └─────────────────────────────────────────────────┘
+
+Thread Safety Considerations:
+├─ Download thread runs in background
+├─ Progress callbacks executed in thread context
+├─ notify_* methods must be thread-safe
+├─ UI updates queued for main thread
+└─ Use pygame events or flags for thread communication
+
+Multiple Concurrent Downloads:
+├─ Each download has unique download_id
+├─ downloads dict tracks all active downloads
+├─ Each download runs in separate thread
+├─ View displays all active downloads
+├─ Progress bars update independently
+└─ No limit enforced (could add max_concurrent_downloads)
+
+Progress Update Frequency:
+├─ Callback invoked after each chunk (8KB)
+├─ For large files: many callbacks per second
+├─ UI throttling recommended:
+│  └─ Only update every 100ms to avoid excessive redraws
+└─ Final update always sent at 100% completion

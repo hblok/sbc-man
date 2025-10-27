@@ -1,0 +1,57 @@
+FILE: views/menu_view.py
+========================
+
+CLASS: MenuView
+---------------
+Inherits: BaseView
+
+ATTRIBUTES:
+- menu_items (list): List of menu item dictionaries
+- widgets (list): List of button widget instances
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize main menu view
+Parameters:
+  - hw_config (dict): Hardware configuration
+  - screen (pygame.Surface): Display surface
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Creates menu_items list with: 'Browse Games', 'Download Games', 'Settings', 'Exit'
+  - Creates Button widget for each menu item
+  - Stores buttons in self.widgets
+
+Method: render
+Purpose: Render main menu screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Fills surface with background color
+  - Draws title text "Game Launcher" at top center
+  - Iterates through widgets and calls render() on each
+  - Draws version number at bottom
+
+Method: update
+Purpose: Update menu view
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior:
+  - Updates any animated elements (future use)
+  - Currently minimal implementation
+
+Method: get_selected_index
+Purpose: Get currently selected menu item index
+Parameters: None
+Returns: int - Index of selected item
+Behavior: Iterates through widgets to find focused button
+
+Method: set_selected_index
+Purpose: Set selected menu item
+Parameters:
+  - index (int): Index to select
+Returns: None
+Behavior: Updates focus state on button widgets

@@ -1,0 +1,73 @@
+INPUT EVENT PROCESSING FLOW
+===========================
+
+Hardware → Pygame → GameLoop → State → Action
+
+Step 1: Physical Input
+┌─────────────────────────────────────────────────────┐
+│ User presses button on device                       │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 2: Pygame Event Generation
+┌─────────────────────────────────────────────────────┐
+│ pygame.event system                                 │
+├─────────────────────────────────────────────────────┤
+│ Creates event object:                               │
+│   - KEYDOWN: event.key = K_RETURN                   │
+│   - JOYBUTTONDOWN: event.button = 0                 │
+│   - JOYHATMOTION: event.value = (0, 1)              │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 3: Event Collection
+┌─────────────────────────────────────────────────────┐
+│ GameLoop.start() - Event phase                      │
+├─────────────────────────────────────────────────────┤
+│ events = pygame.event.get()                         │
+│ - Collects all events since last frame              │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 4: State Event Handling
+┌─────────────────────────────────────────────────────┐
+│ state_manager.handle_events(events)                 │
+├─────────────────────────────────────────────────────┤
+│ Delegates to: current_state.handle_events(events)   │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 5: Action Resolution
+┌─────────────────────────────────────────────────────┐
+│ input_handler.is_action_pressed('confirm', events)  │
+├─────────────────────────────────────────────────────┤
+│ Input: action name, event list                      │
+│ Process:                                            │
+│   1. Get mappings for action from hierarchy         │
+│   2. For each event:                                │
+│      - Extract key/button identifier                │
+│      - Check if in mappings list                    │
+│   3. Return True if match found                     │
+│ Output: boolean (action triggered or not)           │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 6: State Action Handling
+┌─────────────────────────────────────────────────────┐
+│ State-specific logic                                │
+├─────────────────────────────────────────────────────┤
+│ Example (MenuState):                                │
+│   if is_action_pressed('confirm'):                  │
+│     - Determine selected menu item                  │
+│     - Execute action (change state, etc.)           │
+│   if is_action_pressed('up'):                       │
+│     - Move selection up                             │
+│   if is_action_pressed('down'):                     │
+│     - Move selection down                           │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 7: Visual Feedback
+┌─────────────────────────────────────────────────────┐
+│ Next render cycle shows updated UI                  │
+└─────────────────────────────────────────────────────┘

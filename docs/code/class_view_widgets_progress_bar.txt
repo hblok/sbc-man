@@ -1,0 +1,54 @@
+FILE: views/widgets/progress_bar.py
+====================================
+
+CLASS: ProgressBar
+------------------
+
+ATTRIBUTES:
+- rect (pygame.Rect): Progress bar position and size
+- value (float): Current progress (0.0 to 1.0)
+- background_color (tuple): Background color
+- fill_color (tuple): Progress fill color
+- show_text (bool): Whether to show percentage text
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize progress bar widget
+Parameters:
+  - position (tuple): (x, y) position
+  - size (tuple): (width, height)
+  - show_text (bool): Show percentage, defaults to True
+Returns: None
+Behavior:
+  - Creates rect from position and size
+  - Sets value to 0.0
+  - Sets default colors
+  - Stores show_text flag
+
+Method: render
+Purpose: Draw progress bar to surface
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Draws background rectangle
+  - Calculates fill width based on value
+  - Draws filled rectangle for progress
+  - If show_text: renders percentage text centered
+
+Method: set_value
+Purpose: Update progress value
+Parameters:
+  - value (float): New progress (0.0 to 1.0)
+Returns: None
+Side Effects: Updates display
+Behavior:
+  - Clamps value to 0.0-1.0 range
+  - Updates self.value
+
+Method: get_value
+Purpose: Get current progress
+Parameters: None
+Returns: float - Current value
+Behavior: Returns self.value

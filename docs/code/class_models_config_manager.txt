@@ -1,0 +1,74 @@
+FILE: models/config_manager.py
+===============================
+
+CLASS: ConfigManager
+--------------------
+
+ATTRIBUTES:
+- hw_config (dict): Hardware configuration
+- user_config (dict): User preferences and settings
+- config_path (Path): Path to config.json file
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize config manager and load user config
+Parameters:
+  - hw_config (dict): Hardware configuration
+Returns: None
+Behavior:
+  - Stores hw_config
+  - Constructs config_path from hw_config paths.config
+  - Initializes empty user_config dict
+  - Calls load() to load existing config
+
+Method: load
+Purpose: Load user configuration from disk
+Parameters: None
+Returns: None
+Side Effects: Populates self.user_config
+Behavior:
+  - Checks if config_path exists
+  - Opens and parses JSON
+  - Stores in user_config
+  - If file doesn't exist: uses empty dict
+
+Method: save
+Purpose: Persist user configuration to disk
+Parameters: None
+Returns: None
+Side Effects: Writes config.json
+Behavior:
+  - Creates parent directory if needed
+  - Writes user_config as JSON with indent=2
+  - Handles errors silently
+
+Method: get
+Purpose: Get configuration value
+Parameters:
+  - key (str): Configuration key (supports dot notation)
+  - default: Default value if key not found
+Returns: Value at key or default
+Behavior:
+  - Splits key by dots for nested access
+  - Traverses user_config dictionary
+  - Returns value if found, default if not
+
+Method: set
+Purpose: Set configuration value
+Parameters:
+  - key (str): Configuration key (supports dot notation)
+  - value: Value to set
+Returns: None
+Side Effects: Modifies user_config, saves to disk
+Behavior:
+  - Splits key by dots for nested access
+  - Traverses/creates nested dicts as needed
+  - Sets final value
+  - Calls save() to persist
+
+Method: get_hardware_config
+Purpose: Get hardware configuration (read-only)
+Parameters: None
+Returns: dict - Hardware configuration
+Behavior: Returns copy of self.hw_config

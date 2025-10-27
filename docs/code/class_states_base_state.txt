@@ -1,0 +1,59 @@
+FILE: states/base_state.py
+===========================
+
+CLASS: BaseState (ABSTRACT)
+---------------------------
+
+ATTRIBUTES:
+- state_manager (StateManager): Reference to state manager
+- screen (pygame.Surface): Display surface
+- hw_config (dict): Hardware configuration
+- config (ConfigManager): Config manager
+- game_library (GameLibrary): Game library
+- input_handler (InputHandler): Input handler
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize base state with dependencies
+Parameters:
+  - state_manager (StateManager): State manager instance
+Returns: None
+Behavior:
+  - Stores state_manager
+  - Gets references to screen, hw_config, config, game_library, input_handler
+    from state_manager
+
+Method: on_enter
+Purpose: Called when state becomes active
+Parameters:
+  - previous_state (BaseState or None): Previous state
+Returns: None
+Behavior: Default implementation does nothing, override in subclasses
+
+Method: on_exit
+Purpose: Called when leaving this state
+Parameters: None
+Returns: None
+Behavior: Default implementation does nothing, override in subclasses
+
+Method: update (ABSTRACT)
+Purpose: Update state logic
+Parameters:
+  - dt (float): Delta time in seconds
+Returns: None
+Behavior: Must be implemented by subclasses
+
+Method: handle_events (ABSTRACT)
+Purpose: Handle input events
+Parameters:
+  - events (list): List of pygame events
+Returns: None
+Behavior: Must be implemented by subclasses
+
+Method: render (ABSTRACT)
+Purpose: Render state to screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior: Must be implemented by subclasses

@@ -1,0 +1,106 @@
+FILE: models/game_library.py
+=============================
+
+CLASS: GameLibrary
+------------------
+
+ATTRIBUTES:
+- hw_config (dict): Hardware configuration
+- games (dict): Dictionary mapping game_id to Game instances
+- library_path (Path): Path to games.json persistence file
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize game library and load from disk
+Parameters:
+  - hw_config (dict): Hardware configuration
+Returns: None
+Behavior:
+  - Stores hw_config
+  - Initializes empty games dict
+  - Constructs library_path from hw_config paths.data
+  - Calls load() to load existing library
+
+Method: load
+Purpose: Load game library from disk
+Parameters: None
+Returns: None
+Side Effects: Populates self.games dictionary
+Behavior:
+  - Checks if library_path file exists
+  - Opens and parses JSON
+  - For each game dict: calls Game.from_dict() and adds to games
+  - If file doesn't exist or error: starts with empty library
+
+Method: save
+Purpose: Persist game library to disk
+Parameters: None
+Returns: None
+Side Effects: Writes games.json file
+Behavior:
+  - Creates parent directory if needed
+  - Converts all Game instances to dicts via to_dict()
+  - Writes JSON with indent=2 for readability
+  - Handles errors silently
+
+Method: add_game
+Purpose: Add new game to library
+Parameters:
+  - game (Game): Game instance to add
+Returns: None
+Side Effects: Adds to games dict, saves library
+Behavior:
+  - Adds game to self.games with game.id as key
+  - Calls save() to persist
+
+Method: remove_game
+Purpose: Remove game from library
+Parameters:
+  - game_id (str): ID of game to remove
+Returns: None
+Side Effects: Removes from games dict, saves library
+Behavior:
+  - Removes game from self.games if exists
+  - Calls save() to persist
+
+Method: get_game
+Purpose: Retrieve game by ID
+Parameters:
+  - game_id (str): Game identifier
+Returns: Game or None - Game instance if found
+Behavior: Returns self.games.get(game_id)
+
+Method: get_all_games
+Purpose: Get list of all games
+Parameters: None
+Returns: list - List of all Game instances
+Behavior: Returns list(self.games.values())
+
+Method: get_installed_games
+Purpose: Get list of installed games only
+Parameters: None
+Returns: list - List of Game instances where installed is True
+Behavior: Filters games list by game.installed attribute
+
+Method: search_games
+Purpose: Search games by name
+Parameters:
+  - query (str): Search string
+Returns: list - List of matching Game instances
+Behavior:
+  - Converts query to lowercase
+  - Filters games where query is substring of lowercase name
+  - Returns filtered list
+
+Method: update_game
+Purpose: Update game metadata
+Parameters:
+  - game_id (str): Game to update
+  - updates (dict): Dictionary of attributes to update
+Returns: None
+Side Effects: Modifies game attributes, saves library
+Behavior:
+  - Gets game by ID
+  - For each key-value in updates: sets attribute on game
+  - Calls save() to persist

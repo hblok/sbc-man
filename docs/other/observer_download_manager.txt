@@ -1,0 +1,40 @@
+OBSERVER PATTERN IMPLEMENTATION
+===============================
+
+Subject: DownloadManager
+├─ Maintains list of observers
+├─ Notifies on events:
+│  ├─ Progress updates
+│  ├─ Download completion
+│  └─ Download errors
+│
+└─ Methods:
+   ├─ add_observer(observer)
+   ├─ notify_progress(download_id, data)
+   ├─ notify_complete(download_id)
+   └─ notify_error(download_id, error)
+
+Observer: DownloadState
+├─ Registers with DownloadManager
+├─ Implements callbacks:
+│  ├─ on_progress_update(download_id, data)
+│  ├─ on_download_complete(download_id)
+│  └─ on_download_error(download_id, error)
+│
+└─ Updates DownloadView based on notifications
+
+Flow:
+1. DownloadState creates DownloadManager
+2. DownloadState.add_observer(self)
+3. Download thread runs in background
+4. Thread calls notify_progress() periodically
+5. DownloadManager iterates observers
+6. Calls observer.on_progress_update()
+7. DownloadState updates view
+8. View re-renders with new progress
+
+Benefits:
+├─ Decouples download logic from UI
+├─ Multiple observers can watch same download
+├─ Async updates without polling
+└─ Easy to add logging, analytics observers

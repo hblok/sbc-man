@@ -1,0 +1,75 @@
+INITIALIZATION DATA FLOW
+========================
+
+Hardware Detection → Configuration → Component Setup → Ready
+
+Step 1: Hardware Detection
+┌─────────────────────────────────────────────────────┐
+│ HardwareDetector.get_config()                       │
+├─────────────────────────────────────────────────────┤
+│ Input: System files, environment                    │
+│ Process:                                            │
+│   - Read device identifiers                         │
+│   - Read OS release info                            │
+│   - Probe display capabilities                      │
+│   - Probe input devices                             │
+│   - Probe storage locations                         │
+│   - Probe CPU information                           │
+│ Output: hw_config dict                              │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 2: Configuration Loading
+┌─────────────────────────────────────────────────────┐
+│ ConfigLoader.load_config()                          │
+├─────────────────────────────────────────────────────┤
+│ Input: device_type, os_type, probed_hardware        │
+│ Process:                                            │
+│   - Load default.json (base)                        │
+│   - Merge device config                             │
+│   - Merge OS config                                 │
+│   - Apply probed values                             │
+│   - Merge user overrides                            │
+│ Output: Complete configuration dict                 │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 3: Pygame Initialization
+┌─────────────────────────────────────────────────────┐
+│ Application._initialize_pygame()                    │
+├─────────────────────────────────────────────────────┤
+│ Input: hw_config                                    │
+│ Process:                                            │
+│   - pygame.init()                                   │
+│   - Create display with config resolution           │
+│   - Set fullscreen if configured                    │
+│   - Hide cursor on handhelds                        │
+│ Output: screen surface                              │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 4: Component Initialization
+┌─────────────────────────────────────────────────────┐
+│ Application._initialize_components()                │
+├─────────────────────────────────────────────────────┤
+│ Input: hw_config, screen                            │
+│ Process:                                            │
+│   - Create ConfigManager                            │
+│   │   └─> Load user config from data/config.json   │
+│   - Create GameLibrary                              │
+│   │   └─> Load games from data/games.json          │
+│   - Create InputHandler                             │
+│   │   └─> Load input mapping hierarchy             │
+│   - Create StateManager                             │
+│       └─> Initialize all states with dependencies   │
+│ Output: All manager instances ready                 │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+Step 5: Ready State
+┌─────────────────────────────────────────────────────┐
+│ GameLoop.start()                                    │
+├─────────────────────────────────────────────────────┤
+│ Application is ready to receive input               │
+│ Main loop begins processing events                  │
+└─────────────────────────────────────────────────────┘

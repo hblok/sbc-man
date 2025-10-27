@@ -1,0 +1,34 @@
+MODEL-VIEW ARCHITECTURE
+=======================
+
+Models (Data & Logic)          Views (Presentation)
+─────────────────────          ────────────────────
+
+Game                           BaseView (Abstract)
+├─ Data: metadata              ├─ hw_config
+├─ Serialization               ├─ theme
+└─ Business: none              └─ render() [abstract]
+                                   │
+GameLibrary                        ├─── MenuView
+├─ Collection of Games             │    └─ Renders menu UI
+├─ Persistence                     │
+├─ CRUD operations                 ├─── GameListView
+└─ Search/filter                   │    ├─ Renders game grid
+                                   │    └─ Handles game cards
+ConfigManager                      │
+├─ User preferences                ├─── DownloadView
+├─ Settings data                   │    └─ Renders progress bars
+└─ Persistence                     │
+                                   └─── SettingsView
+DownloadManager                         └─ Renders settings form
+├─ Download tracking
+├─ Progress management             Widgets (Reusable UI)
+├─ Observer pattern                ─────────────────────
+└─ Network operations              Button, List, Scrollbar,
+                                   ProgressBar, Grid, GameCard
+
+Separation Rules:
+├─ Models: Never import views
+├─ Views: May observe models (read-only)
+├─ States: Mediate between models and views
+└─ Controllers (States): Handle user input, update models, refresh views

@@ -1,0 +1,61 @@
+HARDWARE DETECTION ERROR HANDLING
+==================================
+
+Scenario 1: Unknown Device
+├─ Condition: No device identifiers match known devices
+├─ Behavior:
+│  ├─ device_type = "desktop" (fallback default)
+│  ├─ Log warning: "Unknown device, using desktop defaults"
+│  └─ Continue with default configuration
+├─ Impact:
+│  ├─ May use suboptimal settings for handheld
+│  └─ User can manually override in settings
+└─ Recovery: Works with reduced optimizations
+
+Scenario 2: Display Probe Fails
+├─ Condition: pygame.display.Info() raises exception
+├─ Behavior:
+│  ├─ Catch exception
+│  ├─ resolution = [640, 480] (safe default)
+│  ├─ Log error with exception details
+│  └─ Continue with fallback resolution
+├─ Impact:
+│  └─ May not use optimal resolution for device
+└─ Recovery: Usable but not optimal display
+
+Scenario 3: Input Device Probe Fails
+├─ Condition: No joysticks detected
+├─ Behavior:
+│  ├─ Initialize with keyboard-only support
+│  ├─ Log info: "No controllers detected, keyboard only"
+│  └─ Continue normally
+├─ Impact:
+│  └─ Keyboard controls work, controller hotplug supported
+└─ Recovery: Fully functional with keyboard
+
+Scenario 4: Storage Probe Fails
+├─ Condition: Cannot read disk usage
+├─ Behavior:
+│  ├─ Assume sufficient space (no check)
+│  ├─ Log warning: "Could not check disk space"
+│  └─ Continue without space validation
+├─ Impact:
+│  └─ Downloads may fail if insufficient space
+└─ Recovery: Catch download errors later
+
+Scenario 5: CPU Probe Fails
+├─ Condition: Cannot detect CPU info
+├─ Behavior:
+│  ├─ target_fps = 60 (conservative default)
+│  ├─ Log warning: "Could not detect CPU, using defaults"
+│  └─ Continue with default performance settings
+├─ Impact:
+│  └─ May set FPS too high for weak devices
+└─ Recovery: User can adjust in settings
+
+General Error Handling Strategy:
+├─ Never crash on probe failure
+├─ Always provide safe fallback defaults
+├─ Log all failures for debugging
+├─ Degrade gracefully
+└─ Allow manual overrides in settings

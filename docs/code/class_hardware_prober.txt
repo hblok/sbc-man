@@ -1,0 +1,70 @@
+FILE: hardware/prober.py
+========================
+
+CLASS: HardwareProber
+---------------------
+
+METHODS (ALL STATIC):
+
+Method: probe_all
+Purpose: Probe all hardware capabilities
+Parameters: None
+Returns: dict - Complete hardware probe results
+Behavior:
+  - Initializes pygame and pygame.joystick
+  - Calls probe_display(), probe_input(), probe_storage(), probe_cpu()
+  - Returns dictionary with keys: 'display', 'input', 'storage', 'cpu'
+
+Method: probe_display
+Purpose: Auto-detect display capabilities
+Parameters: None
+Returns: dict - Display information
+Behavior:
+  - Gets pygame.display.Info() object
+  - Extracts current_w and current_h for resolution
+  - Calls pygame.display.list_modes() for available modes
+  - Returns dict with:
+    * current_resolution: [width, height]
+    * available_modes: list of available resolutions or empty if not applicable
+    * hardware_accelerated: boolean from info.hw
+    * bit_depth: color depth from info.bitsize
+    * video_mem: video memory if available
+
+Method: probe_input
+Purpose: Auto-detect input devices
+Parameters: None
+Returns: dict - Input device information
+Behavior:
+  - Gets joystick count from pygame.joystick.get_count()
+  - For each joystick:
+    * Creates and initializes Joystick object
+    * Gets name, num_axes, num_buttons, num_hats
+    * Appends info to joysticks list
+  - Returns dict with:
+    * has_keyboard: always True
+    * joystick_count: number of detected joysticks
+    * joysticks: list of joystick info dicts
+
+Method: probe_storage
+Purpose: Probe storage locations and free space
+Parameters: None
+Returns: dict - Storage information
+Behavior:
+  - Defines list of common mount paths: /roms, /storage/roms, /mnt/sdcard, etc.
+  - For each path that exists:
+    * Calls shutil.disk_usage() to get total, used, free bytes
+    * Checks if writable using Path.stat().st_mode
+    * Adds to storage_info dict with path as key
+  - Returns dict mapping paths to storage information
+
+Method: probe_cpu
+Purpose: Probe CPU information for performance profiling
+Parameters: None
+Returns: dict - CPU information
+Behavior:
+  - Initializes dict with core_count: 1, architecture: 'unknown'
+  - Reads /proc/cpuinfo if it exists
+  - Counts 'processor' entries for core count
+  - Searches for 'arm', 'aarch', 'intel', 'amd' keywords
+  - Sets architecture to 'arm' or 'x86' accordingly
+  - Returns CPU info dictionary

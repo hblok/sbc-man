@@ -1,0 +1,44 @@
+SCHEMA: config/input_mappings/*.json
+====================================
+
+Structure:
+{
+  "action_name": [array of key identifiers],
+  ...
+}
+
+Standard Actions:
+- "up": Navigate up
+- "down": Navigate down
+- "left": Navigate left
+- "right": Navigate right
+- "confirm": Confirm selection / Select
+- "cancel": Cancel / Go back
+- "menu": Open menu / Additional options
+- "select": Select button (additional action)
+
+Key Identifier Formats:
+- Keyboard: "K_<keyname>" (e.g., "K_UP", "K_RETURN", "K_ESCAPE")
+- D-pad: "DPAD_UP", "DPAD_DOWN", "DPAD_LEFT", "DPAD_RIGHT"
+- Buttons (numeric): "BUTTON_0", "BUTTON_1", etc.
+- Buttons (semantic): "BUTTON_A", "BUTTON_B", "BUTTON_X", "BUTTON_Y"
+- Shoulder buttons: "BUTTON_L1", "BUTTON_R1", "BUTTON_L2", "BUTTON_R2"
+- Analog stick clicks: "BUTTON_L3", "BUTTON_R3"
+- System buttons: "BUTTON_START", "BUTTON_SELECT", "BUTTON_BACK"
+
+Example:
+{
+  "up": ["K_UP", "K_W", "DPAD_UP"],
+  "down": ["K_DOWN", "K_S", "DPAD_DOWN"],
+  "confirm": ["K_RETURN", "K_SPACE", "BUTTON_A"],
+  "cancel": ["K_ESCAPE", "BUTTON_B"],
+  "menu": ["K_TAB", "BUTTON_START"]
+}
+
+Hierarchy:
+1. config/input_mappings/default.json (base)
+2. config/input_mappings/{device_type}.json (device overrides)
+3. data/input_overrides/device.json (user device overrides)
+4. data/input_overrides/games/{game_id}.json (per-game overrides)
+
+Later layers override earlier layers for conflicting actions.

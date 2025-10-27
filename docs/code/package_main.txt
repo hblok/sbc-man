@@ -1,0 +1,8 @@
+FILE: main.py
+=============
+
+MODULE LEVEL:
+- Imports Application class from core.application module
+- Executes Application().run() when script is run directly
+- No functions or classes defined
+- Pure entry point with zero business logic

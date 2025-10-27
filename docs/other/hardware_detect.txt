@@ -1,0 +1,57 @@
+HARDWARE DETECTION DECISION TREE
+=================================
+
+Device Type Detection:
+├─ Check /sys/firmware/devicetree/base/model
+│  ├─ Contains "anbernic" or "rg"? → device_type = "anbernic"
+│  ├─ Contains "miyoo"? → device_type = "miyoo"
+│  └─ Contains "retroid"? → device_type = "retroid"
+│
+├─ Check /mnt/SDCARD/.system exists
+│  └─ Yes? → device_type = "miyoo"
+│
+├─ Check /system/build.prop exists
+│  └─ Yes? → device_type = "retroid" or "android"
+│
+├─ Check DEVICE_TYPE environment variable
+│  └─ Set? → device_type = $DEVICE_TYPE
+│
+└─ Default → device_type = "desktop"
+
+OS Type Detection:
+├─ Check /etc/os-release
+│  ├─ Contains "arkos"? → os_type = "arkos"
+│  ├─ Contains "jelos"? → os_type = "jelos"
+│  └─ Contains "batocera"? → os_type = "batocera"
+│
+├─ Check /system/build.prop
+│  └─ Exists? → os_type = "android"
+│
+├─ Check OS_TYPE environment variable
+│  └─ Set? → os_type = $OS_TYPE
+│
+└─ Default → os_type = "standard_linux"
+
+Display Resolution Logic:
+├─ Config specifies explicit resolution [W, H]?
+│  └─ Use config value
+│
+├─ Config specifies "auto"?
+│  ├─ Call pygame.display.Info()
+│  ├─ Get current_w and current_h
+│  └─ Use detected values
+│
+└─ Default → [640, 480]
+
+FPS Target Logic:
+├─ Config specifies target_fps?
+│  └─ Use config value
+│
+├─ No config, determine from CPU:
+│  ├─ architecture == "arm" AND cores <= 4?
+│  │  └─ target_fps = 30 (conservative for handheld)
+│  │
+│  └─ Else (desktop or powerful CPU)?
+│     └─ target_fps = 60
+│
+└─ Fallback → 60

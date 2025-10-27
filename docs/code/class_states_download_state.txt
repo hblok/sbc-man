@@ -1,0 +1,104 @@
+FILE: states/download_state.py
+===============================
+
+CLASS: DownloadState
+--------------------
+Inherits: BaseState
+
+ATTRIBUTES:
+- view (DownloadView): Download view instance
+- download_manager (DownloadManager): Download manager instance
+- available_games (list): List of games available for download
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize download state
+Parameters:
+  - state_manager (StateManager): State manager
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Creates DownloadManager instance
+  - Creates DownloadView instance
+  - Registers as observer of download_manager
+  - Initializes empty available_games list
+
+Method: on_enter
+Purpose: Called when state becomes active
+Parameters:
+  - previous_state (BaseState or None): Previous state
+Returns: None
+Behavior:
+  - Fetches list of available games from network
+  - Populates available_games list
+  - Updates view with available games
+
+Method: update
+Purpose: Update download logic
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior:
+  - Calls view.update(dt)
+  - Checks for completed downloads
+  - Updates game_library when downloads complete
+
+Method: handle_events
+Purpose: Handle download screen input
+Parameters:
+  - events (list): Pygame events
+Returns: None
+Behavior:
+  - On 'up': navigate available games list
+  - On 'down': navigate available games list
+  - On 'confirm': start download for selected game
+  - On 'cancel': return to menu_state
+
+Method: render
+Purpose: Render download screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior: Calls view.render(surface)
+
+Method: on_progress_update
+Purpose: Observer callback for download progress
+Parameters:
+  - download_id (str): Download identifier
+  - progress_data (dict): Progress information
+Returns: None
+Behavior: Calls view.update_progress(download_id, progress_data)
+
+Method: on_download_complete
+Purpose: Observer callback for download completion
+Parameters:
+  - download_id (str): Download identifier
+Returns: None
+Behavior:
+  - Removes download from view
+  - Adds game to game_library
+  - Shows completion notification
+
+
+
+Method: on_download_error
+Purpose: Observer callback for download error
+Parameters:
+  - download_id (str): Download identifier
+  - error (Exception): Error that occurred
+Returns: None
+Behavior:
+  - Removes download from view
+  - Logs error message
+  - Shows error notification to user
+
+Method: fetch_available_games
+Purpose: Fetch list of downloadable games from network
+Parameters: None
+Returns: list - List of game info dictionaries
+Behavior:
+  - Makes HTTP request to game repository/API
+  - Parses JSON response
+  - Returns list of game metadata
+  - Handles network errors gracefully

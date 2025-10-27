@@ -1,0 +1,39 @@
+SCHEMA: data/games.json
+=======================
+
+Structure:
+{
+  "game_id": {
+    "id": string,
+    "name": string,
+    "version": string,
+    "description": string,
+    "author": string,
+    "install_path": string,
+    "entry_point": string,
+    "installed": boolean,
+    "download_url": string,
+    "custom_input_mappings": object,
+    "custom_resolution": array or null,
+    "custom_fps": integer or null
+  },
+  ...
+}
+
+Example:
+{
+  "snake-game": {
+    "id": "snake-game",
+    "name": "Snake",
+    "version": "1.0.0",
+    "description": "Classic snake game",
+    "author": "John Doe",
+    "install_path": "/home/user/.local/share/game-launcher/games/snake-game",
+    "entry_point": "main.py",
+    "installed": true,
+    "download_url": "https://example.com/games/snake.zip",
+    "custom_input_mappings": {},
+    "custom_resolution": null,
+    "custom_fps": null
+  }
+}

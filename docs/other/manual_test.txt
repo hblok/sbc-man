@@ -1,0 +1,136 @@
+MANUAL TESTING CHECKLIST
+========================
+
+To be performed on target hardware before release.
+
+Hardware Compatibility Testing:
+☐ Test on Anbernic RG353P
+☐ Test on Miyoo Mini Plus
+☐ Test on desktop Linux
+☐ Test on desktop Windows (if supported)
+☐ Verify display resolution auto-detection
+☐ Verify fullscreen/windowed modes
+☐ Test with different controllers
+☐ Test with keyboard only
+☐ Test D-pad navigation
+☐ Test analog stick support (if applicable)
+
+Core Functionality Testing:
+☐ Application launches successfully
+☐ Main menu displays correctly
+☐ Can navigate all menu items
+☐ Game list shows installed games
+☐ Game list handles empty library
+☐ Can launch installed games
+☐ Games run to completion
+☐ Return to launcher after game exit
+☐ Download list shows available games
+☐ Can download new games
+☐ Download progress displays correctly
+☐ Installed games appear in library
+☐ Settings menu accessible
+☐ Settings changes persist
+
+Input Testing:
+☐ All navigation buttons work (up/down/left/right)
+☐ Confirm button works in all contexts
+☐ Cancel/back button works everywhere
+☐ Menu button accessible
+☐ Custom input mappings can be set
+☐ Per-game input mappings work
+☐ Input context switches during game launch
+☐ Hotplug controller support works
+
+UI/Visual Testing:
+☐ All text readable on device screen
+☐ No UI element clipping
+☐ Icons load and display correctly
+☐ Progress bars animate smoothly
+☐ Scrolling works in long lists
+☐ Theme colors apply correctly
+☐ Font sizes appropriate for screen
+☐ No graphical glitches or artifacts
+
+Performance Testing:
+☐ UI responsive (<100ms input latency)
+☐ Smooth scrolling (target FPS maintained)
+☐ No stuttering during navigation
+☐ Game launch completes in reasonable time
+☐ Downloads don't freeze UI
+☐ Multiple concurrent operations work
+☐ Memory usage stable over time
+☐ No memory leaks during extended use
+
+Error Handling Testing:
+☐ Graceful handling of missing games
+☐ Network errors show appropriate messages
+☐ Disk full handled correctly
+☐ Corrupted files detected and handled
+☐ Missing config files don't crash app
+☐ Invalid input ignored safely
+☐ Game launch failures reported clearly
+
+Edge Case Testing:
+☐ Very long game names display correctly
+☐ Special characters in names work
+☐ Empty game library handled
+☐ All downloads completing simultaneously
+☐ Rapid button presses don't cause issues
+☐ State transitions always complete
+☐ Launcher survives game crashes
+
+Persistence Testing:
+☐ Game library persists across restarts
+☐ Settings persist across restarts
+☐ Custom input mappings persist
+☐ Download progress survives restart (or fails gracefully)
+☐ Last played game remembered (if implemented)
+
+Device-Specific Testing (Handhelds):
+☐ Works with device sleep/wake
+☐ Battery indicator visible (if implemented)
+☐ SD card detection works
+☐ Volume controls don't interfere
+☐ WiFi toggle works if available
+☐ Pre-launch commands execute (e.g., stop EmulationStation)
+☐ Post-launch commands execute (e.g., restart UI)
+
+Regression Testing (After Changes):
+☐ All previously working features still work
+☐ No new visual bugs introduced
+☐ Performance not degraded
+☐ No new crashes or errors
+☐ Configuration loading still works
+☐ All states still accessible
+
+Usability Testing:
+☐ New user can navigate without manual
+☐ Game installation intuitive
+☐ Settings are discoverable
+☐ Error messages helpful
+☐ Navigation patterns consistent
+☐ No dead ends in navigation
+
+Documentation Validation:
+☐ README matches actual behavior
+☐ Configuration examples work
+☐ Installation steps successful
+☐ Troubleshooting guide accurate
+☐ API documentation current (if applicable)
+
+Testing Notes Template:
+Date: ____________
+Device: ___________
+Tester: ___________
+Build/Version: _____
+
+Issues Found:
+1. _______________________________
+2. _______________________________
+3. _______________________________
+
+Severity:
+[ ] Critical (app unusable)
+[ ] Major (core feature broken)
+[ ] Minor (cosmetic or edge case)
+[ ] Enhancement (improvement idea)

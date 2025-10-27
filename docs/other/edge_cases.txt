@@ -1,0 +1,247 @@
+EDGE CASE HANDLING
+==================
+
+Edge Case 1: Empty Game Library
+├─ Condition: No games installed, games.json empty
+├─ Behavior:
+│  ├─ GameListState shows empty state message
+│  ├─ Display: "No games installed"
+│  ├─ Show hint: "Press [button] to browse downloads"
+│  ├─ Provide direct navigation to download_state
+│  └─ Browse/back controls still functional
+├─ Impact:
+│  └─ Clear guidance for new users
+└─ Expected: Normal for first launch
+
+Edge Case 2: All Games Installing Simultaneously
+├─ Condition: User starts multiple downloads at once
+├─ Behavior:
+│  ├─ DownloadManager allows concurrent downloads
+│  ├─ Each runs in separate thread
+│  ├─ DownloadView shows all progress bars
+│  ├─ Network bandwidth shared among downloads
+│  └─ No enforced limit (system-limited)
+├─ Impact:
+│  ├─ Each download slower due to sharing
+│  └─ Higher memory usage
+└─ Optimization: Could add max_concurrent setting
+
+Edge Case 3: Very Long Game Names
+├─ Condition: Game name exceeds display width
+├─ Behavior:
+│  ├─ GameCard widget truncates text
+│  ├─ Adds ellipsis: "Very Long Game Na..."
+│  ├─ Full name shown in details view
+│  └─ Maintains grid layout integrity
+├─ Impact:
+│  └─ Name partially hidden but layout preserved
+└─ Alternative: Scrolling text (marquee)
+
+Edge Case 4: Extremely Large Game Download
+├─ Condition: Game is multiple GB in size
+├─ Behavior:
+│  ├─ Pre-check validates sufficient disk space
+│  ├─ Download takes long time (expected)
+│  ├─ Progress bar updates normally
+│  ├─ Extraction may also take significant time
+│  ├─ Status shows "Extracting..." during extract
+│  └─ User can cancel if needed
+├─ Impact:
+│  └─ Extended wait time, but functional
+└─ Enhancement: Add time estimate
+
+Edge Case 5: Rapid State Transitions
+├─ Condition: User rapidly presses buttons causing quick state changes
+├─ Behavior:
+│  ├─ StateManager processes transitions sequentially
+│  ├─ Each on_exit() and on_enter() completes
+│  ├─ Input buffer prevents double-triggers
+│  ├─ Transitions queued if necessary
+│  └─ No race conditions due to single-threaded state logic
+├─ Impact:
+│  └─ All transitions processed correctly
+└─ Safety: Input debouncing prevents spam
+
+Edge Case 6: Game Launched While Download Active
+├─ Condition: User launches game while another downloading
+├─ Behavior:
+│  ├─ Download continues in background
+│  ├─ PlayingState doesn't interfere with threads
+│  ├─ Game runs normally
+│  ├─ Download completes independently
+│  └─ User returns to updated game list
+├─ Impact:
+│  └─ Both operations proceed independently
+└─ Note: Download threads are daemon threads
+
+Edge Case 7: Extremely Low Resolution Display
+├─ Condition: Display is very small (e.g., 320x240)
+├─ Behavior:
+│  ├─ UI scales down based on resolution
+│  ├─ Font sizes adjusted proportionally
+│  ├─ Grid columns reduced (e.g., 2 instead of 4)
+│  ├─ Some details may be cramped
+│  └─ All functionality remains accessible
+├─ Impact:
+│  └─ Usable but less comfortable
+└─ Minimum: 320x240 considered baseline
+
+Edge Case 8: No Network Connection at Startup
+├─ Condition: Launcher starts offline
+├─ Behavior:
+│  ├─ Application starts normally
+│  ├─ Installed games fully accessible
+│  ├─ DownloadState shows "No connection" message
+│  ├─ Periodic connectivity checks
+│  ├─ When connection restored: update automatically
+│  └─ No features break, just limited
+├─ Impact:
+│  └─ Cannot download, but can play installed
+└─ Expected: Offline mode fully supported
+
+Edge Case 9: Unicode/Special Characters in Game Names
+├─ Condition: Game name contains emoji, CJK, etc.
+├─ Behavior:
+│  ├─ Pygame font rendering handles Unicode
+│  ├─ Display characters if font supports them
+│  ├─ Fallback to boxes/? if not supported
+│  ├─ File system operations use UTF-8 encoding
+│  └─ JSON serialization handles Unicode natively
+├─ Impact:
+│  └─ Works with most characters, font-dependent
+└─ Limitation: Font coverage determines display
+
+Edge Case 10: System Clock Wrong
+├─ Condition: System time is incorrect (year 1970, etc.)
+├─ Behavior:
+│  ├─ File timestamps may be wrong
+│  ├─ SSL certificate validation may fail
+│  ├─ Downloads fail with cert errors
+│  ├─ Game launches unaffected
+│  └─ Logs show wrong timestamps
+├─ Impact:
+│  └─ Network features may break
+└─ Solution: User must fix system time
+
+Edge Case 11: Multiple Launcher Instances
+├─ Condition: User starts launcher twice
+├─ Behavior:
+│  ├─ No lock file checking implemented
+│  ├─ Both instances run independently
+│  ├─ Share same data files:
+│  │  ├─ Last write wins for saves
+│  │  ├─ Potential data corruption
+│  │  └─ Race conditions on downloads
+│  └─ Not explicitly prevented
+├─ Impact:
+│  └─ Data conflicts possible
+└─ Enhancement: Add single-instance lock
+
+Edge Case 12: Game Self-Updates
+├─ Condition: Game updates itself while in library
+├─ Behavior:
+│  ├─ Launcher unaware of changes
+│  ├─ Game metadata may be stale
+│  ├─ Version number in library outdated
+│  ├─ Launcher still launches correctly
+│  └─ No automatic detection
+├─ Impact:
+│  └─ Displayed info may be incorrect
+└─ Enhancement: Add "Refresh" functionality
+
+Edge Case 13: Symbolic Links in Game Directories
+├─ Condition: Game directory is symlink or contains symlinks
+├─ Behavior:
+│  ├─ pathlib.Path follows symlinks by default
+│  ├─ File operations work transparently
+│  ├─ Install paths stored as resolved paths
+│  └─ No special handling needed
+├─ Impact:
+│  └─ Works correctly with symlinks
+└─ Note: Follows symlinks, doesn't detect them
+
+Edge Case 14: Read-Only Game Directory
+├─ Condition: Games installed in read-only location
+├─ Behavior:
+│  ├─ Games launch normally (read-only OK)
+│  ├─ Cannot install new games to that location
+│  ├─ Download fails with permission error
+│  ├─ Show error: "Cannot write to games directory"
+│  └─ User must choose different location
+├─ Impact:
+│  └─ Existing games playable, can't add new ones
+└─ Solution: Change download location in settings
+
+Edge Case 15: Very Slow Storage (SD Card)
+├─ Condition: Games on slow SD card
+├─ Behavior:
+│  ├─ Operations take longer (expected)
+│  ├─ Game launch has delay
+│  ├─ Extraction very slow
+│  ├─ UI may feel sluggish during I/O
+│  ├─ No timeouts, just waits
+│  └─ All operations complete eventually
+├─ Impact:
+│  └─ Slower but functional
+└─ Optimization: Show loading indicators
+
+Edge Case 16: Invalid Game Metadata in games.json
+├─ Condition: Manually edited games.json has bad data
+├─ Behavior:
+│  ├─ During load, validate each game entry
+│  ├─ Skip invalid entries:
+│  │  ├─ Log warning: "Invalid game entry: [id]"
+│  │  └─ Continue with valid games
+│  ├─ If critical field missing (e.g., id):
+│  │  └─ Entry completely ignored
+│  └─ Launcher starts with valid games only
+├─ Impact:
+│  └─ Some games missing from library
+└─ Recovery: Edit games.json or reinstall games
+
+Edge Case 17: Game Modifies Launcher Files
+├─ Condition: Malicious/buggy game writes to launcher directories
+├─ Behavior:
+│  ├─ Launcher has no protection against this
+│  ├─ Game runs with same permissions as launcher
+│  ├─ Can potentially corrupt launcher data
+│  ├─ Could modify configs or game library
+│  └─ Relies on trusted game sources
+├─ Impact:
+│  └─ Potential security/stability issues
+└─ Mitigation: Only install trusted games
+
+Edge Case 18: Changing Device Type at Runtime
+├─ Condition: User manually edits config while running
+├─ Behavior:
+│  ├─ Changes not detected while running
+│  ├─ Config loaded once at startup
+│  ├─ Requires restart to apply
+│  └─ No hot-reload functionality
+├─ Impact:
+│  └─ Config changes need restart
+└─ Expected: Restart for config changes
+
+Edge Case 19: Missing Python for Game Launch
+├─ Condition: python_command in config doesn't exist
+├─ Behavior:
+│  ├─ ProcessLauncher attempts to launch
+│  ├─ subprocess raises FileNotFoundError
+│  ├─ Catch exception in launch thread
+│  ├─ Show error: "Python interpreter not found"
+│  └─ Return to game list
+├─ Impact:
+│  └─ Cannot launch any games
+└─ Solution: Fix python_command in config
+
+Edge Case 20: Game Requires Different Python Version
+├─ Condition: Game needs Python 2.7, launcher uses 3.x
+├─ Behavior:
+│  ├─ Game launches with configured python_command
+│  ├─ If command is python3: game may fail
+│  ├─ Game error handling applies (Scenario 2)
+│  ├─ Launcher shows game crashed
+│  └─ No automatic version detection
+├─ Impact:
+│  └─ Game unplayable with wrong Python
+└─ Solution: Per-game python_command setting (enhancement)

@@ -1,0 +1,77 @@
+GAME PERSISTENCE DATA FLOW
+==========================
+
+Add Game → Serialize → Write → Disk
+Load → Read → Deserialize → Use
+
+ADD GAME FLOW:
+┌─────────────────────────────────────────────────────┐
+│ 1. Game Creation                                    │
+├─────────────────────────────────────────────────────┤
+│ game = Game(id="snake", name="Snake", ...)          │
+│ - Creates in-memory Game instance                   │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│ 2. Add to Library                                   │
+├─────────────────────────────────────────────────────┤
+│ game_library.add_game(game)                         │
+│ - Adds to self.games dictionary                     │
+│ - Key: game.id, Value: game instance                │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│ 3. Serialize All Games                              │
+├─────────────────────────────────────────────────────┤
+│ game_library.save()                                 │
+│ - Iterates through self.games                       │
+│ - Calls game.to_dict() on each                      │
+│ - Builds master dictionary                          │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│ 4. Write to Disk                                    │
+├─────────────────────────────────────────────────────┤
+│ json.dump(games_dict, file, indent=2)               │
+│ - Writes to data/games.json                         │
+│ - Pretty-printed for readability                    │
+└─────────────────────────────────────────────────────┘
+
+LOAD GAME FLOW:
+┌─────────────────────────────────────────────────────┐
+│ 1. Read from Disk                                   │
+├─────────────────────────────────────────────────────┤
+│ game_library.load()                                 │
+│ - Opens data/games.json                             │
+│ - Parses JSON to dictionary                         │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│ 2. Deserialize Each Game                            │
+├─────────────────────────────────────────────────────┤
+│ for game_id, game_data in json_data.items():        │
+│   game = Game.from_dict(game_data)                  │
+│ - Creates Game instances from data                  │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│ 3. Populate Library                                 │
+├─────────────────────────────────────────────────────┤
+│ self.games[game_id] = game                          │
+│ - Stores in games dictionary                        │
+└─────────────────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────┐
+│ 4. Ready for Use                                    │
+├─────────────────────────────────────────────────────┤
+│ Games available for:                                │
+│ - Display in UI                                     │
+│ - Launching                                         │
+│ - Updating                                          │
+└─────────────────────────────────────────────────────┘

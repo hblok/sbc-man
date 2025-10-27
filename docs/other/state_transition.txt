@@ -1,0 +1,131 @@
+STATE TRANSITION RULES AND VALIDATION
+======================================
+
+StateManager Controls State Flow:
+
+Valid State Transitions:
+┌────────────┬─────────────────────────────────────┐
+│ From State │ To State(s)                         │
+├────────────┼─────────────────────────────────────┤
+│ menu       │ game_list, download, settings       │
+│ game_list  │ menu, playing                       │
+│ download   │ menu                                │
+│ settings   │ menu                                │
+│ playing    │ game_list                           │
+└────────────┴─────────────────────────────────────┘
+
+Transition Process:
+
+1. Request Transition
+   ├─> state_manager.change_state(new_state_name, **kwargs)
+   │   Examples:
+   │   - change_state('game_list')
+   │   - change_state('playing', game=selected_game)
+   │   - change_state('menu')
+
+2. Validate Transition
+   ├─ Check if new_state_name exists in states dict
+   │  └─ If not: Log error, abort transition
+   │
+   ├─ Optional: Validate transition is allowed
+   │  └─ Check transition table
+   │  └─ If invalid: Log warning, allow anyway (lenient)
+   │
+   └─ Continue to execution
+
+3. Exit Current State
+   ├─> current_state.on_exit()
+   │   │
+   │   ├─ Save any state-specific data
+   │   ├─ Clean up resources
+   │   ├─ Unregister observers if needed
+   │   └─ Perform state-specific cleanup
+   │
+   └─ Store reference: previous_state = current_state
+
+4. Update Current State Reference
+   └─> current_state = states[new_state_name]
+
+5. Enter New State
+   └─> current_state.on_enter(previous_state, **kwargs)
+       │
+       ├─ Receive optional parameters (e.g., game instance)
+       ├─ Initialize state-specific resources
+       ├─ Load data if needed
+       ├─ Register observers
+       ├─ Reset UI to default state
+       └─ Prepare for rendering
+
+6. Clear State Stack (if using stack-based overlay states)
+   └─> state_stack.clear()  # Only relevant for overlay states
+
+7. Resume Main Loop
+   └─ Next frame calls current_state.update() and render()
+
+State-Specific Behaviors:
+
+MenuState.on_enter():
+├─ Reset selected_index to 0
+├─ Update view focus to first item
+└─ No data loading needed (static menu)
+
+GameListState.on_enter(previous_state):
+├─ Refresh games from game_library
+│  └─ games = game_library.get_all_games()
+├─ Update view with fresh game list
+│  └─ view.set_games(games)
+├─ If returning from playing_state:
+│  └─ Maintain previous selection (remember last game)
+└─ Else: Reset to first game
+
+DownloadState.on_enter():
+├─ Fetch available games from network
+│  └─ available_games = fetch_available_games()
+├─ Filter out already installed games
+├─ Update view with available games
+└─ Clear any completed downloads from previous session
+
+SettingsState.on_enter():
+├─ Load current configuration
+│  ├─ theme = config_manager.get('theme')
+│  ├─ fps = hw_config['performance']['target_fps']
+│  └─ input_mappings = input_handler.get_current_mappings()
+├─ Populate settings view with current values
+└─ Reset editing state
+
+PlayingState.on_enter(previous_state, game):
+├─ Validate game parameter provided
+├─ Store game reference
+├─ Set input context for game
+│  └─ input_handler.set_game_context(game.id)
+├─ Create and start launch thread
+│  └─ thread = Thread(target=_launch_game_thread)
+│  └─ thread.start()
+└─ Set game_running = True
+
+PlayingState.on_exit():
+├─ Clear game input context
+│  └─ input_handler.clear_game_context()
+├─ Ensure game process terminated (if still running)
+└─ Reset game_running flag
+
+Overlay State Stack (Advanced):
+For modal dialogs or overlay screens, supports push/pop:
+
+push_state(state_name):
+├─ Push current_state onto state_stack
+├─ Change to new state
+└─ New state renders on top
+
+pop_state():
+├─ Exit current_state
+├─ Pop previous state from stack
+├─ Set as current_state
+└─ Resume previous state
+
+Example: Confirmation Dialog
+├─ User in game_list, tries to delete game
+├─ Push confirm_dialog state
+│  └─ Renders dialog over game_list
+├─ User confirms or cancels
+└─ Pop back to game_list

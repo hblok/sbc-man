@@ -1,0 +1,222 @@
+INTEGRATION TESTING APPROACH
+=============================
+
+Focus: Test interactions between components
+
+1. State Transition Integration Tests
+   ├─ Test full state transition flows
+   ├─ Verify data passes correctly between states
+   ├─ Test state stack operations
+   └─ Verify cleanup happens properly
+
+   Example Test:
+   def test_menu_to_game_list_transition():
+       app = create_test_application()
+       state_manager = app.state_manager
+       
+       # Start in menu
+       assert isinstance(state_manager.current_state, MenuState)
+       
+       # Simulate selecting "Browse Games"
+       menu_view = state_manager.current_state.view
+       menu_view.selected_index = 0  # Browse Games
+       
+       # Simulate confirm press
+       confirm_event = create_mock_event(pygame.KEYDOWN, key=pygame.K_RETURN)
+       state_manager.handle_events([confirm_event])
+       
+       # Should transition to game_list
+       assert isinstance(state_manager.current_state, GameListState)
+       
+       # Game list should be loaded
+       assert len(state_manager.current_state.view.games) >= 0
+
+2. Download Flow Integration Tests
+   ├─ Test complete download and installation
+   ├─ Verify game appears in library after download
+   ├─ Test progress updates flow correctly
+   └─ Test error recovery
+
+   Example Test:
+   @mock.patch('services.network.NetworkService.download_file')
+   def test_complete_download_flow(mock_download, tmp_path):
+       # Setup
+       app = create_test_application()
+       app.hw_config['paths']['games'] = str(tmp_path)
+       
+       # Mock successful download
+       def download_side_effect(url, dest, callback=None):
+           if callback:
+               callback(1000, 1000)  # 100% complete
+           Path(dest).write_bytes(b'test data')
+           return True
+       mock_download.side_effect = download_side_effect
+       
+       # Start download
+       game_info = {
+           'id': 'test-game',
+           'name': 'Test Game',
+           'download_url': 'http://test.com/game.zip'
+       }
+       
+       download_state = app.state_manager.states['download']
+       download_state.start_download(game_info)
+       
+       # Wait for download thread
+       time.sleep(0.5)
+       
+       # Verify game in library
+       game = app.game_library.get_game('test-game')
+       assert game is not None
+       assert game.installed == True
+
+3. Game Launch Integration Tests
+   ├─ Test complete launch sequence
+   ├─ Verify input context changes
+   ├─ Test pre/post launch commands
+   └─ Verify return to game list
+
+   Example Test:
+   @mock.patch('subprocess.Popen')
+   def test_game_launch_sequence(mock_popen, tmp_path):
+       # Setup game
+       game_dir = tmp_path / "test-game"
+       game_dir.mkdir()
+       (game_dir / "main.py").write_text("print('game')")
+       
+       game = Game(
+           id="test-game",
+           name="Test Game",
+           install_path=str(game_dir),
+           entry_point="main.py",
+           installed=True
+       )
+       
+       # Mock process
+       mock_process = mock.Mock()
+       mock_process.wait.return_value = 0
+       mock_popen.return_value = mock_process
+       
+       # Launch
+       app = create_test_application()
+       app.game_library.add_game(game)
+       app.state_manager.change_state('playing', game=game)
+       
+       # Verify process launched
+       time.sleep(0.2)
+       mock_popen.assert_called_once()
+       
+       # Verify input context set
+       assert app.input_handler.current_game_id == "test-game"
+
+4. Configuration Persistence Integration Tests
+   ├─ Test settings save and load across restarts
+   ├─ Test game library persistence
+   ├─ Test input mapping persistence
+   └─ Verify data integrity
+
+   Example Test:
+   def test_settings_persistence(tmp_path):
+       # First run
+       app1 = create_test_application()
+       app1.config_manager.data_path = tmp_path / "config.json"
+       app1.config_manager.set('theme', 'dark')
+       app1.config_manager.set('auto_update', True)
+       app1.config_manager.save()
+       
+       # Second run (simulated restart)
+       app2 = create_test_application()
+       app2.config_manager.data_path = tmp_path / "config.json"
+       app2.config_manager.load()
+       
+       # Verify persistence
+       assert app2.config_manager.get('theme') == 'dark'
+       assert app2.config_manager.get('auto_update') == True
+
+5. Input System Integration Tests
+   ├─ Test input mapping hierarchy in real scenarios
+   ├─ Test context switching during game launch
+   ├─ Test custom mapping save/load
+   └─ Verify all input types work together
+
+   Example Test:
+   def test_input_hierarchy_in_game_context(tmp_path):
+       # Setup
+       app = create_test_application()
+       app.hw_config['paths']['data'] = str(tmp_path)
+       
+       # Base mapping
+       app.input_handler.mappings = {"confirm": ["BUTTON_A"]}
+       
+       # Set game context with override
+       game_override_path = tmp_path / "input_overrides" / "games"
+       game_override_path.mkdir(parents=True)
+       (game_override_path / "test-game.json").write_text(
+           '{"confirm": ["BUTTON_B"]}'
+       )
+       
+       app.input_handler.set_game_context("test-game")
+       
+       # Verify override active
+       assert "BUTTON_B" in app.input_handler.mappings["confirm"]
+       
+       # Clear context
+       app.input_handler.clear_game_context()
+       
+       # Verify reverted
+       assert "BUTTON_A" in app.input_handler.mappings["confirm"]
+
+6. UI Rendering Integration Tests
+   ├─ Test complete render pipeline
+   ├─ Verify themes apply correctly
+   ├─ Test responsive layouts
+   └─ Verify no rendering exceptions
+
+   Example Test:
+   def test_render_all_states():
+       app = create_test_application()
+       screen = pygame.Surface((800, 600))
+       
+       # Test each state renders without error
+       for state_name in ['menu', 'game_list', 'download', 'settings']:
+           app.state_manager.change_state(state_name)
+           try:
+               app.state_manager.render(screen)
+           except Exception as e:
+               pytest.fail(f"State {state_name} failed to render: {e}")
+
+7. Error Recovery Integration Tests
+   ├─ Test recovery from download failures
+   ├─ Test recovery from launch failures
+   ├─ Test state transition error recovery
+   └─ Verify app remains stable
+
+   Example Test:
+   @mock.patch('services.network.NetworkService.download_file')
+   def test_download_error_recovery(mock_download):
+       mock_download.side_effect = ConnectionError("Network error")
+       
+       app = create_test_application()
+       download_state = app.state_manager.states['download']
+       
+       game_info = {'id': 'test', 'name': 'Test', 'download_url': 'http://test'}
+       
+       # Should handle error gracefully
+       try:
+           download_state.start_download(game_info)
+           time.sleep(0.2)
+       except Exception as e:
+           pytest.fail(f"Download error not handled: {e}")
+       
+       # App should still be functional
+       assert app.state_manager.current_state is not None
+
+Integration Test Execution:
+# Run integration tests
+pytest tests/integration/
+
+# Run with real pygame display (requires X server)
+pytest tests/integration/ --no-headless
+
+# Run specific integration test
+pytest tests/integration/test_download_flow.py -v

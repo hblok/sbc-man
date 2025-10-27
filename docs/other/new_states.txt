@@ -1,0 +1,351 @@
+EXTENDING WITH NEW STATES
+=========================
+
+Adding a new state to the launcher (e.g., "Achievements" state)
+
+Step 1: Create State Class
+--------------------------
+Create: src/states/achievements_state.py
+
+from states.base_state import BaseState
+from ui.views.achievements_view import AchievementsView
+
+class AchievementsState(BaseState):
+    """
+    State for displaying and managing game achievements.
+    """
+    
+    def __init__(self, state_manager):
+        super().__init__(state_manager)
+        self.view = None
+        self.achievements = []
+    
+    def on_enter(self, previous_state, **kwargs):
+        """Initialize achievements view."""
+        # Create view
+        self.view = AchievementsView(
+            self.hw_config,
+            self.theme
+        )
+        
+        # Load achievements
+        self.achievements = self._load_achievements()
+        self.view.set_achievements(self.achievements)
+        
+        # Optional: receive game filter
+        if 'game_id' in kwargs:
+            self.view.filter_by_game(kwargs['game_id'])
+    
+    def on_exit(self):
+        """Cleanup on exit."""
+        self._save_achievements()
+        self.view = None
+    
+    def update(self, dt):
+        """Update achievements state."""
+        if self.view:
+            self.view.update(dt)
+    
+    def handle_events(self, events):
+        """Handle user input."""
+        for event in events:
+            # Back to menu
+            if self.input_handler.is_action_pressed('cancel', [event]):
+                self.state_manager.change_state('menu')
+                return
+            
+            # Navigation
+            if self.input_handler.is_action_pressed('up', [event]):
+                self.view.scroll_up()
+            elif self.input_handler.is_action_pressed('down', [event]):
+                self.view.scroll_down()
+            
+            # View details
+            if self.input_handler.is_action_pressed('confirm', [event]):
+                selected = self.view.get_selected_achievement()
+                if selected:
+                    self._show_achievement_details(selected)
+    
+    def render(self, surface):
+        """Render achievements screen."""
+        if self.view:
+            self.view.render(surface)
+    
+    def _load_achievements(self):
+        """Load achievements from storage."""
+        # Implementation
+        pass
+    
+    def _save_achievements(self):
+        """Save achievements to storage."""
+        # Implementation
+        pass
+    
+    def _show_achievement_details(self, achievement):
+        """Show achievement details overlay."""
+        # Implementation
+        pass
+
+Step 2: Create View Class
+-------------------------
+Create: src/ui/views/achievements_view.py
+
+from ui.views.base_view import BaseView
+from ui.widgets.list import List
+from ui.widgets.card import Card
+
+class AchievementsView(BaseView):
+    """
+    View for displaying achievements.
+    """
+    
+    def __init__(self, hw_config, theme):
+        super().__init__(hw_config, theme)
+        self.achievements = []
+        self.scroll_offset = 0
+        self.selected_index = 0
+        
+        # Create UI components
+        self._create_widgets()
+    
+    def _create_widgets(self):
+        """Create view widgets."""
+        width, height = self.hw_config['display']['resolution']
+        
+        # Title
+        self.title_text = "Achievements"
+        self.title_pos = (width // 2, 30)
+        
+        # Achievement list
+        self.list_widget = List(
+            position=(20, 80),
+            size=(width - 40, height - 120),
+            item_height=60,
+            theme=self.theme
+        )
+    
+    def set_achievements(self, achievements):
+        """Set achievements to display."""
+        self.achievements = achievements
+        self.list_widget.set_items(achievements)
+    
+    def filter_by_game(self, game_id):
+        """Filter achievements by game."""
+        filtered = [a for a in self.achievements if a.game_id == game_id]
+        self.list_widget.set_items(filtered)
+    
+    def scroll_up(self):
+        """Scroll up in list."""
+        self.list_widget.scroll_up()
+    
+    def scroll_down(self):
+        """Scroll down in list."""
+        self.list_widget.scroll_down()
+    
+    def get_selected_achievement(self):
+        """Get currently selected achievement."""
+        return self.list_widget.get_selected_item()
+    
+    def render(self, surface):
+        """Render achievements view."""
+        # Background
+        surface.fill(self.theme.colors['background'])
+        
+        # Title
+        self._render_text(
+            surface,
+            self.title_text,
+            self.title_pos,
+            self.theme.fonts['title'],
+            self.theme.colors['text'],
+            align='center'
+        )
+        
+        # Achievement list
+        self.list_widget.render(surface)
+        
+        # Stats summary
+        self._render_stats(surface)
+    
+    def _render_stats(self, surface):
+        """Render achievement statistics."""
+        unlocked = sum(1 for a in self.achievements if a.unlocked)
+        total = len(self.achievements)
+        stats_text = f"Unlocked: {unlocked}/{total}"
+        
+        width, height = self.hw_config['display']['resolution']
+        self._render_text(
+            surface,
+            stats_text,
+            (width // 2, height - 30),
+            self.theme.fonts['normal'],
+            self.theme.colors['text_secondary'],
+            align='center'
+        )
+
+Step 3: Register State
+----------------------
+Update: src/core/state_manager.py
+
+def __init__(self, hw_config, ...):
+    # Existing initialization...
+    
+    # Import new state
+    from states.achievements_state import AchievementsState
+    
+    # Register state
+    self.states = {
+        'menu': MenuState(self),
+        'game_list': GameListState(self),
+        'download': DownloadState(self),
+        'settings': SettingsState(self),
+        'playing': PlayingState(self),
+        'achievements': AchievementsState(self),  # NEW
+    }
+
+Step 4: Add Navigation
+---------------------
+Update menu to include new state:
+
+src/states/menu_state.py:
+
+self.menu_items = [
+    {'label': 'Browse Games', 'action': 'game_list'},
+    {'label': 'Download Games', 'action': 'download'},
+    {'label': 'Achievements', 'action': 'achievements'},  # NEW
+    {'label': 'Settings', 'action': 'settings'},
+    {'label': 'Exit', 'action': 'exit'}
+]
+
+Step 5: Add Models (if needed)
+-----------------------------
+Create: src/models/achievement.py
+
+class Achievement:
+    """
+    Represents a game achievement.
+    """
+    
+    def __init__(self, id, name, description, game_id, 
+                 icon_path=None, unlocked=False, unlock_date=None):
+        self.id = id
+        self.name = name
+        self.description = description
+        self.game_id = game_id
+        self.icon_path = icon_path
+        self.unlocked = unlocked
+        self.unlock_date = unlock_date
+    
+    def to_dict(self):
+        """Serialize to dictionary."""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'game_id': self.game_id,
+            'icon_path': self.icon_path,
+            'unlocked': self.unlocked,
+            'unlock_date': self.unlock_date.isoformat() if self.unlock_date else None
+        }
+    
+    @classmethod
+    def from_dict(cls, data):
+        """Deserialize from dictionary."""
+        from datetime import datetime
+        
+        unlock_date = None
+        if data.get('unlock_date'):
+            unlock_date = datetime.fromisoformat(data['unlock_date'])
+        
+        return cls(
+            id=data['id'],
+            name=data['name'],
+            description=data['description'],
+            game_id=data['game_id'],
+            icon_path=data.get('icon_path'),
+            unlocked=data.get('unlocked', False),
+            unlock_date=unlock_date
+        )
+
+Step 6: Add Data Persistence
+----------------------------
+Create achievement storage:
+
+src/services/achievement_manager.py:
+
+class AchievementManager:
+    """
+    Manages achievement storage and tracking.
+    """
+    
+    def __init__(self, data_path):
+        self.data_path = Path(data_path) / "achievements.json"
+        self.achievements = {}
+    
+    def load(self):
+        """Load achievements from storage."""
+        if self.data_path.exists():
+            with open(self.data_path, 'r') as f:
+                data = json.load(f)
+                for ach_id, ach_data in data.items():
+                    self.achievements[ach_id] = Achievement.from_dict(ach_data)
+    
+    def save(self):
+        """Save achievements to storage."""
+        data = {
+            ach_id: ach.to_dict()
+            for ach_id, ach in self.achievements.items()
+        }
+        self.data_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(self.data_path, 'w') as f:
+            json.dump(data, f, indent=2)
+    
+    def unlock_achievement(self, achievement_id):
+        """Unlock an achievement."""
+        if achievement_id in self.achievements:
+            from datetime import datetime
+            ach = self.achievements[achievement_id]
+            ach.unlocked = True
+            ach.unlock_date = datetime.now()
+            self.save()
+            return True
+        return False
+    
+    def get_achievements_for_game(self, game_id):
+        """Get all achievements for a specific game."""
+        return [
+            ach for ach in self.achievements.values()
+            if ach.game_id == game_id
+        ]
+
+Step 7: Test New State
+---------------------
+1. Launch application
+2. Navigate to new "Achievements" menu item
+3. Verify view displays correctly
+4. Test all navigation controls
+5. Verify state transitions work
+6. Test data persistence
+
+Step 8: Document Extension
+--------------------------
+Update: docs/ARCHITECTURE.md
+
+Add to states section:
+- AchievementsState: Displays and manages game achievements
+  - Loads from achievement_manager
+  - Supports filtering by game
+  - Persists unlock status
+
+Extension Checklist:
+☐ State class created
+☐ View class created
+☐ Models created (if needed)
+☐ State registered in StateManager
+☐ Navigation added to menu
+☐ Data persistence implemented
+☐ Input handling complete
+☐ Rendering tested
+☐ State transitions work
+☐ Documentation updated
+☐ Tests written (optional)

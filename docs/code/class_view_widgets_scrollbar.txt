@@ -1,0 +1,67 @@
+FILE: views/widgets/scrollbar.py
+=================================
+
+CLASS: Scrollbar
+----------------
+
+ATTRIBUTES:
+- rect (pygame.Rect): Scrollbar track position and size
+- thumb_rect (pygame.Rect): Draggable thumb position and size
+- orientation (str): 'vertical' or 'horizontal'
+- value (float): Current scroll value (0.0 to 1.0)
+- track_color (tuple): Track background color
+- thumb_color (tuple): Thumb color
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize scrollbar widget
+Parameters:
+  - position (tuple): (x, y) position
+  - size (tuple): (width, height)
+  - orientation (str): 'vertical' or 'horizontal'
+Returns: None
+Behavior:
+  - Creates rect from position and size
+  - Sets orientation
+  - Initializes value to 0.0
+  - Creates initial thumb_rect based on orientation
+  - Sets default colors
+
+Method: render
+Purpose: Draw scrollbar to surface
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Draws track rectangle with track_color
+  - Draws thumb rectangle with thumb_color
+  - Adds border to thumb for definition
+
+Method: handle_event
+Purpose: Process input event
+Parameters:
+  - event (pygame.Event): Input event
+Returns: bool - True if handled
+Behavior:
+  - If MOUSEBUTTONDOWN on thumb: starts dragging
+  - If MOUSEMOTION while dragging: updates value and thumb position
+  - If MOUSEBUTTONUP: stops dragging
+  - Returns True if event affected scrollbar
+
+Method: set_value
+Purpose: Set scroll position
+Parameters:
+  - value (float): New value between 0.0 and 1.0
+Returns: None
+Side Effects: Updates thumb position
+Behavior:
+  - Clamps value to 0.0-1.0 range
+  - Updates self.value
+  - Recalculates thumb_rect position based on value
+
+Method: get_value
+Purpose: Get current scroll position
+Parameters: None
+Returns: float - Current value (0.0 to 1.0)
+Behavior: Returns self.value

@@ -1,0 +1,44 @@
+MAIN GAME LOOP (Each Frame)
+============================
+
+GameLoop.start() - Main Loop:
+│
+├─> 1. Timing
+│   ├─> delta_time = clock.tick(target_fps)
+│   └─> dt = delta_time / 1000.0  # Convert to seconds
+│
+├─> 2. Event Collection
+│   └─> events = pygame.event.get()
+│
+├─> 3. Event Processing
+│   ├─> For each event:
+│   │   └─> If event.type == QUIT: running = False
+│   │
+│   └─> state_manager.handle_events(events)
+│       └─> current_state.handle_events(events)
+│           └─> input_handler.is_action_pressed(action, events)
+│               ├─> Check keyboard events
+│               ├─> Check joystick button events
+│               ├─> Check d-pad events
+│               └─> Return True if action triggered
+│
+├─> 4. State Update
+│   └─> state_manager.update(dt)
+│       └─> current_state.update(dt)
+│           └─> view.update(dt)
+│               └─> Update widgets, animations
+│
+├─> 5. Rendering
+│   ├─> screen.fill(BLACK)
+│   │
+│   └─> state_manager.render(screen)
+│       └─> current_state.render(screen)
+│           └─> view.render(screen)
+│               ├─> Draw background
+│               ├─> Draw UI elements
+│               └─> Draw widgets
+│
+└─> 6. Display Update
+    └─> pygame.display.flip()
+
+Loop continues until running == False

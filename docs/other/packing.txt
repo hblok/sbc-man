@@ -1,0 +1,61 @@
+DEPLOYMENT PACKAGE STRUCTURE
+=============================
+
+Distribution Formats:
+1. Source Distribution (for development)
+2. Platform-Specific Packages (for users)
+
+Source Distribution:
+game-launcher/
+├── src/                    # Source code
+├── assets/                 # Static assets
+├── config/                 # Default configurations
+├── tests/                  # Test suite
+├── docs/                   # Documentation
+├── requirements.txt        # Python dependencies
+├── setup.py               # Installation script
+├── README.md              # User documentation
+├── LICENSE                # License file
+└── .gitignore            # Git ignore rules
+
+Platform Packages:
+
+1. Linux (tar.gz or AppImage):
+game-launcher-linux.tar.gz
+├── game-launcher/
+│   ├── launcher          # Launcher script
+│   ├── src/              # Python source
+│   ├── assets/           # Assets
+│   ├── config/           # Defaults
+│   └── venv/             # Bundled Python environment (optional)
+└── install.sh            # Installation script
+
+2. Handheld Device (OPK for OpenDingux/RetroFW):
+game-launcher.opk
+├── launcher.sh           # Entry script
+├── default.gcw0.desktop  # Desktop entry
+├── icon.png              # Launcher icon
+└── game-launcher/        # Application files
+
+3. Windows (if supported):
+game-launcher-windows.zip
+├── game-launcher.exe     # PyInstaller executable
+├── assets/               # Assets
+└── config/               # Defaults
+
+Installation Paths:
+
+System-wide Installation (Linux):
+├── /usr/local/bin/game-launcher          # Executable
+├── /usr/local/share/game-launcher/       # Application files
+├── /etc/game-launcher/                   # System config
+└── ~/.local/share/game-launcher/         # User data
+
+User Installation (Linux):
+├── ~/.local/bin/game-launcher            # Executable
+├── ~/.local/share/game-launcher/         # Application
+└── ~/.config/game-launcher/              # Config
+
+Handheld Installation (varies by device):
+├── /media/sdcard/Apps/game-launcher.opk  # Anbernic, Miyoo
+└── /roms/ports/game-launcher/            # Alternative location

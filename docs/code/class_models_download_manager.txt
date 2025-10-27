@@ -1,0 +1,134 @@
+FILE: models/download_manager.py
+=================================
+
+CLASS: DownloadManager
+----------------------
+
+ATTRIBUTES:
+- hw_config (dict): Hardware configuration
+- downloads (dict): Dictionary mapping download_id to download info
+- download_dir (Path): Temporary directory for downloads
+- observers (list): List of observer callbacks for progress updates
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize download manager
+Parameters:
+  - hw_config (dict): Hardware configuration
+Returns: None
+Behavior:
+  - Stores hw_config
+  - Initializes empty downloads dict and observers list
+  - Creates download_dir in cache directory
+
+Method: add_observer
+Purpose: Register callback for download progress updates
+Parameters:
+  - observer (callable): Function to call on updates
+Returns: None
+Behavior: Appends observer to self.observers list
+
+Method: notify_progress
+Purpose: Notify observers of download progress
+Parameters:
+  - download_id (str): Download identifier
+  - progress_data (dict): Progress information
+Returns: None
+Behavior: Calls each observer function with download_id and progress_data
+
+Method: notify_complete
+Purpose: Notify observers of download completion
+Parameters:
+  - download_id (str): Download identifier
+Returns: None
+Behavior: ...
+
+
+
+Method: notify_complete
+Purpose: Notify observers of download completion
+Parameters:
+  - download_id (str): Download identifier
+Returns: None
+Behavior: Calls each observer's on_complete method with download_id
+
+Method: notify_error
+Purpose: Notify observers of download error
+Parameters:
+  - download_id (str): Download identifier
+  - error (Exception): Error that occurred
+Returns: None
+Behavior: Calls each observer's on_error method with download_id and error
+
+Method: start_download
+Purpose: Start downloading a game
+Parameters:
+  - game_info (dict): Game metadata including download_url
+  - destination (Path): Where to install the game
+Returns: str - Unique download_id
+Behavior:
+  - Generates unique download_id
+  - Creates download info dict with status, progress, destination
+  - Stores in self.downloads
+  - Starts download thread that:
+    * Downloads file from game_info['download_url']
+    * Updates progress periodically via notify_progress
+    * Extracts archive to destination
+    * Calls notify_complete on success
+    * Calls notify_error on failure
+  - Returns download_id
+
+Method: cancel_download
+Purpose: Cancel an in-progress download
+Parameters:
+  - download_id (str): Download to cancel
+Returns: None
+Side Effects: Sets download status to 'cancelled'
+Behavior:
+  - Gets download from self.downloads
+  - Sets status to 'cancelled'
+  - Interrupts download thread if possible
+  - Cleans up partial downloads
+
+Method: get_progress
+Purpose: Get current progress of a download
+Parameters:
+  - download_id (str): Download identifier
+Returns: dict - Progress information with keys:
+  * status: 'downloading', 'extracting', 'complete', 'error', 'cancelled'
+  * bytes_downloaded: Number of bytes downloaded
+  * total_bytes: Total file size
+  * percent: Progress percentage (0-100)
+Behavior: Returns progress info from self.downloads[download_id]
+
+Method: _download_file
+Purpose: Internal method to download file with progress tracking
+Parameters:
+  - url (str): URL to download from
+  - destination (Path): Local file path
+  - download_id (str): Download identifier for progress updates
+Returns: None
+Side Effects: Downloads file, updates progress
+Behavior:
+  - Opens HTTP connection with requests library
+  - Gets total file size from Content-Length header
+  - Downloads in chunks (8KB each)
+  - After each chunk: updates progress and notifies observers
+  - Writes chunks to destination file
+  - Handles network errors
+
+Method: _extract_archive
+Purpose: Internal method to extract downloaded archive
+Parameters:
+  - archive_path (Path): Path to archive file
+  - destination (Path): Extract destination
+  - download_id (str): Download identifier
+Returns: None
+Side Effects: Extracts archive, updates status
+Behavior:
+  - Detects archive type (zip, tar.gz)
+  - Updates status to 'extracting'
+  - Calls FileOps.extract_archive()
+  - Deletes archive file after extraction
+  - Sets executable permissions on main.py if on Linux

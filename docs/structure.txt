@@ -1,0 +1,97 @@
+game_launcher/
+│
+├── main.py
+├── requirements.txt
+├── README.md
+│
+├── core/
+│   ├── __init__.py
+│   ├── application.py
+│   ├── state_manager.py
+│   └── game_loop.py
+│
+├── hardware/
+│   ├── __init__.py
+│   ├── detector.py
+│   ├── prober.py
+│   └── config_loader.py
+│
+├── config/
+│   ├── devices/
+│   │   ├── default.json
+│   │   ├── anbernic.json
+│   │   ├── miyoo.json
+│   │   ├── retroid.json
+│   │   └── desktop.json
+│   │
+│   ├── os_types/
+│   │   ├── arkos.json
+│   │   ├── jelos.json
+│   │   ├── batocera.json
+│   │   ├── android.json
+│   │   └── standard_linux.json
+│   │
+│   └── input_mappings/
+│       ├── default.json
+│       ├── anbernic.json
+│       └── per_game/
+│           └── .gitkeep
+│
+├── models/
+│   ├── __init__.py
+│   ├── game.py
+│   ├── game_library.py
+│   ├── config_manager.py
+│   └── download_manager.py
+│
+├── views/
+│   ├── __init__.py
+│   ├── base_view.py
+│   ├── menu_view.py
+│   ├── game_list_view.py
+│   ├── download_view.py
+│   ├── settings_view.py
+│   └── widgets/
+│       ├── __init__.py
+│       ├── button.py
+│       ├── list.py
+│       ├── scrollbar.py
+│       ├── progress_bar.py
+│       ├── grid.py
+│       └── game_card.py
+│
+├── states/
+│   ├── __init__.py
+│   ├── base_state.py
+│   ├── menu_state.py
+│   ├── game_list_state.py
+│   ├── download_state.py
+│   ├── settings_state.py
+│   └── playing_state.py
+│
+├── services/
+│   ├── __init__.py
+│   ├── input_handler.py
+│   ├── file_ops.py
+│   ├── process_launcher.py
+│   └── network.py
+│
+├── assets/
+│   ├── fonts/
+│   │   └── default.ttf
+│   ├── icons/
+│   │   ├── launcher_icon.png
+│   │   └── default_game.png
+│   └── themes/
+│       ├── default/
+│       │   └── theme.json
+│       └── dark/
+│           └── theme.json
+│
+└── data/
+    ├── games.json
+    ├── config.json
+    └── input_overrides/
+        ├── device.json
+        └── games/
+            └── .gitkeep

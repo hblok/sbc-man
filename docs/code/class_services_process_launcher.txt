@@ -1,0 +1,58 @@
+FILE: services/process_launcher.py
+===================================
+
+CLASS: ProcessLauncher
+----------------------
+
+ATTRIBUTES:
+- hw_config (dict): Hardware configuration
+- input_handler (InputHandler): Input handler instance
+- launcher_config (dict): Launcher configuration section
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize process launcher
+Parameters:
+  - hw_config (dict): Hardware configuration
+  - input_handler (InputHandler): Input handler
+Returns: None
+Behavior:
+  - Stores hw_config and input_handler
+  - Extracts launcher_config from hw_config
+
+Method: launch_game
+Purpose: Launch a game and wait for completion
+Parameters:
+  - game_path (Path or str): Path to game directory
+  - entry_point (str): Name of main file, defaults to 'main.py'
+Returns: int - Process return code
+Behavior:
+  - Converts game_path to Path
+  - Constructs entry_file path
+  - Checks if entry_file exists, raises FileNotFoundError if not
+  - Generates game_id from game_path.name
+  - Calls input_handler.set_game_context(game_id)
+  - Calls _run_commands() with pre_launch_commands
+  - Gets python_command from launcher_config
+  - Creates subprocess.Popen:
+    * Command: [python_cmd, str(entry_file)]
+    * cwd: str(game_path)
+    * stdout: subprocess.DEVNULL
+    * stderr: subprocess.DEVNULL
+  - Calls process.wait() to block until game exits
+  - In finally block:
+    * Calls input_handler.clear_game_context()
+    * Calls _run_commands() with post_launch_commands
+  - Returns process return code
+
+Method: _run_commands
+Purpose: Execute shell commands from config
+Parameters:
+  - commands (list): List of shell command strings
+Returns: None
+Behavior:
+  - For each command in list:
+    * Calls subprocess.run(cmd, shell=True, check=False)
+    * Ignores errors (check=False)
+    * Wrapped in try-except to prevent crashes

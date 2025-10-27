@@ -1,0 +1,37 @@
+SCHEMA: config/devices/*.json
+==============================
+
+Structure:
+{
+  "device": {
+    "name": string,              // Human-readable device name
+    "type": string               // Device category: "handheld", "desktop", "unknown"
+  },
+  "display": {
+    "resolution": array or "auto",  // [width, height] or "auto" for probing
+    "fullscreen": boolean        // Whether to run fullscreen
+  },
+  "paths": {
+    "games": string,             // Path to games directory (supports ~, $VAR)
+    "data": string,              // Path to data directory
+    "config": string,            // Path to config directory
+    "cache": string              // Path to cache directory
+  },
+  "performance": {
+    "target_fps": integer,       // Target frame rate (optional, auto-detected)
+    "vsync": boolean,            // Enable vsync
+    "max_cached_surfaces": integer,  // Max surfaces to cache in memory
+    "lazy_load_icons": boolean,  // Load icons on-demand vs. all at once
+    "icon_size": array           // [width, height] for game icons
+  },
+  "launcher": {
+    "python_command": string,    // Python interpreter command
+    "launch_method": string      // "subprocess" or "android_intent"
+  }
+}
+
+Notes:
+- All fields are optional except where inherited from default.json
+- Paths support environment variable expansion
+- Resolution "auto" triggers hardware probing
+- Performance settings auto-adjust based on CPU detection if omitted

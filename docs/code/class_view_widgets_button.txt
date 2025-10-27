@@ -1,0 +1,67 @@
+FILE: views/widgets/button.py
+==============================
+
+CLASS: Button
+-------------
+
+ATTRIBUTES:
+- text (str): Button label text
+- rect (pygame.Rect): Button position and size
+- color (tuple): Button background color
+- text_color (tuple): Text color
+- hover_color (tuple): Color when mouse over
+- focused (bool): Whether button has focus
+- callback (callable): Function to call when clicked
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize button widget
+Parameters:
+  - text (str): Button label
+  - position (tuple): (x, y) position
+  - size (tuple): (width, height)
+  - callback (callable): Click handler function
+  - color (tuple): Background color RGB
+  - text_color (tuple): Text color RGB
+Returns: None
+Behavior:
+  - Stores all parameters as attributes
+  - Creates pygame.Rect from position and size
+  - Sets focused to False
+
+Method: render
+Purpose: Draw button to surface
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Chooses color based on focused state
+  - Draws filled rectangle for button background
+  - Draws border if focused
+  - Renders text centered on button
+  - Blits text to button surface
+
+Method: handle_event
+Purpose: Process input event for button
+Parameters:
+  - event (pygame.Event): Input event
+Returns: bool - True if event was handled
+Behavior:
+  - If MOUSEBUTTONDOWN: checks if click is inside rect
+  - If inside and callback exists: calls callback()
+  - Returns True if event handled, False otherwise
+
+Method: set_focus
+Purpose: Set focus state
+Parameters:
+  - focused (bool): New focus state
+Returns: None
+Side Effects: Updates self.focused
+Behavior: Sets self.focused to parameter value
+
+Method: is_focused
+Purpose: Get focus state
+Parameters: None
+Returns: bool - Whether button is focused
+Behavior: Returns self.focused

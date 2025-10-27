@@ -1,0 +1,62 @@
+FILE: views/base_view.py
+========================
+
+CLASS: BaseView (ABSTRACT)
+--------------------------
+
+ATTRIBUTES:
+- hw_config (dict): Hardware configuration
+- screen (pygame.Surface): Display surface
+- theme (dict): Color theme configuration
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize base view with common dependencies
+Parameters:
+  - hw_config (dict): Hardware configuration
+  - screen (pygame.Surface): Display surface
+Returns: None
+Behavior:
+  - Stores hw_config and screen
+  - Loads theme from hw_config or uses default colors
+  - Initializes font from assets/fonts/default.ttf
+
+Method: render (ABSTRACT)
+Purpose: Render view to surface
+Parameters:
+  - surface (pygame.Surface): Surface to render to
+Returns: None
+Behavior: Must be implemented by subclasses
+
+Method: update
+Purpose: Update view logic (optional override)
+Parameters:
+  - dt (float): Delta time in seconds
+Returns: None
+Behavior: Default implementation does nothing
+
+Method: load_theme
+Purpose: Load color theme from configuration
+Parameters: None
+Returns: dict - Theme color dictionary
+Behavior:
+  - Gets theme name from hw_config or defaults to 'default'
+  - Loads theme.json from assets/themes/{theme_name}/
+  - Returns dict with keys: background, text, primary, secondary, accent
+
+Method: draw_text
+Purpose: Helper method to draw text on surface
+Parameters:
+  - surface (pygame.Surface): Target surface
+  - text (str): Text to draw
+  - position (tuple): (x, y) coordinates
+  - color (tuple): RGB color tuple
+  - font_size (int): Font size in points
+  - align (str): 'left', 'center', or 'right'
+Returns: pygame.Rect - Bounding rect of drawn text
+Behavior:
+  - Creates/gets font of specified size
+  - Renders text to surface
+  - Handles alignment by adjusting x position
+  - Returns rect for collision detection

@@ -1,0 +1,63 @@
+FILE: states/menu_state.py
+==========================
+
+CLASS: MenuState
+----------------
+Inherits: BaseState
+
+ATTRIBUTES:
+- view (MenuView): Menu view instance
+- selected_index (int): Currently selected menu item
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize menu state
+Parameters:
+  - state_manager (StateManager): State manager
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Creates MenuView instance
+  - Sets selected_index to 0
+
+Method: on_enter
+Purpose: Called when menu becomes active
+Parameters:
+  - previous_state (BaseState or None): Previous state
+Returns: None
+Behavior:
+  - Resets selected_index to 0
+  - Updates view focus
+
+Method: update
+Purpose: Update menu logic
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior:
+  - Calls view.update(dt)
+  - Updates any animations
+
+Method: handle_events
+Purpose: Handle menu input
+Parameters:
+  - events (list): Pygame events
+Returns: None
+Behavior:
+  - Uses input_handler to check for actions
+  - On 'up': decrements selected_index
+  - On 'down': increments selected_index
+  - On 'confirm': executes selected menu action:
+    * Browse Games -> changes to game_list_state
+    * Download Games -> changes to download_state
+    * Settings -> changes to settings_state
+    * Exit -> calls pygame.quit() and sys.exit()
+  - On 'cancel': exits application
+
+Method: render
+Purpose: Render menu to screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior: Calls view.render(surface)

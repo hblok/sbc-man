@@ -1,0 +1,61 @@
+FILE: services/network.py
+==========================
+
+CLASS: NetworkService
+---------------------
+
+METHODS (ALL STATIC):
+
+Method: download_file
+Purpose: Download file from URL with progress tracking
+Parameters:
+  - url (str): URL to download from
+  - destination (Path or str): Local file path
+  - progress_callback (callable or None): Function to call with progress updates
+    Signature: callback(bytes_downloaded, total_bytes)
+Returns: bool - True if successful
+Behavior:
+  - Converts destination to Path
+  - Opens HTTP connection with requests.get(url, stream=True)
+  - Gets Content-Length header for total_bytes
+  - Opens destination file in binary write mode
+  - Reads response in 8192-byte chunks
+  - For each chunk:
+    * Writes to file
+    * Accumulates bytes_downloaded
+    * Calls progress_callback if provided
+  - Returns True on success
+  - Returns False and cleans up partial file on error
+
+Method: fetch_json
+Purpose: Fetch and parse JSON from URL
+Parameters:
+  - url (str): URL to fetch from
+Returns: dict or None - Parsed JSON or None on error
+Behavior:
+  - Makes HTTP GET request with requests.get(url)
+  - Checks status code (200 = success)
+  - Calls response.json() to parse
+  - Returns parsed data
+  - Returns None on any error
+
+Method: check_connectivity
+Purpose: Check if network connection is available
+Parameters: None
+Returns: bool - True if connected
+Behavior:
+  - Attempts to connect to known reliable host (e.g., 8.8.8.8)
+  - Uses socket with short timeout
+  - Returns True if connection succeeds
+  - Returns False on timeout or error
+
+Method: get_file_size
+Purpose: Get remote file size without downloading
+Parameters:
+  - url (str): URL to check
+Returns: int or None - File size in bytes or None
+Behavior:
+  - Makes HTTP HEAD request to url
+  - Extracts Content-Length header
+  - Returns as integer
+  - Returns None if header missing or error

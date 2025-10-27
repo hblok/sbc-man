@@ -1,0 +1,80 @@
+FILE: views/game_list_view.py
+==============================
+
+CLASS: GameListView
+-------------------
+Inherits: BaseView
+
+ATTRIBUTES:
+- games (list): List of Game instances to display
+- grid_widget (Grid): Grid widget for game cards
+- scrollbar_widget (Scrollbar): Scrollbar widget
+- selected_index (int): Currently selected game index
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize game list view
+Parameters:
+  - hw_config (dict): Hardware configuration
+  - screen (pygame.Surface): Display surface
+  - games (list): List of Game instances
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Stores games list
+  - Creates Grid widget with game cards
+  - Creates Scrollbar widget
+  - Sets selected_index to 0
+
+Method: render
+Purpose: Render game list screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Fills surface with background color
+  - Draws "Game Library" title
+  - Renders grid widget with visible games
+  - Renders scrollbar widget
+  - Draws selected game details at bottom
+
+Method: update
+Purpose: Update game list view
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior:
+  - Updates grid widget
+  - Updates scrollbar position
+
+Method: set_games
+Purpose: Update games list
+Parameters:
+  - games (list): New list of games
+Returns: None
+Side Effects: Recreates grid with new games
+Behavior:
+  - Stores new games list
+  - Recreates grid widget with updated games
+  - Resets selected_index to 0
+
+Method: get_selected_game
+Purpose: Get currently selected game
+Parameters: None
+Returns: Game or None - Selected game instance
+Behavior: Returns games[selected_index] if valid
+
+Method: scroll_up
+Purpose: Scroll selection up
+Parameters: None
+Returns: None
+Side Effects: Changes selected_index
+Behavior: Decrements selected_index, wraps to end if at top
+
+Method: scroll_down
+Purpose: Scroll selection down
+Parameters: None
+Returns: None
+Side Effects: Changes selected_index
+Behavior: Increments selected_index, wraps to start if at bottom

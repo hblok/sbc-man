@@ -1,0 +1,51 @@
+SERVICE LAYER COMPONENTS
+========================
+
+Services provide utility functions and cross-cutting concerns:
+
+InputHandler
+├─ Purpose: Hierarchical input mapping resolution
+├─ Dependencies: hw_config, config files
+├─ Used by: All states for event handling
+└─ Responsibilities:
+   ├─ Load mapping hierarchy
+   ├─ Resolve actions from events
+   ├─ Manage game context
+   └─ Save custom mappings
+
+FileOps (Static Utilities)
+├─ Purpose: Cross-platform file operations
+├─ Dependencies: pathlib, shutil, zipfile, tarfile
+├─ Used by: DownloadManager, ProcessLauncher
+└─ Responsibilities:
+   ├─ Directory management
+   ├─ Archive extraction
+   ├─ File copying/removal
+   └─ Permission management
+
+ProcessLauncher
+├─ Purpose: Launch external game processes
+├─ Dependencies: subprocess, InputHandler
+├─ Used by: PlayingState
+└─ Responsibilities:
+   ├─ Execute pre-launch commands
+   ├─ Launch game with correct context
+   ├─ Manage process lifecycle
+   └─ Execute post-launch commands
+
+NetworkService (Static Utilities)
+├─ Purpose: Network operations
+├─ Dependencies: requests, socket
+├─ Used by: DownloadManager
+└─ Responsibilities:
+   ├─ Download files with progress
+   ├─ Fetch JSON data
+   ├─ Check connectivity
+   └─ Get remote file info
+
+Dependency Flow:
+States → Services → External Systems
+   │         │
+   │         └─> File System, Network, Processes
+   │
+   └─> Models → Persistence (via Services)

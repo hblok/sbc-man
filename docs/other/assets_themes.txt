@@ -1,0 +1,46 @@
+SCHEMA: assets/themes/*/theme.json
+==================================
+
+Structure:
+{
+  "name": string,                // Theme name
+  "colors": {
+    "background": array,         // [R, G, B] for main background
+    "surface": array,            // [R, G, B] for UI surfaces
+    "primary": array,            // [R, G, B] for primary elements
+    "secondary": array,          // [R, G, B] for secondary elements
+    "accent": array,             // [R, G, B] for accents/highlights
+    "text": array,               // [R, G, B] for main text
+    "text_secondary": array,     // [R, G, B] for dimmed text
+    "success": array,            // [R, G, B] for success indicators
+    "warning": array,            // [R, G, B] for warnings
+    "error": array               // [R, G, B] for errors
+  },
+  "fonts": {
+    "default_size": integer,     // Default font size in points
+    "title_size": integer,       // Title font size
+    "small_size": integer        // Small text size
+  }
+}
+
+Example:
+{
+  "name": "Dark Theme",
+  "colors": {
+    "background": [30, 30, 30],
+    "surface": [45, 45, 45],
+    "primary": [100, 150, 255],
+    "secondary": [80, 80, 80],
+    "accent": [255, 180, 50],
+    "text": [255, 255, 255],
+    "text_secondary": [180, 180, 180],
+    "success": [100, 255, 100],
+    "warning": [255, 200, 50],
+    "error": [255, 80, 80]
+  },
+  "fonts": {
+    "default_size": 16,
+    "title_size": 24,
+    "small_size": 12
+  }
+}

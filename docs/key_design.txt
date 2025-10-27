@@ -1,0 +1,185 @@
+KEY DESIGN DECISIONS AND RATIONALE
+===================================
+
+1. State-Based Architecture
+   Decision: Use state machine for navigation
+   Rationale:
+   ├─ Clear separation of concerns
+   ├─ Easy to add new screens
+   ├─ Predictable navigation flow
+   ├─ Simplified event handling per context
+   └─ Better testability
+   Alternative Considered: Single-screen with overlays
+   Chosen Because: Better organization for complex app
+
+2. Configuration Hierarchy
+   Decision: 4-layer configuration merging
+   Rationale:
+   ├─ Device-specific optimizations
+   ├─ User customization without breaking defaults
+   ├─ Per-game overrides for special cases
+   ├─ Easy to add new devices
+   └─ Maintainable default configs
+   Alternative Considered: Single config file
+   Chosen Because: Flexibility needed for multi-device
+
+3. Action-Based Input System
+   Decision: Map inputs to semantic actions
+   Rationale:
+   ├─ Controller layout independence
+   ├─ Easy remapping for users
+   ├─ Context-aware input handling
+   ├─ Support multiple input types
+   └─ Maintainable across devices
+   Alternative Considered: Direct key/button checking
+   Chosen Because: Abstraction essential for portability
+
+4. File-Based Hardware Detection
+   Decision: Read system files for device ID
+   Rationale:
+   ├─ No external dependencies
+   ├─ Reliable on Linux-based devices
+   ├─ Fast detection
+   ├─ Works without special permissions
+   └─ Standard approach on embedded Linux
+   Alternative Considered: User selection at startup
+   Chosen Because: Better user experience (automatic)
+
+5. Observer Pattern for Downloads
+   Decision: Use observer pattern for progress updates
+   Rationale:
+   ├─ Decouples download logic from UI
+   ├─ Multiple observers possible
+   ├─ Thread-safe communication
+   ├─ Easy to test components independently
+   └─ Standard pattern for this use case
+   Alternative Considered: Polling/callbacks
+   Chosen Because: More flexible and maintainable
+
+6. JSON for All Configuration
+   Decision: Use JSON for configs and data
+   Rationale:
+   ├─ Human-readable and editable
+   ├─ Built-in Python support
+   ├─ Cross-platform compatible
+   ├─ Easy to validate
+   └─ Widely understood format
+   Alternative Considered: YAML, INI, XML
+   Chosen Because: Best balance of features/simplicity
+
+7. Threading for Game Launch
+   Decision: Launch games in separate thread
+   Rationale:
+   ├─ UI remains responsive during launch
+   ├─ Can show launch status
+   ├─ Non-blocking I/O
+   ├─ Easy error handling
+   └─ Matches async nature of operation
+   Alternative Considered: Blocking subprocess calls
+   Chosen Because: Better UX with non-blocking
+
+8. Separate Processes for Games
+   Decision: Launch games as separate processes
+   Rationale:
+   ├─ Game crashes don't crash launcher
+   ├─ Clean separation of concerns
+   ├─ Games can use full resources
+   ├─ Standard approach for launchers
+   └─ Easy to monitor/terminate
+   Alternative Considered: Import and run in-process
+   Chosen Because: Isolation and stability
+
+9. Path-Based Game Identification
+   Decision: Store games by filesystem path
+   Rationale:
+   ├─ Simple and reliable
+   ├─ No database needed
+   ├─ Easy to verify installation
+   ├─ Portable across systems
+   └─ Matches actual storage
+   Alternative Considered: Database with registry
+   Chosen Because: Simplicity for target use case
+
+10. Theme System Design
+    Decision: JSON themes with color/font definitions
+    Rationale:
+    ├─ Easy for users to create themes
+    ├─ No code changes needed
+    ├─ Hot-swappable
+    ├─ Version controllable
+    └─ Shareable between users
+    Alternative Considered: Coded themes
+    Chosen Because: User customization priority
+
+11. No Database Usage
+    Decision: Use JSON files instead of database
+    Rationale:
+    ├─ Simpler deployment (no DB setup)
+    ├─ Easy to backup (copy files)
+    ├─ Human-readable data
+    ├─ No migration scripts needed
+    ├─ Appropriate for data volume
+    └─ One less dependency
+    Alternative Considered: SQLite
+    Chosen Because: Unnecessary complexity for scale
+
+12. pygame for Rendering
+    Decision: Use pygame instead of other frameworks
+    Rationale:
+    ├─ Lightweight and performant
+    ├─ Works well on embedded devices
+    ├─ Good controller support
+    ├─ Cross-platform
+    ├─ Mature and stable
+    └─ Python-native
+    Alternative Considered: Kivy, tkinter, PyQt
+    Chosen Because: Best fit for gaming context
+
+13. Synchronous Main Loop
+    Decision: Single-threaded main game loop
+    Rationale:
+    ├─ Simpler reasoning about state
+    ├─ No race conditions in UI
+    ├─ pygame design matches this
+    ├─ Predictable execution order
+    └─ Easier debugging
+    Alternative Considered: Async/await
+    Chosen Because: pygame not async-friendly
+
+14. Manual Dependency Management
+    Decision: requirements.txt instead of pipenv/poetry
+    Rationale:
+    ├─ Universal tool support
+    ├─ Simple for end users
+    ├─ Works everywhere
+    ├─ No lock file conflicts
+    └─ Standard approach
+    Alternative Considered: pipenv, poetry
+    Chosen Because: Simplicity and compatibility
+
+15. No Auto-Update Feature (Initial)
+    Decision: Manual updates only
+    Rationale:
+    ├─ Simpler implementation
+    ├─ Avoid security concerns
+    ├─ User control preserved
+    ├─ Less code to maintain
+    └─ Can add later if needed
+    Alternative Considered: Built-in auto-update
+    Chosen Because: Feature prioritization
+
+Design Principles Applied:
+├─ KISS (Keep It Simple, Stupid)
+├─ YAGNI (You Aren't Gonna Need It)
+├─ DRY (Don't Repeat Yourself)
+├─ Separation of Concerns
+├─ Fail-Safe Defaults
+├─ Convention Over Configuration
+└─ Progressive Enhancement
+
+Trade-offs Accepted:
+├─ Simplicity over features
+├─ Compatibility over cutting-edge
+├─ Maintainability over optimization
+├─ User control over automation
+└─ Stability over novelty

@@ -1,0 +1,99 @@
+FILE: views/settings_view.py
+=============================
+
+CLASS: SettingsView
+-------------------
+Inherits: BaseView
+
+ATTRIBUTES:
+- settings_items (list): List of setting items with labels and values
+- selected_index (int): Currently selected setting
+- editing (bool): Whether currently editing a setting
+- input_capture_mode (bool): Whether capturing input for remapping
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize settings view
+Parameters:
+  - hw_config (dict): Hardware configuration
+  - screen (pygame.Surface): Display surface
+  - config_manager (ConfigManager): Config manager instance
+  - input_handler (InputHandler): Input handler instance
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Stores config_manager and input_handler
+  - Loads current settings into settings_items list
+  - Includes: theme, FPS target, input mappings, etc.
+  - Sets selected_index to 0
+
+Method: render
+Purpose: Render settings screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Fills surface with background color
+  - Draws "Settings" title
+  - Draws each setting item with label and current value
+  - Highlights selected item
+  - If editing: draws edit indicator
+  - If input_capture_mode: draws "Press key to map..." message
+
+Method: update
+Purpose: Update settings view
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior: Updates any animated elements
+
+Method: navigate_up
+Purpose: Move selection up
+Parameters: None
+Returns: None
+Side Effects: Changes selected_index
+Behavior: Decrements selected_index with wrapping
+
+Method: navigate_down
+Purpose: Move selection down
+Parameters: None
+Returns: None
+Side Effects: Changes selected_index
+Behavior: Increments selected_index with wrapping
+
+Method: start_editing
+Purpose: Start editing selected setting
+Parameters: None
+Returns: None
+Side Effects: Sets editing to True
+Behavior: Prepares setting for modification
+
+Method: save_setting
+Purpose: Save modified setting value
+Parameters:
+  - value: New value for setting
+Returns: None
+Side Effects: Updates config, saves to disk
+Behavior:
+  - Updates config_manager with new value
+  - If input mapping: calls input_handler.save_mapping()
+  - Sets editing to False
+
+Method: start_input_capture
+Purpose: Start capturing input for remapping
+Parameters: None
+Returns: None
+Side Effects: Sets input_capture_mode to True
+Behavior: Prepares to capture next input event for button mapping
+
+Method: capture_input
+Purpose: Process captured input for remapping
+Parameters:
+  - event (pygame.Event): Input event to capture
+Returns: None
+Side Effects: Saves new input mapping
+Behavior:
+  - Extracts key/button identifier from event
+  - Calls save_setting with new mapping
+  - Sets input_capture_mode to False

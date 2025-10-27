@@ -1,0 +1,19 @@
+SCHEMA: data/config.json
+========================
+
+Structure:
+{
+  "theme": string,               // Selected theme name
+  "last_played_game": string,    // Last game ID played
+  "auto_update": boolean,        // Auto-update games
+  "download_location": string,   // Custom download location
+  ...                            // User preferences
+}
+
+Example:
+{
+  "theme": "dark",
+  "last_played_game": "snake-game",
+  "auto_update": true,
+  "download_location": "~/games"
+}

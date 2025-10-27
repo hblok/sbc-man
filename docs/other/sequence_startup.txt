@@ -1,0 +1,56 @@
+APPLICATION STARTUP FLOW
+========================
+
+1. main.py Entry
+   ├─> Create Application instance
+   └─> Call Application.run()
+
+2. Hardware Detection Phase
+   ├─> HardwareDetector._detect_device()
+   │   ├─> Read /sys/firmware/devicetree/base/model
+   │   ├─> Check for device-specific files
+   │   └─> Return device_type (e.g., "anbernic")
+   │
+   ├─> HardwareDetector._detect_os()
+   │   ├─> Read /etc/os-release
+   │   └─> Return os_type (e.g., "arkos")
+   │
+   └─> HardwareProber.probe_all()
+       ├─> probe_display() -> resolution, modes
+       ├─> probe_input() -> joysticks info
+       ├─> probe_storage() -> available space
+       └─> probe_cpu() -> cores, architecture
+
+3. Configuration Loading Phase
+   ├─> ConfigLoader.__init__(device_type, os_type, probed_hardware)
+   └─> ConfigLoader.load_config()
+       ├─> Load config/devices/default.json
+       ├─> Merge config/devices/anbernic.json
+       ├─> Merge config/os_types/arkos.json
+       ├─> Apply probed hardware (override resolution, FPS)
+       └─> Merge data/user_config.json (if exists)
+
+4. Pygame Initialization
+   ├─> pygame.init()
+   ├─> Create display with probed/config resolution
+   ├─> Set fullscreen based on device type
+   └─> Hide cursor on handheld devices
+
+5. Component Initialization
+   ├─> ConfigManager(hw_config)
+   │   └─> Load data/config.json
+   │
+   ├─> GameLibrary(hw_config)
+   │   └─> Load data/games.json
+   │
+   ├─> InputHandler(hw_config)
+   │   ├─> Load input mapping hierarchy
+   │   └─> Initialize joysticks
+   │
+   └─> StateManager(...)
+       ├─> Create all state instances
+       └─> Set initial state to menu_state
+
+6. Main Loop Start
+   └─> GameLoop.start()
+       └─> Enter game loop (see 5.2)

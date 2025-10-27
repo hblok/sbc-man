@@ -1,0 +1,214 @@
+11.2 INSTALLATION PROCEDURES (FULL)
+====================================
+
+INSTALLATION METHODS
+====================
+
+Method 1: pip Install (Development)
+-----------------------------------
+Prerequisites:
+- Python 3.7+
+- pip
+- git (for source install)
+
+Steps:
+1. Clone repository:
+   $ git clone https://github.com/username/game-launcher.git
+   $ cd game-launcher
+
+2. Create virtual environment (recommended):
+   $ python3 -m venv venv
+   $ source venv/bin/activate  # Linux/Mac
+   $ venv\Scripts\activate     # Windows
+
+3. Install dependencies:
+   $ pip install -r requirements.txt
+
+4. Install package:
+   $ pip install -e .  # Editable install
+   # OR
+   $ python setup.py install
+
+5. Run:
+   $ game-launcher
+   # OR
+   $ python -m src.main
+
+Method 2: Standalone Package (Linux)
+------------------------------------
+Prerequisites:
+- Linux system with X11 or Wayland
+- SDL2 libraries (usually pre-installed)
+
+Steps:
+1. Download package:
+   $ wget https://releases.example.com/game-launcher-linux.tar.gz
+
+2. Extract:
+   $ tar -xzf game-launcher-linux.tar.gz
+   $ cd game-launcher
+
+3. Run install script:
+   $ ./install.sh
+   # Installs to ~/.local/ by default
+   # Use sudo ./install.sh for system-wide
+
+4. Run:
+   $ game-launcher
+   # OR navigate via application menu
+
+Method 3: Handheld Device (OPK)
+-------------------------------
+Prerequisites:
+- Device running ArkOS, JELOS, or compatible OS
+- SD card access
+
+Steps (Anbernic RG353P example):
+1. Download OPK file to computer
+2. Connect device via USB or remove SD card
+3. Copy to: /roms/ports/ or /media/sdcard/Apps/
+4. Safely eject/unmount
+5. On device: Navigate to Apps or Ports section
+6. Select "Game Launcher" icon
+
+Method 4: Source Build for Handheld
+-----------------------------------
+For developers building custom OPK:
+
+1. Install OPK creation tools:
+   $ sudo apt-get install squashfs-tools
+
+2. Prepare directory structure:
+   $ mkdir -p opk-build/game-launcher
+   $ cp -r src assets config opk-build/game-launcher/
+   $ cp launcher.sh opk-build/
+   $ cp default.gcw0.desktop opk-build/
+   $ cp icon.png opk-build/
+
+3. Create launcher script (launcher.sh):
+   #!/bin/sh
+   cd $(dirname $0)/game-launcher
+   python3 -m src.main
+
+4. Create desktop file (default.gcw0.desktop):
+   [Desktop Entry]
+   Name=Game Launcher
+   Comment=Python Game Launcher
+   Exec=launcher.sh
+   Icon=icon.png
+   Terminal=false
+   Type=Application
+   Categories=games;
+
+5. Build OPK:
+   $ cd opk-build
+   $ mksquashfs * ../game-launcher.opk -all-root -noappend -no-exports -no-xattrs
+
+6. Install OPK (see Method 3)
+
+Post-Installation Configuration:
+--------------------------------
+First run creates user directories:
+~/.local/share/game-launcher/games/     # Game installations
+~/.local/share/game-launcher/data/      # User data
+~/.config/game-launcher/                # User configs
+~/.cache/game-launcher/                 # Cache/downloads
+
+Optional: Set custom paths
+Edit ~/.config/game-launcher/user_config.json:
+{
+  "paths": {
+    "games": "/path/to/custom/games",
+    "data": "/custom/data/path"
+  }
+}
+
+Verify Installation:
+-------------------
+1. Check version:
+   $ game-launcher --version
+
+2. Test hardware detection:
+   $ game-launcher --test-hardware
+
+3. Validate configuration:
+   $ game-launcher --validate-config
+
+4. List detected games:
+   $ game-launcher --list-games
+
+Uninstallation:
+--------------
+pip install:
+$ pip uninstall game-launcher
+$ rm -rf ~/.local/share/game-launcher
+$ rm -rf ~/.config/game-launcher
+$ rm -rf ~/.cache/game-launcher
+
+Standalone Linux:
+$ ~/.local/share/game-launcher/uninstall.sh
+# OR manually:
+$ rm -rf ~/.local/share/game-launcher
+$ rm ~/.local/bin/game-launcher
+$ rm -rf ~/.config/game-launcher
+$ rm -rf ~/.cache/game-launcher
+
+Handheld:
+Delete OPK file from device storage
+
+Troubleshooting Installation:
+-----------------------------
+Issue: "pygame not found"
+Solution: $ pip install pygame
+
+Issue: "Permission denied"
+Solution: Check file permissions, use chmod +x launcher.sh
+
+Issue: "Display not found"
+Solution: Ensure X11/Wayland running, check DISPLAY variable
+
+Issue: "Config files missing"
+Solution: Reinstall or restore from backup
+
+Issue: "Python version too old"
+Solution: Upgrade to Python 3.7+
+
+Issue: "SDL2 libraries missing"
+Solution: $ sudo apt-get install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev
+
+Issue: "OPK doesn't appear on device"
+Solution: Verify OPK in correct directory, restart device
+
+Issue: "Launcher crashes on start"
+Solution: Check logs at ~/.local/share/game-launcher/logs/
+         Verify all dependencies installed
+
+Updating:
+--------
+pip install:
+$ pip install --upgrade game-launcher
+
+Standalone:
+$ game-launcher --update
+# OR download new version and reinstall
+
+Handheld:
+Replace OPK file with newer version
+
+Migration from Previous Versions:
+--------------------------------
+1. Backup user data:
+   $ cp -r ~/.local/share/game-launcher ~/game-launcher-backup
+
+2. Uninstall old version
+
+3. Install new version
+
+4. First run will migrate data automatically
+   - Old config files converted to new format
+   - Game library preserved
+   - Custom input mappings maintained
+
+5. If migration fails:
+   - Restore from backup
+   - File issue report with logs

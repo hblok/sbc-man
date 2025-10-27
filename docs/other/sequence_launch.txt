@@ -1,0 +1,58 @@
+GAME LAUNCH FLOW
+================
+
+1. User Selects Game
+   ├─> User in game_list_state
+   ├─> Navigates to installed game
+   └─> Presses "confirm"
+
+2. Validate and Initiate
+   └─> game_list_state.handle_events()
+       ├─> selected_game = view.get_selected_game()
+       ├─> Check if selected_game.installed == True
+       └─> If True: state_manager.change_state('playing', game=selected_game)
+
+3. Transition to Playing State
+   └─> playing_state.on_enter(previous_state, game=selected_game)
+       ├─> Store game reference
+       ├─> input_handler.set_game_context(game.id)
+       │   └─> Load per-game input mappings if exist
+       │
+       ├─> Create launch thread
+       └─> thread.start() -> _launch_game_thread()
+
+4. Launch Thread Execution
+   └─> _launch_game_thread()
+       └─> process_launcher.launch_game(game.install_path, game.entry_point)
+
+5. Process Launcher Execution
+   ├─> Construct entry_file path
+   ├─> Validate entry_file exists
+   │
+   ├─> Execute pre_launch_commands
+   │   └─> E.g., "killall emulationstation" on RetroPie
+   │
+   ├─> Create subprocess:
+   │   ├─> Command: [python_command, entry_file]
+   │   ├─> cwd: game directory
+   │   └─> Redirect stdout/stderr to DEVNULL
+   │
+   ├─> process.wait()  # Block until game exits
+   │
+   └─> In finally block:
+       ├─> input_handler.clear_game_context()
+       └─> Execute post_launch_commands
+           └─> E.g., "emulationstation &" on RetroPie
+
+6. Monitor Game Process
+   └─> playing_state.update(dt) [runs each frame]
+       ├─> Check if launch_thread.is_alive()
+       │
+       └─> If thread finished:
+           ├─> Set game_running = False
+           └─> state_manager.change_state('game_list')
+
+7. Return to Game List
+   └─> game_list_state.on_enter(playing_state)
+       ├─> Refresh game list
+       └─> Resume at previously selected game

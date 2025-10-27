@@ -1,0 +1,27 @@
+SCHEMA: config/os_types/*.json
+==============================
+
+Structure:
+{
+  "device": {
+    "os_name": string            // OS/distribution name
+  },
+  "paths": {
+    "games": string,             // OS-specific game directory
+    "data": string,              // OS-specific data directory
+    "config": string,            // OS-specific config directory
+    "cache": string,             // OS-specific cache directory
+    "sdcard": string             // SD card mount point (optional)
+  },
+  "launcher": {
+    "python_command": string,    // OS-specific Python path
+    "pre_launch_commands": array,   // Shell commands to run before game launch
+    "post_launch_commands": array   // Shell commands to run after game exit
+  }
+}
+
+Notes:
+- Primarily overrides paths for OS-specific locations
+- pre_launch_commands useful for stopping system UI (e.g., EmulationStation)
+- post_launch_commands useful for restarting system UI
+- Commands execute via shell, handle errors gracefully

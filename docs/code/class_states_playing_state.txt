@@ -1,0 +1,85 @@
+FILE: states/playing_state.py
+==============================
+
+CLASS: PlayingState
+-------------------
+Inherits: BaseState
+
+ATTRIBUTES:
+- game (Game): Game being launched
+- process_launcher (ProcessLauncher): Process launcher instance
+- launch_thread (Thread): Thread running game process
+- game_running (bool): Whether game is currently running
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize playing state
+Parameters:
+  - state_manager (StateManager): State manager
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Creates ProcessLauncher instance
+  - Sets game to None
+  - Sets game_running to False
+
+Method: on_enter
+Purpose: Called when entering playing state
+Parameters:
+  - previous_state (BaseState or None): Previous state
+  - game (Game): Game to launch
+Returns: None
+Behavior:
+  - Stores game instance
+  - Sets input context for game
+  - Creates and starts launch_thread
+  - Thread executes _launch_game_thread()
+  - Sets game_running to True
+
+Method: on_exit
+Purpose: Called when exiting playing state
+Parameters: None
+Returns: None
+Behavior:
+  - Clears input context
+  - Resets game_running flag
+
+Method: update
+Purpose: Update playing state logic
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior:
+  - Checks if launch_thread is still alive
+  - If thread finished: returns to game_list_state
+  - Monitors for quit signals
+
+Method: handle_events
+Purpose: Handle input while game running
+Parameters:
+  - events (list): Pygame events
+Returns: None
+Behavior:
+  - Minimal handling (game owns input)
+  - Checks for emergency quit combination (if configured)
+
+Method: render
+Purpose: Render playing screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Fills screen with black
+  - Shows "Game Running..." message
+  - Shows "Press START+SELECT to return" hint if configured
+
+Method: _launch_game_thread
+Purpose: Thread function that launches game process
+Parameters: None
+Returns: None
+Behavior:
+  - Calls process_launcher.launch_game(game.install_path, game.entry_point)
+  - Waits for game to exit
+  - Sets game_running to False when complete
+  - Handles any launch errors

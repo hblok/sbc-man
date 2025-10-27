@@ -1,0 +1,92 @@
+ROOT LEVEL FILES
+================
+main.py - Application entry point that imports and starts the Application class
+requirements.txt - Python package dependencies (pygame-ce, requests, etc.)
+README.md - Project documentation and setup instructions
+
+CORE PACKAGE
+============
+core/__init__.py - Package initialization for core framework components
+core/application.py - Main application controller orchestrating initialization and lifecycle
+core/state_manager.py - Manages application states and transitions between screens
+core/game_loop.py - Main game loop handling events, updates, and rendering
+
+HARDWARE PACKAGE
+================
+hardware/__init__.py - Package initialization for hardware detection components
+hardware/detector.py - Detects device type and OS distribution
+hardware/prober.py - Auto-probes hardware capabilities (display, input, storage, CPU)
+hardware/config_loader.py - Loads and merges configuration files hierarchically
+
+CONFIG DIRECTORY
+================
+config/devices/default.json - Default fallback configuration for unknown devices
+config/devices/anbernic.json - Anbernic handheld-specific configuration overrides
+config/devices/miyoo.json - Miyoo Mini device-specific configuration
+config/devices/retroid.json - Retroid Pocket (Android) device configuration
+config/devices/desktop.json - Desktop/laptop testing configuration
+config/os_types/arkos.json - ArkOS distribution-specific settings (paths, commands)
+config/os_types/jelos.json - JELOS distribution-specific settings
+config/os_types/batocera.json - Batocera distribution-specific settings
+config/os_types/android.json - Android OS-specific settings
+config/os_types/standard_linux.json - Standard Linux fallback settings
+config/input_mappings/default.json - Default keyboard and gamepad button mappings
+config/input_mappings/anbernic.json - Anbernic device input mapping overrides
+config/input_mappings/per_game/.gitkeep - Placeholder for per-game input overrides
+
+MODELS PACKAGE
+==============
+models/__init__.py - Package initialization for data models
+models/game.py - Game entity class representing individual game metadata
+models/game_library.py - Manages collection of games with persistence
+models/config_manager.py - Handles launcher configuration and user preferences
+models/download_manager.py - Manages game downloads, updates, and installations
+
+VIEWS PACKAGE
+=============
+views/__init__.py - Package initialization for UI components
+views/base_view.py - Abstract base class for all view components
+views/menu_view.py - Main menu screen rendering
+views/game_list_view.py - Game library browsing screen rendering
+views/download_view.py - Download progress screen rendering
+views/settings_view.py - Settings and configuration screen rendering
+views/widgets/__init__.py - Package initialization for reusable UI widgets
+views/widgets/button.py - Interactive button widget component
+views/widgets/list.py - Scrollable list widget component
+views/widgets/scrollbar.py - Scrollbar widget for list navigation
+views/widgets/progress_bar.py - Progress bar widget for downloads
+views/widgets/grid.py - Grid layout widget for game cards
+views/widgets/game_card.py - Visual game card component with icon and metadata
+
+STATES PACKAGE
+==============
+states/__init__.py - Package initialization for state implementations
+states/base_state.py - Abstract base class for all application states
+states/menu_state.py - Main menu state logic and event handling
+states/game_list_state.py - Game library browsing state logic
+states/download_state.py - Download/update state logic
+states/settings_state.py - Settings screen state with input remapping
+states/playing_state.py - Transitional state when launching external games
+
+SERVICES PACKAGE
+================
+services/__init__.py - Package initialization for utility services
+services/input_handler.py - Hierarchical input mapping and event processing
+services/file_ops.py - Cross-platform file operations using pathlib
+services/process_launcher.py - Game launching and process management
+services/network.py - HTTP download utilities and network operations
+
+ASSETS DIRECTORY
+================
+assets/fonts/default.ttf - Default font for UI rendering
+assets/icons/launcher_icon.png - Application launcher icon
+assets/icons/default_game.png - Default placeholder icon for games
+assets/themes/default/theme.json - Default theme color scheme
+assets/themes/dark/theme.json - Dark theme color scheme
+
+DATA DIRECTORY (RUNTIME GENERATED)
+===================================
+data/games.json - Persistent storage of game library metadata
+data/config.json - User configuration and preferences
+data/input_overrides/device.json - User device-level input customizations
+data/input_overrides/games/.gitkeep - Placeholder for per-game input files

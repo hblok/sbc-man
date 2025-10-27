@@ -1,0 +1,52 @@
+STATE PATTERN STRUCTURE
+=======================
+
+BaseState (Abstract)
+│
+├─ on_enter(previous_state)
+├─ on_exit()
+├─ update(dt)          [abstract]
+├─ handle_events(events) [abstract]
+└─ render(surface)     [abstract]
+    │
+    ├─── MenuState
+    │    ├─ Owns: MenuView
+    │    ├─ Handles: Menu navigation and selection
+    │    └─ Transitions to: game_list, download, settings states
+    │
+    ├─── GameListState
+    │    ├─ Owns: GameListView
+    │    ├─ Handles: Game browsing and selection
+    │    └─ Transitions to: playing, menu states
+    │
+    ├─── DownloadState
+    │    ├─ Owns: DownloadView, DownloadManager
+    │    ├─ Handles: Game downloads and installation
+    │    ├─ Observes: Download progress
+    │    └─ Transitions to: menu state
+    │
+    ├─── SettingsState
+    │    ├─ Owns: SettingsView
+    │    ├─ Handles: Configuration and input remapping
+    │    └─ Transitions to: menu state
+    │
+    └─── PlayingState
+         ├─ Owns: ProcessLauncher
+         ├─ Handles: Game process management
+         └─ Transitions to: game_list state
+
+StateManager
+├─ Responsibilities:
+│  ├─ Store all state instances
+│  ├─ Track current active state
+│  ├─ Manage state transitions
+│  ├─ Delegate events, updates, render calls
+│  └─ Support state stack for overlays
+│
+└─ Methods:
+   ├─ change_state(name): Full transition
+   ├─ push_state(name): Push overlay state
+   ├─ pop_state(): Return to previous state
+   ├─ update(dt): Delegate to current state
+   ├─ handle_events(events): Delegate to current state
+   └─ render(surface): Delegate to current state

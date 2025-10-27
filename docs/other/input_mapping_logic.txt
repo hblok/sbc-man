@@ -1,0 +1,193 @@
+8.2 INPUT MAPPING RESOLUTION LOGIC (FULL)
+==========================================
+
+INPUT MAPPING RESOLUTION ALGORITHM
+===================================
+
+Context:
+- User presses a button
+- System needs to determine what action to trigger
+- Multiple mapping layers exist with different priorities
+
+Algorithm:
+
+1. Determine Current Context
+   ├─ Are we in a game? (current_game_id is set)
+   │  └─ Yes: Use 4-layer hierarchy
+   │  └─ No: Use 3-layer hierarchy (no per-game layer)
+
+2. Load Mapping Hierarchy (on context change)
+   ├─ Layer 1: config/input_mappings/default.json
+   │   - Base mappings for all contexts
+   │
+   ├─ Layer 2: config/input_mappings/{device_type}.json
+   │   - Device-specific overrides
+   │   - Example: Anbernic has different button layout than desktop
+   │
+   ├─ Layer 3: data/input_overrides/device.json
+   │   - User customizations for this device
+   │   - Created when user remaps buttons
+   │
+   └─ Layer 4 (if in game): data/input_overrides/games/{game_id}.json
+       - Per-game customizations
+       - Example: User wants different controls for specific game
+
+3. Merge Layers (Deep Merge)
+   ├─ Start with Layer 1 (base)
+   ├─ For each subsequent layer:
+   │  └─ For each action in layer:
+   │     ├─ If action exists in merged: replace with layer value
+   │     └─ If action new: add to merged
+   └─ Result: Single mappings dict with all overrides applied
+
+   Example Merge:
+   Layer 1 (default.json):
+   {
+     "confirm": ["K_RETURN", "BUTTON_A"],
+     "cancel": ["K_ESCAPE", "BUTTON_B"]
+   }
+
+   Layer 2 (anbernic.json):
+   {
+     "confirm": ["BUTTON_1"],  # Replaces default
+     "menu": ["BUTTON_START"]  # Adds new
+   }
+
+   Merged Result:
+   {
+     "confirm": ["BUTTON_1"],           # From Layer 2
+     "cancel": ["K_ESCAPE", "BUTTON_B"], # From Layer 1
+     "menu": ["BUTTON_START"]           # From Layer 2
+   }
+
+4. Event Processing (Per Frame)
+   ├─ Collect events: events = pygame.event.get()
+   │
+   └─ For each state action check:
+       └─> is_action_pressed(action, events)
+
+5. Action Resolution (is_action_pressed)
+   Input: action="confirm", events=[...]
+   
+   ├─ Step 1: Get mappings for action
+   │   mapping_list = self.mappings.get("confirm", [])
+   │   Example: ["K_RETURN", "BUTTON_1", "BUTTON_A"]
+   │
+   ├─ Step 2: For each event in events:
+   │   │
+   │   ├─ If event.type == KEYDOWN:
+   │   │   ├─ key_name = pygame.key.name(event.key)  # e.g., "return"
+   │   │   ├─ key_id = f"K_{key_name.upper()}"       # e.g., "K_RETURN"
+   │   │   └─ Is key_id in mapping_list?
+   │   │      └─ Yes: Return True
+   │   │
+   │   ├─ If event.type == JOYBUTTONDOWN:
+   │   │   ├─ button_index = event.button            # e.g., 1
+   │   │   ├─ button_names = _get_button_names(button_index)
+   │   │   │   # Returns: ["BUTTON_1", "BUTTON_A", "BUTTON_SOUTH"]
+   │   │   │   # Multiple names for compatibility
+   │   │   │
+   │   │   └─ For each name in button_names:
+   │   │      └─ Is name in mapping_list?
+   │   │         └─ Yes: Return True
+   │   │
+   │   └─ If event.type == JOYHATMOTION:
+   │       ├─ value = event.value                    # e.g., (0, 1)
+   │       ├─ Convert to direction:
+   │       │   ├─ (0, 1) → "DPAD_UP"
+   │       │   ├─ (0, -1) → "DPAD_DOWN"
+   │       │   ├─ (-1, 0) → "DPAD_LEFT"
+   │       │   └─ (1, 0) → "DPAD_RIGHT"
+   │       │
+   │       └─ Is direction in mapping_list?
+   │          └─ Yes: Return True
+   │
+   └─ Step 3: No matches found
+       └─ Return False
+
+6. Button Name Mapping Logic (_get_button_names)
+   Purpose: Map physical button indices to semantic names
+   
+   Input: button_index (int)
+   Output: list of possible names
+   
+   Mapping Table (Standard Gamepad Layout):
+   ┌───────┬──────────────────────────────────────┐
+   │ Index │ Names                                │
+   ├───────┼──────────────────────────────────────┤
+   │   0   │ BUTTON_0, BUTTON_A, BUTTON_SOUTH     │
+   │   1   │ BUTTON_1, BUTTON_B, BUTTON_EAST      │
+   │   2   │ BUTTON_2, BUTTON_X, BUTTON_WEST      │
+   │   3   │ BUTTON_3, BUTTON_Y, BUTTON_NORTH     │
+   │   4   │ BUTTON_4, BUTTON_L1, BUTTON_LB       │
+   │   5   │ BUTTON_5, BUTTON_R1, BUTTON_RB       │
+   │   6   │ BUTTON_6, BUTTON_L2, BUTTON_LT       │
+   │   7   │ BUTTON_7, BUTTON_R2, BUTTON_RT       │
+   │   8   │ BUTTON_8, BUTTON_SELECT, BUTTON_BACK │
+   │   9   │ BUTTON_9, BUTTON_START               │
+   │   10  │ BUTTON_10, BUTTON_L3, BUTTON_LSTICK  │
+   │   11  │ BUTTON_11, BUTTON_R3, BUTTON_RSTICK  │
+   └───────┴──────────────────────────────────────┘
+   
+   Why Multiple Names?
+   - Different controllers use different conventions
+   - BUTTON_A vs BUTTON_SOUTH (Xbox vs PlayStation)
+   - Numeric indices for low-level mapping
+   - Semantic names for readability
+
+7. Saving Custom Mappings
+   When user remaps a button:
+   
+   ├─ User navigates to Settings
+   ├─ Selects action to remap (e.g., "confirm")
+   ├─ Enters input capture mode
+   ├─ Presses desired button (e.g., BUTTON_2)
+   ├─ System captures event and extracts identifier
+   │
+   └─> input_handler.save_mapping("confirm", ["BUTTON_2"], scope)
+       │
+       ├─ If scope == "device":
+       │   └─ Save to data/input_overrides/device.json
+       │
+       └─ If scope == "game":
+           └─ Save to data/input_overrides/games/{current_game_id}.json
+       
+       Process:
+       1. Load existing overrides from target file
+       2. Update/add action mapping
+       3. Write back to file
+       4. Reload mapping hierarchy
+       5. New mappings active immediately
+
+Example Full Resolution:
+========================
+
+Scenario: User in "snake" game, presses button 1
+
+1. Context: current_game_id = "snake"
+   
+2. Loaded Hierarchy:
+   Layer 1 (default): "confirm": ["K_RETURN", "BUTTON_A"]
+   Layer 2 (anbernic): "confirm": ["BUTTON_1"]
+   Layer 3 (user device): (empty)
+   Layer 4 (snake game): "confirm": ["BUTTON_2"]
+   
+   Merged: "confirm": ["BUTTON_2"]  # Layer 4 wins
+
+3. Event: JOYBUTTONDOWN, button=1
+
+4. Resolution:
+   ├─ Get mappings: ["BUTTON_2"]
+   ├─ Button names for 1: ["BUTTON_1", "BUTTON_B", "BUTTON_EAST"]
+   ├─ Check "BUTTON_1" in ["BUTTON_2"]? → No
+   ├─ Check "BUTTON_B" in ["BUTTON_2"]? → No
+   ├─ Check "BUTTON_EAST" in ["BUTTON_2"]? → No
+   └─ Return False
+
+5. Result: Action NOT triggered (because game overrides to BUTTON_2)
+
+If Layer 4 didn't exist:
+   Merged: "confirm": ["BUTTON_1"]  # Layer 2 wins
+   Check "BUTTON_1" in ["BUTTON_1"]? → Yes
+   Return True
+   Result: Action triggered

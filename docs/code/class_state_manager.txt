@@ -1,0 +1,104 @@
+FILE: core/state_manager.py
+============================
+
+CLASS: StateManager
+-------------------
+
+ATTRIBUTES:
+- screen (pygame.Surface): Display surface for rendering
+- hw_config (dict): Hardware configuration dictionary
+- config (ConfigManager): Configuration manager instance
+- game_library (GameLibrary): Game library manager instance
+- input_handler (InputHandler): Input handler service instance
+- states (dict): Dictionary mapping state names to state class instances
+- current_state (BaseState): Currently active state instance
+- state_stack (list): Stack of states for overlay support
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize state manager with all required dependencies
+Parameters:
+  - screen (pygame.Surface): Display surface
+  - hw_config (dict): Hardware configuration
+  - config (ConfigManager): Config manager
+  - game_library (GameLibrary): Game library
+  - input_handler (InputHandler): Input handler
+Returns: None
+Behavior:
+  - Stores all dependencies as instance attributes
+  - Initializes empty states dictionary
+  - Calls _initialize_states() to create state instances
+  - Sets initial current_state to menu state
+  - Initializes empty state_stack list
+  - Calls on_enter() on initial state
+
+Method: _initialize_states
+Purpose: Create instances of all application states
+Parameters: None
+Returns: None
+Side Effects: Populates self.states dictionary
+Behavior:
+  - Imports all state classes from states package
+  - Creates instance of each state class passing self as parameter
+  - Stores instances in states dict with string keys
+  - Keys: 'menu', 'game_list', 'download', 'settings', 'playing'
+
+Method: change_state
+Purpose: Transition from current state to a new state
+Parameters:
+  - state_name (str): Name of state to transition to
+Returns: None
+Side Effects: Changes current_state, calls lifecycle methods
+Behavior:
+  - Calls on_exit() on current state
+  - Retrieves new state from states dictionary
+  - Sets current_state to new state
+  - Calls on_enter() on new state passing previous state
+  - Clears state_stack
+
+Method: push_state
+Purpose: Push a new state onto stack (for overlays like pause menus)
+Parameters:
+  - state_name (str): Name of state to push
+Returns: None
+Side Effects: Adds to state_stack, changes current_state
+Behavior:
+  - Appends current_state to state_stack
+  - Changes to new state via change_state()
+  - Preserves ability to return to previous state
+
+Method: pop_state
+Purpose: Return to previous state from overlay
+Parameters: None
+Returns: None
+Side Effects: Removes from stack, restores previous state
+Behavior:
+  - Checks if state_stack is not empty
+  - Calls on_exit() on current state
+  - Pops previous state from stack
+  - Sets current_state to popped state
+  - Calls on_enter() on restored state
+
+Method: update
+Purpose: Update current state logic
+Parameters:
+  - dt (float): Delta time in seconds since last update
+Returns: None
+Behavior: Calls update(dt) on current_state
+
+Method: handle_events
+Purpose: Route pygame events to current state
+Parameters:
+  - events (list): List of pygame.event.Event objects
+Returns: None
+Behavior: Calls handle_events(events) on current_state
+
+Method: render
+Purpose: Render current state to screen
+Parameters:
+  - surface (pygame.Surface): Surface to render to
+Returns: None
+Behavior:
+  - Calls render(surface) on current_state
+  - If state_stack not empty, also renders states below for overlay effect

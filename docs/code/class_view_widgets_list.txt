@@ -1,0 +1,88 @@
+FILE: views/widgets/list.py
+============================
+
+CLASS: List
+-----------
+
+ATTRIBUTES:
+- items (list): List of item strings to display
+- rect (pygame.Rect): List position and size
+- selected_index (int): Currently selected item
+- visible_items (int): Number of items visible at once
+- scroll_offset (int): Current scroll position
+- item_height (int): Height of each item in pixels
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize list widget
+Parameters:
+  - position (tuple): (x, y) position
+  - size (tuple): (width, height)
+  - items (list): List of strings
+  - item_height (int): Height per item, defaults to 40
+Returns: None
+Behavior:
+  - Stores parameters as attributes
+  - Creates pygame.Rect from position and size
+  - Calculates visible_items from size and item_height
+  - Sets selected_index to 0, scroll_offset to 0
+
+Method: render
+Purpose: Draw list to surface
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Draws list background rectangle
+  - Calculates which items are visible based on scroll_offset
+  - For each visible item:
+    * Draws background (highlighted if selected)
+    * Renders item text
+  - Draws scrollbar if needed
+
+Method: handle_event
+Purpose: Process input event
+Parameters:
+  - event (pygame.Event): Input event
+Returns: bool - True if handled
+Behavior:
+  - Handles mouse wheel for scrolling
+  - Handles mouse clicks for selection
+  - Returns True if event affected list
+
+Method: select_next
+Purpose: Move selection down
+Parameters: None
+Returns: None
+Side Effects: Updates selected_index and scroll_offset
+Behavior:
+  - Increments selected_index
+  - Wraps to 0 if past end
+  - Adjusts scroll_offset to keep selection visible
+
+Method: select_previous
+Purpose: Move selection up
+Parameters: None
+Returns: None
+Side Effects: Updates selected_index and scroll_offset
+Behavior:
+  - Decrements selected_index
+  - Wraps to end if before start
+  - Adjusts scroll_offset to keep selection visible
+
+Method: get_selected_item
+Purpose: Get currently selected item
+Parameters: None
+Returns: str or None - Selected item text
+Behavior: Returns items[selected_index] if valid
+
+Method: set_items
+Purpose: Update list items
+Parameters:
+  - items (list): New list of items
+Returns: None
+Side Effects: Resets selection and scroll
+Behavior:
+  - Updates self.items
+  - Resets selected_index and scroll_offset to 0

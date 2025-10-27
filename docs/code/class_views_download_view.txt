@@ -1,0 +1,79 @@
+FILE: views/download_view.py
+=============================
+
+CLASS: DownloadView
+-------------------
+Inherits: BaseView
+
+ATTRIBUTES:
+- downloads (dict): Dictionary of active downloads
+- progress_bars (dict): Dictionary mapping download_id to ProgressBar widgets
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize download view
+Parameters:
+  - hw_config (dict): Hardware configuration
+  - screen (pygame.Surface): Display surface
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Initializes empty downloads and progress_bars dicts
+
+Method: render
+Purpose: Render download progress screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Fills surface with background color
+  - Draws "Downloads" title
+  - For each active download:
+    * Draws game name
+    * Renders progress bar widget
+    * Draws status text and percentage
+  - If no downloads: draws "No active downloads" message
+
+Method: update
+Purpose: Update download view
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior:
+  - Updates all progress bar widgets
+  - Animates progress bars
+
+Method: add_download
+Purpose: Add download to view
+Parameters:
+  - download_id (str): Download identifier
+  - game_name (str): Name of game being downloaded
+Returns: None
+Side Effects: Creates new progress bar widget
+Behavior:
+  - Creates ProgressBar widget for download
+  - Adds to progress_bars dict
+  - Adds download info to downloads dict
+
+Method: update_progress
+Purpose: Update progress for a download
+Parameters:
+  - download_id (str): Download identifier
+  - progress_data (dict): Progress information
+Returns: None
+Side Effects: Updates progress bar value
+Behavior:
+  - Gets progress bar for download_id
+  - Updates value based on progress_data['percent']
+  - Updates status text
+
+Method: remove_download
+Purpose: Remove completed/cancelled download from view
+Parameters:
+  - download_id (str): Download identifier
+Returns: None
+Side Effects: Removes from downloads and progress_bars
+Behavior:
+  - Deletes download from downloads dict
+  - Deletes progress bar from progress_bars dict

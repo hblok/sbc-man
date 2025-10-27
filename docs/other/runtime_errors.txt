@@ -1,0 +1,260 @@
+RUNTIME ERROR HANDLING
+======================
+
+Scenario 1: Game Launch Failure
+├─ Condition: Game executable not found or won't start
+├─ Detection:
+│  ├─ ProcessLauncher checks if entry_point exists
+│  ├─ subprocess.Popen raises FileNotFoundError
+│  └─ Game process exits immediately with non-zero code
+├─ Behavior:
+│  ├─ Catch exception in launch thread
+│  ├─ Log error with game details
+│  ├─ Show error dialog to user:
+│  │  "Failed to launch game: [game_name]"
+│  │  "Error: [error_message]"
+│  ├─ Return to game_list_state
+│  └─ Mark game as "needs repair" (optional)
+├─ Impact:
+│  └─ Game unplayable until fixed
+└─ Recovery: User can reinstall or check game files
+
+Scenario 2: Game Crashes During Play
+├─ Condition: Game process terminates unexpectedly
+├─ Detection:
+│  └─ launch_thread detects process.wait() returns non-zero
+├─ Behavior:
+│  ├─ Thread completes normally (game exited)
+│  ├─ PlayingState detects thread finished
+│  ├─ Log: "Game exited with code: [return_code]"
+│  ├─ Execute post_launch_commands anyway
+│  ├─ Return to game_list_state
+│  └─ Optional: Show "Game closed unexpectedly" notification
+├─ Impact:
+│  └─ User returned to launcher, can relaunch
+└─ Recovery: Automatic, user can try again
+
+Scenario 3: Network Unavailable During Download
+├─ Condition: Network connection lost mid-download
+├─ Detection:
+│  └─ requests.get() raises ConnectionError or timeout
+├─ Behavior:
+│  ├─ Catch exception in download thread
+│  ├─ Retry logic (3 attempts with backoff):
+│  │  ├─ Wait 5 seconds
+│  │  ├─ Retry download from last position (if supported)
+│  │  └─ If all retries fail: notify error
+│  ├─ Update status to "failed"
+│  ├─ Call download_manager.notify_error()
+│  └─ Clean up partial files
+├─ Impact:
+│  └─ Download fails, game not installed
+└─ Recovery: User can retry download manually
+
+Scenario 4: Insufficient Disk Space
+├─ Condition: Disk full during download or installation
+├─ Detection:
+│  ├─ OSError with errno.ENOSPC during file write
+│  └─ Or pre-check fails in download validation
+├─ Behavior:
+│  ├─ If during pre-check:
+│  │  ├─ Show error before starting
+│  │  └─ Don't initiate download
+│  ├─ If during download:
+│  │  ├─ Catch exception
+│  │  ├─ Delete partial files
+│  │  ├─ Show error: "Insufficient disk space"
+│  │  └─ Suggest freeing space or changing location
+│  └─ Log required vs available space
+├─ Impact:
+│  └─ Download fails, no partial installation
+└─ Recovery: User must free space and retry
+
+Scenario 5: Corrupted Game Files
+├─ Condition: Game installed but files corrupted
+├─ Detection:
+│  ├─ Archive extraction fails
+│  ├─ Checksum mismatch (if implemented)
+│  └─ Game fails to launch consistently
+├─ Behavior:
+│  ├─ If detected during extraction:
+│  │  ├─ Abort installation
+│  │  ├─ Delete corrupted files
+│  │  └─ Notify error
+│  ├─ If detected at launch:
+│  │  └─ Show launch error (Scenario 1)
+│  └─ Offer "Repair" option in game menu
+├─ Impact:
+│  └─ Game unplayable until repaired
+└─ Recovery: Delete and reinstall
+
+Scenario 6: Input Device Disconnected
+├─ Condition: Controller unplugged during use
+├─ Detection:
+│  └─ pygame joystick events stop arriving
+├─ Behavior:
+│  ├─ Continue with keyboard controls
+│  ├─ Monitor for JOYDEVICEADDED event
+│  ├─ When device reconnected:
+│  │  ├─ Reinitialize joystick
+│  │  └─ Resume normal operation
+│  └─ No user notification (seamless)
+├─ Impact:
+│  └─ Temporary loss of controller input
+└─ Recovery: Automatic when reconnected
+
+Scenario 7: Theme Files Missing or Corrupted
+├─ Condition: Selected theme unreadable at runtime
+├─ Detection:
+│  └─ Exception when loading theme colors/fonts
+├─ Behavior:
+│  ├─ Log error: "Theme loading failed: [theme_name]"
+│  ├─ Fall back to hardcoded default theme:
+│  │  └─ Basic black/white/gray color scheme
+│  ├─ Continue rendering with fallback
+│  └─ User can change theme in settings
+├─ Impact:
+│  └─ Visual appearance changes but functionality intact
+└─ Recovery: Select different working theme
+
+Scenario 8: Save Data Corruption
+├─ Condition: data/games.json or config.json corrupted
+├─ Detection:
+│  └─ json.JSONDecodeError during load
+├─ Behavior:
+│  ├─ For games.json:
+│  │  ├─ Backup to games.json.backup
+│  │  ├─ Create empty games list
+│  │  ├─ Attempt to rescan games directory
+│  │  └─ Rebuild library from installed games
+│  ├─ For config.json:
+│  │  ├─ Backup to config.json.backup
+│  │  ├─ Create new with default values
+│  │  └─ User settings reset to defaults
+│  └─ Show notification about recovery
+├─ Impact:
+│  └─ User data partially or fully lost
+└─ Recovery: Restore from backup or reconfigure
+
+Scenario 9: Permission Denied Errors
+├─ Condition: Cannot write to data/config directories
+├─ Detection:
+│  └─ PermissionError during save operations
+├─ Behavior:
+│  ├─ Catch exception
+│  ├─ Log error with path and operation
+│  ├─ Show error to user:
+│  │  "Cannot save settings: permission denied"
+│  ├─ Continue in-memory without persisting
+│  └─ Retry on next save attempt
+├─ Impact:
+│  └─ Changes not persisted, lost on restart
+└─ Recovery: Fix permissions or change data directory
+
+Scenario 10: Pygame Initialization Failure
+├─ Condition: pygame.init() or display creation fails
+├─ Detection:
+│  └─ Exception during Application._initialize_pygame()
+├─ Behavior:
+│  ├─ Catch exception
+│  ├─ Log critical error
+│  ├─ Try fallback display modes:
+│  │  ├─ Try windowed instead of fullscreen
+│  │  ├─ Try lower resolution
+│  │  └─ Try basic 640x480 window
+│  ├─ If all fail:
+│  │  ├─ Print error to console
+│  │  └─ Exit with code 1
+│  └─ No GUI fallback available
+├─ Impact:
+│  └─ Application cannot start
+└─ Recovery: User must fix system/drivers
+
+Scenario 11: State Transition Errors
+├─ Condition: Exception during state on_enter() or on_exit()
+├─ Detection:
+│  └─ Exception in StateManager.change_state()
+├─ Behavior:
+│  ├─ Catch exception
+│  ├─ Log error with state names and traceback
+│  ├─ Attempt recovery:
+│  │  ├─ If in on_exit(): force exit anyway
+│  │  ├─ If in on_enter(): roll back to previous state
+│  │  └─ If rollback fails: go to menu_state
+│  └─ Show error notification
+├─ Impact:
+│  └─ State transition may fail, but app continues
+└─ Recovery: Return to safe state (menu)
+
+Scenario 12: Memory Exhaustion
+├─ Condition: System runs out of memory
+├─ Detection:
+│  └─ MemoryError exception
+├─ Behavior:
+│  ├─ Catch MemoryError
+│  ├─ Log critical error
+│  ├─ Attempt emergency cleanup:
+│  │  ├─ Clear cached surfaces
+│  │  ├─ Unload unused assets
+│  │  └─ Force garbage collection
+│  ├─ Reduce memory footprint:
+│  │  ├─ Disable icon caching
+│  │  └─ Use smaller surface sizes
+│  └─ Continue with reduced functionality
+├─ Impact:
+│  └─ Performance degraded, features limited
+└─ Recovery: Restart application or system
+
+Global Exception Handler:
+def main():
+    try:
+        app = Application()
+        app.run()
+    except KeyboardInterrupt:
+        log_info("Application interrupted by user")
+        sys.exit(0)
+    except Exception as e:
+        log_critical(f"Unhandled exception: {e}")
+        log_critical(traceback.format_exc())
+        
+        # Show error dialog if pygame initialized
+        if pygame.get_init():
+            show_error_dialog(
+                "Critical Error",
+                f"The application encountered an error:\n{str(e)}\n\n"
+                f"Check logs for details."
+            )
+        else:
+            print(f"CRITICAL ERROR: {e}")
+            traceback.print_exc()
+        
+        sys.exit(1)
+
+Per-State Error Handling Wrapper:
+class StateManager:
+    def _safe_call(self, method, *args, **kwargs):
+        """
+        Safely call a state method with error handling.
+        """
+        try:
+            return method(*args, **kwargs)
+        except Exception as e:
+            log_error(f"Error in {method.__name__}: {e}")
+            log_error(traceback.format_exc())
+            
+            # Attempt recovery
+            if method.__name__ in ['on_enter', 'on_exit']:
+                # State transition error
+                self._emergency_state_recovery()
+            
+            # Don't propagate, keep app running
+            return None
+    
+    def update(self, dt):
+        self._safe_call(self.current_state.update, dt)
+    
+    def handle_events(self, events):
+        self._safe_call(self.current_state.handle_events, events)
+    
+    def render(self, surface):
+        self._safe_call(self.current_state.render, surface)

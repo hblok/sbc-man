@@ -1,0 +1,60 @@
+FILE: states/game_list_state.py
+================================
+
+CLASS: GameListState
+--------------------
+Inherits: BaseState
+
+ATTRIBUTES:
+- view (GameListView): Game list view instance
+- games (list): List of games to display
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize game list state
+Parameters:
+  - state_manager (StateManager): State manager
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Gets games from game_library
+  - Creates GameListView with games
+
+Method: on_enter
+Purpose: Called when state becomes active
+Parameters:
+  - previous_state (BaseState or None): Previous state
+Returns: None
+Behavior:
+  - Refreshes games list from game_library
+  - Updates view with fresh games
+
+Method: update
+Purpose: Update game list logic
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior: Calls view.update(dt)
+
+Method: handle_events
+Purpose: Handle game list input
+Parameters:
+  - events (list): Pygame events
+Returns: None
+Behavior:
+  - On 'up': calls view.scroll_up()
+  - On 'down': calls view.scroll_down()
+  - On 'confirm': 
+    * Gets selected game
+    * If installed: changes to playing_state
+    * If not installed: shows install prompt
+  - On 'cancel': returns to menu_state
+  - On 'menu': shows game options (delete, update, etc.)
+
+Method: render
+Purpose: Render game list to screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior: Calls view.render(surface)

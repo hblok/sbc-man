@@ -1,0 +1,72 @@
+FILE: states/settings_state.py
+===============================
+
+CLASS: SettingsState
+--------------------
+Inherits: BaseState
+
+ATTRIBUTES:
+- view (SettingsView): Settings view instance
+- modified (bool): Whether settings have been changed
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize settings state
+Parameters:
+  - state_manager (StateManager): State manager
+Returns: None
+Behavior:
+  - Calls super().__init__()
+  - Creates SettingsView with config and input_handler
+  - Sets modified to False
+
+Method: on_enter
+Purpose: Called when state becomes active
+Parameters:
+  - previous_state (BaseState or None): Previous state
+Returns: None
+Behavior:
+  - Reloads current settings into view
+  - Resets modified flag
+
+Method: on_exit
+Purpose: Called when leaving settings
+Parameters: None
+Returns: None
+Behavior:
+  - If modified: saves config to disk
+  - Resets modified flag
+
+Method: update
+Purpose: Update settings logic
+Parameters:
+  - dt (float): Delta time
+Returns: None
+Behavior: Calls view.update(dt)
+
+Method: handle_events
+Purpose: Handle settings input
+Parameters:
+  - events (list): Pygame events
+Returns: None
+Behavior:
+  - If view.input_capture_mode:
+    * Passes events to view.capture_input()
+    * Sets modified to True when captured
+  - If view.editing:
+    * Handles value editing (arrow keys to change values)
+    * On 'confirm': saves value, sets modified to True
+    * On 'cancel': cancels editing
+  - Otherwise:
+    * On 'up': calls view.navigate_up()
+    * On 'down': calls view.navigate_down()
+    * On 'confirm': calls view.start_editing()
+    * On 'cancel': returns to menu_state
+
+Method: render
+Purpose: Render settings screen
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior: Calls view.render(surface)

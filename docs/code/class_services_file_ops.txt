@@ -1,0 +1,75 @@
+FILE: services/file_ops.py
+===========================
+
+CLASS: FileOps
+--------------
+
+Make sure to use pathlib here.
+
+Method: ensure_dir
+Purpose: Create directory if it doesn't exist
+Parameters:
+  - path (Path or str): Directory path
+Returns: Path - Path object for created/existing directory
+Behavior:
+  - Converts to Path object
+  - Calls path.mkdir(parents=True, exist_ok=True)
+  - Returns Path object
+
+Method: get_free_space
+Purpose: Get free disk space at path
+Parameters:
+  - path (Path or str): Path to check
+Returns: int - Free bytes available
+Behavior:
+  - Converts to Path
+  - Calls shutil.disk_usage(path)
+  - Returns usage.free
+
+Method: extract_archive
+Purpose: Extract archive to destination
+Parameters:
+  - archive_path (Path or str): Path to archive file
+  - destination (Path or str): Extract destination
+Returns: Path - Destination path
+Behavior:
+  - Converts paths to Path objects
+  - Calls ensure_dir on destination
+  - Detects archive type from suffix:
+    * .zip: uses zipfile.ZipFile
+    * .tar.gz, .tgz, .tar.*: uses tarfile.open
+  - Extracts all contents
+  - Raises ValueError for unsupported formats
+  - Returns destination path
+
+Method: copy_tree
+Purpose: Copy directory tree recursively
+Parameters:
+  - src (Path or str): Source directory
+  - dst (Path or str): Destination directory
+Returns: None
+Behavior:
+  - Converts to Path objects
+  - Calls shutil.copytree(src, dst, dirs_exist_ok=True)
+
+Method: remove_tree
+Purpose: Remove directory tree
+Parameters:
+  - path (Path or str): Directory to remove
+Returns: None
+Behavior:
+  - Converts to Path
+  - Checks if exists
+  - Calls shutil.rmtree(path)
+
+Method: set_executable
+Purpose: Set executable permission on file (Unix)
+Parameters:
+  - file_path (Path or str): File to make executable
+Returns: None
+Behavior:
+  - Converts to Path
+  - Checks if file exists
+  - Gets current mode with file_path.stat().st_mode
+  - Adds execute bit with stat.S_IEXEC
+  - Calls file_path.chmod() with new mode

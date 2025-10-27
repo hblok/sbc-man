@@ -1,0 +1,118 @@
+GAME INSTALLATION WORKFLOW
+==========================
+
+Trigger: User downloads and installs a game
+
+1. Pre-Installation Validation
+   ┌─────────────────────────────────────────────────┐
+   │ Check Prerequisites                             │
+   ├─────────────────────────────────────────────────┤
+   │ - Check network connectivity                    │
+   │ - Verify download URL is valid                  │
+   │ - Check available disk space                    │
+   │   └─> Required: game_size * 1.5 (for extraction)│
+   │ - Verify install path is writable              │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [All checks pass]
+   
+2. Download Phase
+   ┌─────────────────────────────────────────────────┐
+   │ NetworkService.download_file()                  │
+   ├─────────────────────────────────────────────────┤
+   │ Source: game_info['download_url']               │
+   │ Destination: {cache_dir}/downloads/{game_id}.zip│
+   │ Progress: Callback every chunk (8KB)            │
+   │   └─> Updates UI via observer pattern           │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [Download complete]
+   
+3. Verification Phase
+   ┌─────────────────────────────────────────────────┐
+   │ Verify Downloaded Archive                       │
+   ├─────────────────────────────────────────────────┤
+   │ - Check file exists                             │
+   │ - Verify file size matches expected             │
+   │ - Check archive is valid (can open)             │
+   │ - Optional: Verify checksum if provided         │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [Verification passed]
+   
+4. Extraction Phase
+   ┌─────────────────────────────────────────────────┐
+   │ FileOps.extract_archive()                       │
+   ├─────────────────────────────────────────────────┤
+   │ Source: {cache_dir}/downloads/{game_id}.zip     │
+   │ Destination: {games_dir}/{game_id}/             │
+   │ Process:                                        │
+   │   - Create destination directory                │
+   │   - Detect archive type (.zip, .tar.gz, etc.)   │
+   │   - Extract all contents                        │
+   │   - Preserve file permissions                   │
+   │   - Delete archive after successful extraction  │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [Extraction complete]
+   
+5. Post-Installation Setup
+   ┌─────────────────────────────────────────────────┐
+   │ Finalize Installation                           │
+   ├─────────────────────────────────────────────────┤
+   │ - Locate entry point (main.py or specified)     │
+   │ - Set executable permissions (Unix systems):    │
+   │   └─> chmod +x main.py                          │
+   │ - Create game metadata file if needed           │
+   │ - Cache game icon/screenshots                   │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [Setup complete]
+   
+6. Library Registration
+   ┌─────────────────────────────────────────────────┐
+   │ GameLibrary.add_game()                          │
+   ├─────────────────────────────────────────────────┤
+   │ Create Game instance:                           │
+   │   - id: Unique identifier                       │
+   │   - name: Display name                          │
+   │   - version: Version number                     │
+   │   - install_path: Full path to game directory   │
+   │   - entry_point: Main file name                 │
+   │   - installed: True                             │
+   │   - Other metadata from download                │
+   │                                                 │
+   │ Add to library:                                 │
+   │   - self.games[game.id] = game                  │
+   │   - self.save() → Write to data/games.json      │
+   └─────────────────────────────────────────────────┘
+                    │
+                    ▼ [Registration complete]
+   
+7. User Notification
+   ┌─────────────────────────────────────────────────┐
+   │ Display Success Message                         │
+   ├─────────────────────────────────────────────────┤
+   │ - Show "Installation Complete" notification     │
+   │ - Update UI to show game in library             │
+   │ - Game now appears in game list                 │
+   │ - User can launch immediately                   │
+   └─────────────────────────────────────────────────┘
+
+Error Handling at Each Stage:
+├─ Pre-Installation: Show error, cancel installation
+├─ Download: Retry logic (3 attempts), then fail
+├─ Verification: Delete corrupt file, offer re-download
+├─ Extraction: Clean up partial files, show error
+├─ Post-Installation: Mark as needs repair, allow retry
+└─ Library Registration: Log error, game won't appear in library
+
+Expected Directory Structure After Installation:
+{games_dir}/{game_id}/
+├── main.py           # Entry point
+├── assets/           # Game assets
+│   ├── images/
+│   ├── sounds/
+│   └── fonts/
+├── game_config.json  # Game-specific config (optional)
+└── README.md         # Documentation (optional)

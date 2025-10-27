@@ -1,0 +1,87 @@
+FILE: hardware/config_loader.py
+===============================
+
+CLASS: ConfigLoader
+-------------------
+
+ATTRIBUTES:
+- device_type (str): Detected device type identifier
+- os_type (str): Detected OS type identifier
+- probed_hardware (dict): Hardware probe results
+- config_dir (Path): Path to config directory
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize config loader with detection results
+Parameters:
+  - device_type (str): Device type from detector
+  - os_type (str): OS type from detector
+  - probed_hardware (dict): Hardware probe results
+Returns: None
+Behavior:
+  - Stores all parameters as instance attributes
+  - Sets config_dir to config/ directory relative to this file
+
+Method: load_config
+Purpose: Load and merge all configuration layers
+Parameters: None
+Returns: dict - Complete merged configuration
+Behavior:
+  - Starts with empty dict
+  - Layer 1: Loads devices/default.json and merges
+  - Layer 2: If device_type not 'default', loads devices/{device_type}.json and merges
+  - Layer 3: Loads os_types/{os_type}.json and merges
+  - Layer 4: Calls _apply_probed_hardware() to override with detected values
+  - Layer 5: Calls _load_user_overrides() and merges user customizations
+  - Returns final merged configuration
+
+Method: _load_json
+Purpose: Load JSON file safely
+Parameters:
+  - relative_path (str): Path relative to config_dir
+Returns: dict or None - Loaded JSON data or None if file doesn't exist
+Behavior:
+  - Constructs full path from config_dir and relative_path
+  - Checks if file exists
+  - Opens and parses JSON
+  - Returns None if file not found or JSON invalid
+
+Method: _merge
+Purpose: Deep merge two configuration dictionaries
+Parameters:
+  - base (dict): Base configuration
+  - override (dict): Overriding configuration
+Returns: dict - Merged configuration
+Behavior:
+  - Returns base if override is None
+  - Copies base dictionary
+  - For each key in override:
+    * If value is dict and exists in base as dict: recursively merge
+    * Otherwise: override value replaces base value
+  - Returns merged result
+
+Method: _apply_probed_hardware
+Purpose: Apply auto-detected hardware values to config
+Parameters:
+  - config (dict): Configuration to modify
+Returns: dict - Modified configuration
+Behavior:
+  - Creates 'display' section if missing
+  - If config resolution is 'auto' or missing: uses probed current_resolution
+  - Adds 'hardware_probed' key with full probe results
+  - Creates 'performance' section if missing
+  - If target_fps not set:
+    * Sets 30 FPS for ARM devices with <=4 cores
+    * Sets 60 FPS for desktop/x86
+  - Returns modified config
+
+Method: _load_user_overrides
+Purpose: Load user customizations from data directory
+Parameters: None
+Returns: dict or None - User overrides or None
+Behavior:
+  - Constructs path to user_config.json in data directory
+  - Attempts to load and parse JSON
+  - Returns None if file doesn't exist or is invalid
+  - Returns user override dictionary if successful

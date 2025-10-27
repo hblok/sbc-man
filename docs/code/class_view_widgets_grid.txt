@@ -1,0 +1,78 @@
+FILE: views/widgets/grid.py
+============================
+
+CLASS: Grid
+-----------
+
+ATTRIBUTES:
+- rect (pygame.Rect): Grid container position and size
+- items (list): List of widget items to display in grid
+- columns (int): Number of columns in grid
+- rows (int): Number of rows visible
+- cell_size (tuple): (width, height) of each cell
+- spacing (int): Pixels between cells
+- scroll_offset (int): Current scroll position
+
+METHODS:
+
+Method: __init__
+Purpose: Initialize grid widget
+Parameters:
+  - position (tuple): (x, y) position
+  - size (tuple): (width, height)
+  - columns (int): Number of columns
+  - cell_size (tuple): Size of each cell
+  - spacing (int): Space between cells, defaults to 10
+Returns: None
+Behavior:
+  - Creates rect from position and size
+  - Stores columns, cell_size, spacing
+  - Calculates rows from size and cell_size
+  - Initializes empty items list
+  - Sets scroll_offset to 0
+
+Method: render
+Purpose: Draw grid to surface
+Parameters:
+  - surface (pygame.Surface): Target surface
+Returns: None
+Behavior:
+  - Calculates visible items based on scroll_offset
+  - For each visible item:
+    * Calculates grid position (row, col)
+    * Calculates pixel position from grid position
+    * Calls item.render() at calculated position
+  - Draws grid borders/separators if configured
+
+Method: add_item
+Purpose: Add item to grid
+Parameters:
+  - item (Widget): Widget to add
+Returns: None
+Side Effects: Adds to items list
+Behavior: Appends item to self.items
+
+Method: remove_item
+Purpose: Remove item from grid
+Parameters:
+  - item (Widget): Widget to remove
+Returns: None
+Side Effects: Removes from items list
+Behavior: Removes item from self.items if present
+
+Method: clear_items
+Purpose: Remove all items
+Parameters: None
+Returns: None
+Side Effects: Clears items list
+Behavior: Sets self.items to empty list
+
+Method: scroll
+Purpose: Scroll grid vertically
+Parameters:
+  - delta (int): Number of rows to scroll (positive or negative)
+Returns: None
+Side Effects: Updates scroll_offset
+Behavior:
+  - Adds delta to scroll_offset
+  - Clamps to valid range (0 to max scroll)

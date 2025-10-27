@@ -1,0 +1,36 @@
+STATE TRANSITION FLOW
+=====================
+
+Example: Menu -> Game List
+
+1. User Input (in menu_state)
+   ├─> User presses "confirm" on "Browse Games"
+   └─> menu_state.handle_events()
+       └─> Detects "Browse Games" selected
+
+2. Initiate Transition
+   └─> state_manager.change_state('game_list')
+
+3. Exit Current State
+   ├─> current_state.on_exit()  # menu_state
+   │   └─> Save any menu state if needed
+   │
+   └─> Store reference to previous_state
+
+4. Retrieve New State
+   └─> new_state = states['game_list']
+
+5. Update Current State
+   └─> current_state = new_state
+
+6. Enter New State
+   └─> current_state.on_enter(previous_state)
+       ├─> Refresh games list from game_library
+       ├─> Update view with games
+       └─> Reset selection to first game
+
+7. Clear State Stack
+   └─> state_stack.clear()
+
+8. Continue Game Loop
+   └─> Next frame renders new state
