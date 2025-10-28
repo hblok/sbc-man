@@ -12,7 +12,8 @@ PRIMARY OBJECTIVES
 
 KEY CONTEXT FROM THE REPOSITORY
 - The repo contains documentation files under /docs that define the entire system.
-- Attached structural summary (from tree.txt):
+- Attached structural summary:
+
   docs
   ├── code
   │   ├── class_hardware_config_loader.txt
@@ -96,25 +97,24 @@ KEY CONTEXT FROM THE REPOSITORY
 ABSOLUTE REQUIREMENTS AND CONSTRAINTS
 - Language: Python 3.11
 - UI/Input: pygame-ce (use pygame APIs; support handheld controller input)
-- Main entry point must be zero-logic: main.py should only import Application and run it.
+- Main entry point must be zero-logic: main.py should only import compat_sdl and  application, and then run the application start().
 - Use pathlib for all filesystem paths (no os.path).
 - Avoid hard-coded hardware properties when they can be probed (e.g., display resolution). Implement probing in hardware/prober per docs.
-- Config is data-driven: merge device + OS + user overrides; support per-game input overrides. No per-device Python subclasses unless explicitly required by specs; prefer JSON/YAML as per docs.
+- Config is data-driven: merge device + OS + user overrides; support per-game input overrides. No per-device Python subclasses unless explicitly required by specs; prefer JSON as per docs.
 - Target OS: Linux-based handhelds and some Android-based Linux; avoid Windows-specific behavior.
 - Follow PEP 8, type hints, docstrings (Google-style), logging instead of print, small cohesive modules.
 - Testing: python unittest as the framework; include fixtures and mocks; ensure headless testability (SDL_VIDEODRIVER=dummy and joystick/input mocking).
-- Provide a Makefile or simple scripts/pyproject tasks to run lint, type-check, tests, coverage.
+- Provide simple scripts/pyproject tasks to run lint, type-check, tests, coverage.
 - Provide README.md with how to run, test, and package.
 
 EXPECTED CODE ORGANIZATION
 Generate a working codebase with this layout (you may refine if docs indicate otherwise, but keep intent):
 
-game_launcher/
+sbc-man/
 ├── main.py                         # Entry point: only boots Application
-├── pyproject.toml                  # Build system + dependencies (runtime + dev)
 ├── README.md
 ├── LICENSE                         # Placeholder if not specified
-├── game_launcher/                  # Python package root
+├── src/                            # Python package root
 │   ├── __init__.py
 │   ├── core/
 │   │   ├── __init__.py
@@ -125,6 +125,7 @@ game_launcher/
 │   │   ├── __init__.py
 │   │   ├── detector.py             # Detect device/OS from docs
 │   │   ├── prober.py               # Probe display/input/storage/CPU
+│   │   ├── compat_sdl.py           # SDL specific probe and config. Use in main.py
 │   │   └── config_loader.py        # Merge default + device + OS + user
 │   ├── models/
 │   │   ├── __init__.py
@@ -187,35 +188,35 @@ game_launcher/
 
 DOCS-TO-CODE MAPPING
 Implement the classes and behaviors as defined in these files (use them as the source of truth):
-- docs/code/class_hardware_config_loader.txt -> game_launcher/hardware/config_loader.py
-- docs/code/class_hardware_detector.txt -> game_launcher/hardware/detector.py
-- docs/code/class_hardware_prober.txt -> game_launcher/hardware/prober.py
-- docs/code/class_models_config_manager.txt -> game_launcher/models/config_manager.py
-- docs/code/class_models_download_manager.txt -> game_launcher/models/download_manager.py
-- docs/code/class_models_game_library.txt -> game_launcher/models/game_library.py
-- docs/code/class_models_game.txt -> game_launcher/models/game.py
-- docs/code/class_services_file_ops.txt -> game_launcher/services/file_ops.py
-- docs/code/class_services_input_handler.txt -> game_launcher/services/input_handler.py
-- docs/code/class_services_network.txt -> game_launcher/services/network.py
-- docs/code/class_services_process_launcher.txt -> game_launcher/services/process_launcher.py
-- docs/code/class_state_manager.txt -> game_launcher/core/state_manager.py
-- docs/code/class_states_base_state.txt -> game_launcher/states/base_state.py
-- docs/code/class_states_download_state.txt -> game_launcher/states/download_state.py
-- docs/code/class_states_game_list_state.txt -> game_launcher/states/game_list_state.py
-- docs/code/class_states_menu_state.txt -> game_launcher/states/menu_state.py
-- docs/code/class_states_playing_state.txt -> game_launcher/states/playing_state.py
-- docs/code/class_states_settings_state.txt -> game_launcher/states/settings_state.py
-- docs/code/class_views_base_view.txt -> game_launcher/views/base_view.py
-- docs/code/class_views_download_view.txt -> game_launcher/views/download_view.py
-- docs/code/class_views_game_list_view.txt -> game_launcher/views/game_list_view.py
-- docs/code/class_views_menu_view.txt -> game_launcher/views/menu_view.py
-- docs/code/class_views_settings_view.txt -> game_launcher/views/settings_view.py
-- docs/code/class_view_widgets_button.txt -> game_launcher/views/widgets/button.py
-- docs/code/class_view_widgets_game_card.txt -> game_launcher/views/widgets/game_card.py
-- docs/code/class_view_widgets_grid.txt -> game_launcher/views/widgets/grid.py
-- docs/code/class_view_widgets_list.txt -> game_launcher/views/widgets/list.py
-- docs/code/class_view_widgets_progress_bar.txt -> game_launcher/views/widgets/progress_bar.py
-- docs/code/class_view_widgets_scrollbar.txt -> game_launcher/views/widgets/scrollbar.py
+- docs/code/class_hardware_config_loader.txt -> src/hardware/config_loader.py
+- docs/code/class_hardware_detector.txt -> src/hardware/detector.py
+- docs/code/class_hardware_prober.txt -> src/hardware/prober.py
+- docs/code/class_models_config_manager.txt -> src/models/config_manager.py
+- docs/code/class_models_download_manager.txt -> src/models/download_manager.py
+- docs/code/class_models_game_library.txt -> src/models/game_library.py
+- docs/code/class_models_game.txt -> src/models/game.py
+- docs/code/class_services_file_ops.txt -> src/services/file_ops.py
+- docs/code/class_services_input_handler.txt -> src/services/input_handler.py
+- docs/code/class_services_network.txt -> src/services/network.py
+- docs/code/class_services_process_launcher.txt -> src/services/process_launcher.py
+- docs/code/class_state_manager.txt -> src/core/state_manager.py
+- docs/code/class_states_base_state.txt -> src/states/base_state.py
+- docs/code/class_states_download_state.txt -> src/states/download_state.py
+- docs/code/class_states_game_list_state.txt -> src/states/game_list_state.py
+- docs/code/class_states_menu_state.txt -> src/states/menu_state.py
+- docs/code/class_states_playing_state.txt -> src/states/playing_state.py
+- docs/code/class_states_settings_state.txt -> src/states/settings_state.py
+- docs/code/class_views_base_view.txt -> src/views/base_view.py
+- docs/code/class_views_download_view.txt -> src/views/download_view.py
+- docs/code/class_views_game_list_view.txt -> src/views/game_list_view.py
+- docs/code/class_views_menu_view.txt -> src/views/menu_view.py
+- docs/code/class_views_settings_view.txt -> src/views/settings_view.py
+- docs/code/class_view_widgets_button.txt -> src/views/widgets/button.py
+- docs/code/class_view_widgets_game_card.txt -> src/views/widgets/game_card.py
+- docs/code/class_view_widgets_grid.txt -> src/views/widgets/grid.py
+- docs/code/class_view_widgets_list.txt -> src/views/widgets/list.py
+- docs/code/class_view_widgets_progress_bar.txt -> src/views/widgets/progress_bar.py
+- docs/code/class_view_widgets_scrollbar.txt -> src/views/widgets/scrollbar.py
 - docs/code/package_core.txt -> Implement main.py, core/application.py, core/game_loop.py shapes
 Use these "other" docs to define flows and tests:
 - Sequence/flows: docs/other/sequence_startup.txt, sequence_game_loop.txt, sequence_state_transition.txt, sequence_download.txt, sequence_launch.txt
@@ -230,17 +231,22 @@ Use these "other" docs to define flows and tests:
 - Edge cases: docs/other/edge_cases.txt, game_install.txt, game_save.txt, device_support.txt
 
 CODING STANDARDS AND PRACTICES
+
 - PEP 8 compliant. Use isort and black formatting defaults.
 - Type hints everywhere (including return types). mypy-friendly stubs where applicable.
 - Docstrings in Google style; include Args/Returns/Raises sections.
 - Use logging (not print). Provide module-level logger = logging.getLogger(__name__).
 - Use pathlib.Path for all paths.
 - No hard-coded screen resolutions; use hardware/prober to detect and config_loader to prioritize "auto".
+- Import hardware details (screen resolution, etc.) from a the hardware related modules.
 - Main entry point pattern:
-  - main.py: from game_launcher.core.application import Application; if __name__ == "__main__": Application().run()
+  - main.py: from src.core.application import Application; if __name__ == "__main__": Application().run()
 - Ensure DownloadManager uses an observer or callback mechanism per docs. Threading for downloads; UI stays responsive.
 - InputHandler must support layered mappings: default -> device -> user -> per-game.
 - Ensure tests run headless: set SDL_VIDEODRIVER=dummy in test setup or fixtures; mock joystick and network.
+- Avoid `staticmethod` decorators when possible
+- Use the `pygame_ce` library (not standard pygame)
+
 
 TESTING REQUIREMENTS
 - Framework: python unittest
@@ -259,22 +265,16 @@ TESTING REQUIREMENTS
   - monkeypatch and mock for environment variables, pygame, requests, subprocess
   - Convenience fixture to build a minimal hw_config and sample games.json/config.json in temp dirs
 
-DEV TOOLING
-- pyproject.toml should define:
-  - Dependencies: pygame-ce (or pygame), requests
-  - Dev deps: unittest, unittest.mock
-- Optional: Makefile with targets: install, lint, typecheck, test, test-cov, format
-- GitHub Actions CI (optional): run lint, typecheck, tests on push
-
 RUNTIME AND CONFIG EXPECTATIONS
-- Seed default config files under game_launcher/config/:
+- Seed default config files under src/config/:
   - devices/default.json, anbernic.json, miyoo.json, retroid.json (if specified in docs)
   - os_types/arkos.json, jelos.json, batocera.json, android.json, standard_linux.json
   - input_mappings/default.json (+ device overrides as per docs)
 - At runtime, the app writes user data to ~/… paths (from config). Do not commit runtime /data content.
 - Respect docs: no per-device Python subclasses; differences captured in data config and probing.
 - Ensure robust error handling and safe fallbacks for unknown devices and missing configs.
-
+- Exit controls: Hardware: buttons 8, 13, and menu button, Keyboard: ESC key
+  
 SECURITY AND PORTABILITY
 - No shell injection: when running pre/post commands, treat as controlled inputs from config; document risks.
 - Network operations must use HTTPS when possible; handle timeouts/retries if prescribed by docs.
@@ -292,35 +292,39 @@ DELIVERABLES
 
 WORKFLOW FOR THIS TASK (PLEASE FOLLOW)
 1) Phase 0 – Repository Intake
-   - Clone the repo URL provided.
-   - Print a short inventory of the documentation you will use (grouped by purpose).
-   - Confirm any assumptions if a file is missing; otherwise proceed.
+   - Clone the attached repo and branch
+   - Print a short inventory of the documentation you will use (grouped by purpose). And this under the docs directory.
+   - Take a note if a file is missing, but proceed.
 
 2) Phase 1 – Approach and Mapping
    - Explain your approach to implement the system from the docs.
    - Provide a docs-to-code mapping table (bulleted is fine).
    - Provide/confirm the final project directory structure you will generate.
+   - Add any notes and summary files under the docs directory. In a new sub-directory if there are many files.
 
 3) Phase 2 – Scaffolding
-   - Generate package scaffolding, empty modules with docstrings that reference the corresponding docs, pyproject.toml, tests directories, and a minimal main.py.
-   - Explain decisions (e.g., why certain modules split).
+   - Generate package scaffolding, empty modules with docstrings that reference the corresponding docs, tests directories, and a minimal main.py.
+   - Explain decisions (e.g., why certain modules split), the the docs directories.
 
 4) Phase 3 – Core Implementations
    - Implement hardware: detector, prober, config_loader.
    - Implement core: application, game_loop, state_manager.
    - Implement models: game, game_library, config_manager.
    - Add unit tests for each as you go; run tests.
+   - Ensure that the unit tests pass.
 
 5) Phase 4 – Services and Views/States
    - Implement services: input_handler, file_ops, process_launcher, network.
    - Implement views and widgets; keep graphics light and testable.
    - Implement states: base_state, menu, game_list, download, settings, playing.
    - Add unit + integration tests for flows (use mocks), keeping SDL headless.
+   - Ensure that the tests pass.   
 
 6) Phase 5 – Download and Install Flows
    - Implement DownloadManager with observer/callbacks; thread-safe progress.
    - Implement extraction and install; permissions via pathlib Path.chmod on Unix.
    - Write integration tests: sequence_download and sequence_launch per docs.
+   - Ensure that the tests pass.      
 
 7) Phase 6 – Polish and Docs
    - Add README content, usage examples, testing notes, contribution notes.
@@ -330,6 +334,10 @@ WORKFLOW FOR THIS TASK (PLEASE FOLLOW)
    - Summarize what was built vs. documentation requirements.
    - Provide commands to run the app, tests, and checks.
    - Provide any caveats or TODOs mapped to doc gaps.
+   -  And this under the docs directory.   
+
+9) Phase 8 - Github Pull Request
+   - Create a new git pull request with all the changes.
 
 SPECIAL NOTES FROM DOCS TO HONOR
 - Input mapping hierarchy and per-game overrides are critical (docs/other/input_mapping_logic.txt).
@@ -362,6 +370,6 @@ OUTPUT FORMAT
 - For test results, show example unittest command lines and summarize expected outcomes.
 
 BEGIN NOW
-1) Clone the repository from the URL I provided.
-2) Print Phase 0 with your inventory of the exact docs you will rely on (group by category).
-3) Wait for my acknowledgment if any critical file is missing; otherwise proceed to Phase 1 explanation and scaffolding plan.
+1) Clone the repository from the attached branch.
+2) Print Phase 0 with your inventory of the exact docs you will rely on (group by category). Add this under the docs directory.
+3) If any critical file is missing, note it clearly in the summary notes, but proceed to Phase 1 explanation and scaffolding plan.

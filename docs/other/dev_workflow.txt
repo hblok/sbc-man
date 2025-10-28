@@ -16,7 +16,8 @@ Setting Up Development Environment:
    $ pip install -r requirements-dev.txt
 
 4. Run tests to verify setup:
-   $ pytest tests/
+   # Unittest test discovery (runs tests in ./tests)
+   $ python3 -m unittest discover -s tests -p "test_*.py"
 
 5. Run application:
    $ python -m src.main
@@ -33,9 +34,10 @@ Daily Development Cycle:
    $ git checkout -b feature/my-feature
 
 4. Make changes with TDD:
-   - Write test first
-   - Implement feature
-   - Run tests: pytest tests/
+   - Write a failing unittest
+   - Implement the feature
+   - Run tests:
+     $ python3 -m unittest discover -s tests
    - Refactor if needed
 
 5. Run linter:
@@ -47,8 +49,11 @@ Daily Development Cycle:
 7. Type check (optional):
    $ mypy src/
 
-8. Run full test suite:
-   $ pytest tests/ --cov=src
+8. Run full test suite with coverage:
+   $ coverage run -m unittest discover -s tests
+   $ coverage report -m
+   # Optional HTML report:
+   $ coverage html  # see htmlcov/index.html
 
 9. Commit changes:
    $ git add .
@@ -75,15 +80,16 @@ Code Review Checklist:
 Testing Strategy:
 ----------------
 Before commit:
-$ pytest tests/unit/test_myfeature.py  # Unit test
+$ python3 -m unittest tests.unit.test_myfeature  # Single test module
 
 Before push:
-$ pytest tests/                         # All tests
+$ python3 -m unittest discover -s tests         # All tests
 
 Before release:
-$ pytest tests/ --cov=src --cov-report=html
-$ # Review coverage report
-$ # Run manual tests on target device
+$ coverage run -m unittest discover -s tests
+$ coverage html
+# Review coverage report (htmlcov/index.html)
+# Run manual tests on target device
 
 Release Process:
 ---------------
@@ -92,7 +98,7 @@ Release Process:
 3. Run full test suite
 4. Build packages:
    $ python setup.py sdist
-   $ # Build OPK if needed
+   # Build OPK if needed
 5. Tag release:
    $ git tag -a v1.0.0 -m "Release 1.0.0"
    $ git push origin v1.0.0
@@ -106,7 +112,7 @@ Debugging Tips:
    Add to main.py:
    logging.basicConfig(level=logging.DEBUG)
 
-2. Use pygame debug mode:
+2. Use pygame headless mode:
    Set environment variable:
    $ SDL_VIDEODRIVER=dummy python -m src.main
 
@@ -177,7 +183,7 @@ Development:
 - Profiler: cProfile, py-spy
 
 Testing:
-- pytest: Test runner
+- unittest: Standard library test framework
 - coverage: Code coverage
 - tox: Multi-env testing
 
@@ -203,8 +209,8 @@ CI/CD Pipeline:
 --------------
 On push:
 1. Run linter
-2. Run tests
-3. Check coverage
+2. Run tests (python -m unittest discover)
+3. Check coverage (coverage run/report)
 4. Build packages
 5. Run integration tests
 

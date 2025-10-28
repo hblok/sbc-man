@@ -1,10 +1,10 @@
 10.1 UNIT TEST STRATEGY (FULL)
 ===============================
 
-UNIT TESTING APPROACH
-=====================
+UNIT TESTING APPROACH (unittest)
+================================
 
-Test Framework: pytest
+Test Framework: unittest (Python standard library)
 
 Directory Structure:
 tests/
@@ -22,7 +22,7 @@ tests/
 ├── fixtures/
 │   ├── test_configs/
 │   └── test_games/
-└── conftest.py
+└── conftest.py    # (Optional in unittest; helper modules can be regular .py files)
 
 Key Test Categories:
 
@@ -33,26 +33,30 @@ Key Test Categories:
    ├─ Round-trip: game == Game.from_dict(game.to_dict())
    └─ Handles missing optional fields
 
-   Example Tests:
-   def test_game_to_dict():
-       game = Game(id="test", name="Test Game", ...)
-       data = game.to_dict()
-       assert data['id'] == "test"
-       assert data['name'] == "Test Game"
-       assert 'installed' in data
-   
-   def test_game_from_dict():
-       data = {"id": "test", "name": "Test", ...}
-       game = Game.from_dict(data)
-       assert game.id == "test"
-       assert isinstance(game, Game)
-   
-   def test_game_round_trip():
-       original = Game(id="test", name="Test", ...)
-       data = original.to_dict()
-       restored = Game.from_dict(data)
-       assert original.id == restored.id
-       assert original.name == restored.name
+   Example Tests (unittest):
+   import unittest
+   from models.game import Game
+
+   class TestModels(unittest.TestCase):
+       def test_game_to_dict(self):
+           game = Game(game_id="test", name="Test Game", installed=False)
+           data = game.to_dict()
+           self.assertEqual(data['id'], "test")
+           self.assertEqual(data['name'], "Test Game")
+           self.assertIn('installed', data)
+
+       def test_game_from_dict(self):
+           data = {"id": "test", "name": "Test", "installed": True}
+           game = Game.from_dict(data)
+           self.assertEqual(game.id, "test")
+           self.assertIsInstance(game, Game)
+
+       def test_game_round_trip(self):
+           original = Game(game_id="test", name="Test", installed=True)
+           data = original.to_dict()
+           restored = Game.from_dict(data)
+           self.assertEqual(original.id, restored.id)
+           self.assertEqual(original.name, restored.name)
 
 2. Hardware Detection Tests
    ├─ Mock file system for device detection
@@ -61,24 +65,30 @@ Key Test Categories:
    ├─ Test fallback to defaults
    └─ Test probe failures return safe values
 
-   Example Tests:
-   @mock.patch('builtins.open', mock_open(read_data="Anbernic RG353"))
-   def test_detect_anbernic_device():
-       detector = HardwareDetector()
-       device_type = detector._detect_device()
-       assert device_type == "anbernic"
-   
-   @mock.patch('pathlib.Path.exists', return_value=False)
-   def test_unknown_device_fallback(mock_exists):
-       detector = HardwareDetector()
-       device_type = detector._detect_device()
-       assert device_type == "desktop"
-   
-   def test_display_probe_failure():
-       with mock.patch('pygame.display.Info', side_effect=Exception):
-           prober = HardwareProber()
-           result = prober.probe_display()
-           assert result['resolution'] == [640, 480]
+   Example Tests (unittest + mock):
+   import unittest
+   from unittest import mock
+   from hardware.detector import HardwareDetector
+   from hardware.prober import HardwareProber
+
+   class TestHardware(unittest.TestCase):
+       @mock.patch('builtins.open', new_callable=mock.mock_open, read_data="Anbernic RG353")
+       @mock.patch('pathlib.Path.exists', return_value=True)
+       def test_detect_anbernic_device(self, _exists, _open):
+           device_type = HardwareDetector._detect_device()
+           self.assertEqual(device_type, "anbernic")
+
+       @mock.patch('pathlib.Path.exists', return_value=False)
+       def test_unknown_device_fallback(self, _exists):
+           device_type = HardwareDetector._detect_device()
+           self.assertEqual(device_type, "desktop")
+
+       @mock.patch('pygame.display.Info', side_effect=Exception)
+       def test_display_probe_failure(self, _info):
+           # Provide a safe fallback in your implementation if needed
+           result = HardwareProber.probe_display()
+           # Assuming your prober returns dict with current_resolution
+           self.assertIn('current_resolution', result)
 
 3. Configuration Loading Tests
    ├─ Test layer merging logic
@@ -88,28 +98,29 @@ Key Test Categories:
    ├─ Test missing file handling
    └─ Test validation catches invalid values
 
-   Example Tests:
-   def test_config_deep_merge():
-       base = {"display": {"resolution": [640, 480], "fullscreen": False}}
-       override = {"display": {"fullscreen": True}}
-       result = ConfigLoader._deep_merge(base, override)
-       assert result['display']['resolution'] == [640, 480]
-       assert result['display']['fullscreen'] == True
-   
-   def test_missing_config_file():
-       loader = ConfigLoader("nonexistent", "standard_linux", {})
-       config = loader.load_config()
-       # Should load default.json only
-       assert 'device' in config
-       assert 'display' in config
-   
-   def test_malformed_json_handling():
-       with tempfile.NamedTemporaryFile(mode='w', suffix='.json') as f:
-           f.write("{invalid json}")
-           f.flush()
-           # Should handle gracefully
-           result = ConfigLoader._load_mapping_file(Path(f.name))
-           assert result == {}
+   Example Tests (unittest):
+   import unittest
+   from hardware.config_loader import ConfigLoader
+
+   class TestConfigLoader(unittest.TestCase):
+       def test_config_deep_merge(self):
+           base = {"display": {"resolution": [640, 480], "fullscreen": False}}
+           override = {"display": {"fullscreen": True}}
+           result = ConfigLoader._merge(base, override)
+           self.assertEqual(result['display']['resolution'], [640, 480])
+           self.assertTrue(result['display']['fullscreen'])
+
+       def test_missing_config_file(self):
+           loader = ConfigLoader("nonexistent", "standard_linux", {})
+           config = loader.load_config()
+           self.assertIn('device', config)
+           self.assertIn('display', config)
+
+       def test_malformed_json_handling(self):
+           # Implement _load_json to safely return None on malformed JSON
+           result = ConfigLoader._load_json("nonexistent_or_bad.json")
+           # Expect None or a handled response
+           self.assertIsNone(result)
 
 4. Input Mapping Tests
    ├─ Test action resolution
@@ -120,27 +131,44 @@ Key Test Categories:
    ├─ Test d-pad event matching
    └─ Test save/load custom mappings
 
-   Example Tests:
-   def test_keyboard_action_pressed():
-       handler = InputHandler(test_hw_config)
-       handler.mappings = {"confirm": ["K_RETURN"]}
-       event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
-       assert handler.is_action_pressed("confirm", [event]) == True
-   
-   def test_button_mapping_hierarchy():
-       # Layer 1: default
-       # Layer 2: device override
-       # Layer 2 should win
-       handler = InputHandler(test_hw_config)
-       # Simulate hierarchy loading
-       assert "BUTTON_1" in handler.mappings["confirm"]
-   
-   def test_button_name_mapping():
-       handler = InputHandler(test_hw_config)
-       names = handler._get_button_names(0)
-       assert "BUTTON_0" in names
-       assert "BUTTON_A" in names
-       assert "BUTTON_SOUTH" in names
+   Example Tests (unittest):
+   import unittest
+   import pygame
+   from services.input_handler import InputHandler
+
+   class TestInputHandler(unittest.TestCase):
+       def setUp(self):
+           self.hw_config = {
+               "device": {"detected_type": "desktop"},
+               "paths": {"data": "/tmp"},
+               "display": {"resolution": [800, 600], "fullscreen": False}
+           }
+           self.handler = InputHandler(self.hw_config)
+
+       def test_keyboard_action_pressed(self):
+           self.handler.mappings = {"confirm": ["K_RETURN"]}
+           event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_RETURN)
+           self.assertTrue(self.handler.is_action_pressed("confirm", [event]))
+
+       def test_button_name_mapping(self):
+           names = self.handler._get_button_names(0)
+           self.assertIn("BUTTON_0", names)
+           self.assertIn("BUTTON_A", names)
+           self.assertIn("BUTTON_SOUTH", names)
+
+       def test_layer_hierarchy_with_subTest(self):
+           # Example of replacing parametrize with subTest
+           scenarios = [
+               ({"confirm": ["BUTTON_1"]}, "BUTTON_1", True),
+               ({"confirm": ["BUTTON_2"]}, "BUTTON_1", False),
+           ]
+           for mapping, check, expected in scenarios:
+               with self.subTest(mapping=mapping, check=check, expected=expected):
+                   self.handler.mappings = mapping
+                   # Simulate JOYBUTTONDOWN with index parsed by _get_button_names
+                   event = pygame.event.Event(pygame.JOYBUTTONDOWN, button=1)
+                   result = self.handler.is_action_pressed("confirm", [event])
+                   self.assertEqual(result, expected)
 
 5. File Operations Tests
    ├─ Test directory creation
@@ -149,27 +177,36 @@ Key Test Categories:
    ├─ Test permission handling
    └─ Test cleanup on errors
 
-   Example Tests:
-   def test_ensure_dir_creates_directory(tmp_path):
-       test_dir = tmp_path / "new_dir"
-       result = FileOps.ensure_dir(test_dir)
-       assert test_dir.exists()
-       assert result == test_dir
-   
-   def test_extract_zip_archive(tmp_path):
-       # Create test zip
-       zip_path = tmp_path / "test.zip"
-       with zipfile.ZipFile(zip_path, 'w') as zf:
-           zf.writestr("test.txt", "content")
-       
-       extract_dir = tmp_path / "extracted"
-       FileOps.extract_archive(zip_path, extract_dir)
-       assert (extract_dir / "test.txt").exists()
-   
-   def test_get_free_space(tmp_path):
-       space = FileOps.get_free_space(tmp_path)
-       assert isinstance(space, int)
-       assert space > 0
+   Example Tests (unittest):
+   import unittest
+   from tempfile import TemporaryDirectory
+   from pathlib import Path
+   import zipfile
+   from services.file_ops import FileOps
+
+   class TestFileOps(unittest.TestCase):
+       def test_ensure_dir_creates_directory(self):
+           with TemporaryDirectory() as td:
+               test_dir = Path(td) / "new_dir"
+               result = FileOps.ensure_dir(test_dir)
+               self.assertTrue(test_dir.exists())
+               self.assertEqual(result, test_dir)
+
+       def test_extract_zip_archive(self):
+           with TemporaryDirectory() as td:
+               zip_path = Path(td) / "test.zip"
+               with zipfile.ZipFile(zip_path, 'w') as zf:
+                   zf.writestr("test.txt", "content")
+
+               extract_dir = Path(td) / "extracted"
+               FileOps.extract_archive(zip_path, extract_dir)
+               self.assertTrue((extract_dir / "test.txt").exists())
+
+       def test_get_free_space(self):
+           with TemporaryDirectory() as td:
+               space = FileOps.get_free_space(td)
+               self.assertIsInstance(space, int)
+               self.assertGreater(space, 0)
 
 6. Game Library Tests
    ├─ Test add/remove/get games
@@ -178,32 +215,41 @@ Key Test Categories:
    ├─ Test filter by installed status
    └─ Test empty library handling
 
-   Example Tests:
-   def test_add_game():
-       library = GameLibrary(test_hw_config)
-       game = Game(id="test", name="Test Game")
-       library.add_game(game)
-       assert library.get_game("test") == game
-   
-   def test_remove_game():
-       library = GameLibrary(test_hw_config)
-       game = Game(id="test", name="Test")
-       library.add_game(game)
-       library.remove_game("test")
-       assert library.get_game("test") is None
-   
-   def test_library_persistence(tmp_path):
-       library = GameLibrary(test_hw_config)
-       library.data_path = tmp_path / "games.json"
-       game = Game(id="test", name="Test")
-       library.add_game(game)
-       library.save()
-       
-       # Load in new instance
-       library2 = GameLibrary(test_hw_config)
-       library2.data_path = tmp_path / "games.json"
-       library2.load()
-       assert library2.get_game("test").name == "Test"
+   Example Tests (unittest):
+   import unittest
+   from tempfile import TemporaryDirectory
+   from pathlib import Path
+   from models.game import Game
+   from models.game_library import GameLibrary
+
+   class TestGameLibrary(unittest.TestCase):
+       def setUp(self):
+           self.hw_config = {"paths": {"data": ""}}
+           self.library = GameLibrary(self.hw_config)
+
+       def test_add_and_get_game(self):
+           game = Game(game_id="test", name="Test Game")
+           self.library.add_game(game)
+           self.assertEqual(self.library.get_game("test"), game)
+
+       def test_remove_game(self):
+           game = Game(game_id="test", name="Test")
+           self.library.add_game(game)
+           self.library.remove_game("test")
+           self.assertIsNone(self.library.get_game("test"))
+
+       def test_library_persistence(self):
+           with TemporaryDirectory() as td:
+               data_path = Path(td) / "games.json"
+               self.library.library_path = data_path
+               game = Game(game_id="test", name="Test")
+               self.library.add_game(game)
+               self.library.save()
+
+               library2 = GameLibrary(self.hw_config)
+               library2.library_path = data_path
+               library2.load()
+               self.assertEqual(library2.get_game("test").name, "Test")
 
 7. Network Service Tests
    ├─ Mock HTTP requests
@@ -212,25 +258,36 @@ Key Test Categories:
    ├─ Test connectivity checks
    └─ Test error handling
 
-   Example Tests:
-   @mock.patch('requests.get')
-   def test_download_file(mock_get, tmp_path):
-       mock_response = mock.Mock()
-       mock_response.headers = {'Content-Length': '100'}
-       mock_response.iter_content = lambda chunk_size: [b'x' * 100]
-       mock_get.return_value = mock_response
-       
-       dest = tmp_path / "download.bin"
-       result = NetworkService.download_file("http://test.com/file", dest)
-       assert result == True
-       assert dest.exists()
-   
-   @mock.patch('requests.get')
-   def test_fetch_json(mock_get):
-       mock_get.return_value.json.return_value = {"key": "value"}
-       mock_get.return_value.status_code = 200
-       result = NetworkService.fetch_json("http://test.com/api")
-       assert result == {"key": "value"}
+   Example Tests (unittest + mock):
+   import unittest
+   from unittest import mock
+   from pathlib import Path
+   from services.network import NetworkService
+
+   class TestNetworkService(unittest.TestCase):
+       @mock.patch('requests.get')
+       def test_download_file(self, mock_get):
+           mock_response = mock.Mock()
+           mock_response.headers = {'Content-Length': '100'}
+           mock_response.iter_content = lambda chunk_size: [b'x' * 100]
+           mock_response.__enter__ = lambda s: s
+           mock_response.__exit__ = lambda s, exc_type, exc, tb: None
+           mock_get.return_value = mock_response
+
+           with TemporaryDirectory() as td:
+               dest = Path(td) / "download.bin"
+               result = NetworkService.download_file("http://test.com/file", dest)
+               self.assertTrue(result)
+               self.assertTrue(dest.exists())
+
+       @mock.patch('requests.get')
+       def test_fetch_json(self, mock_get):
+           resp = mock.Mock()
+           resp.json.return_value = {"key": "value"}
+           resp.status_code = 200
+           mock_get.return_value = resp
+           result = NetworkService.fetch_json("http://test.com/api")
+           self.assertEqual(result, {"key": "value"})
 
 8. State Tests
    ├─ Test state lifecycle (on_enter/on_exit)
@@ -238,21 +295,21 @@ Key Test Categories:
    ├─ Test view interactions
    └─ Test error handling in states
 
-   Example Tests:
-   def test_menu_state_navigation():
-       state = MenuState(mock_state_manager)
-       state.on_enter(None)
-       initial_index = state.view.selected_index
-       # Simulate down press
-       state.handle_events([mock_down_event])
-       assert state.view.selected_index == initial_index + 1
-   
-   def test_game_list_state_filter():
-       state = GameListState(mock_state_manager)
-       state.on_enter(None)
-       installed_games = state.view.get_filtered_games(installed=True)
-       for game in installed_games:
-           assert game.installed == True
+   Example Tests (unittest):
+   import unittest
+   from unittest import mock
+   from states.menu_state import MenuState
+
+   class TestStates(unittest.TestCase):
+       def test_menu_state_navigation(self):
+           state_manager = mock.Mock()
+           state = MenuState(state_manager)
+           state.on_enter(None)
+           initial = state.view.selected_index
+
+           # Simulate 'down' action via input handler mock if needed
+           state.view.set_selected_index(initial + 1)
+           self.assertEqual(state.view.selected_index, initial + 1)
 
 9. Download Manager Tests
    ├─ Test observer registration
@@ -260,65 +317,67 @@ Key Test Categories:
    ├─ Test concurrent downloads
    └─ Test error notifications
 
-   Example Tests:
-   def test_add_observer():
-       manager = DownloadManager()
-       observer = mock.Mock()
-       manager.add_observer(observer)
-       assert observer in manager.observers
-   
-   def test_notify_progress():
-       manager = DownloadManager()
-       observer = mock.Mock()
-       manager.add_observer(observer)
-       manager.notify_progress("dl1", {"percent": 50})
-       observer.on_progress_update.assert_called_with("dl1", {"percent": 50})
-   
-   def test_concurrent_downloads():
-       manager = DownloadManager()
-       dl1 = manager.start_download(game_info1, dest1)
-       dl2 = manager.start_download(game_info2, dest2)
-       assert dl1 != dl2
-       assert dl1 in manager.downloads
-       assert dl2 in manager.downloads
+   Example Tests (unittest):
+   import unittest
+   from unittest import mock
+   from models.download_manager import DownloadManager
 
-Test Fixtures (conftest.py):
-@pytest.fixture
-def test_hw_config():
+   class TestDownloadManager(unittest.TestCase):
+       def test_add_observer(self):
+           manager = DownloadManager(hw_config={})
+           observer = mock.Mock()
+           manager.add_observer(observer)
+           self.assertIn(observer, manager.observers)
+
+       def test_notify_progress(self):
+           manager = DownloadManager(hw_config={})
+           observer = mock.Mock()
+           manager.add_observer(observer)
+           manager.notify_progress("dl1", {"percent": 50})
+           observer.on_progress_update.assert_called_with("dl1", {"percent": 50})
+
+       def test_concurrent_downloads(self):
+           manager = DownloadManager(hw_config={})
+           dl1 = manager.start_download({"id": "g1", "download_url": "http://x"}, Path("/tmp"))
+           dl2 = manager.start_download({"id": "g2", "download_url": "http://y"}, Path("/tmp"))
+           self.assertNotEqual(dl1, dl2)
+           self.assertIn(dl1, manager.downloads)
+           self.assertIn(dl2, manager.downloads)
+
+Test Utilities:
+-------------------------------------------
+- Use setUp/setUpClass/tearDown/tearDownClass in unittest.TestCase to prepare common state.
+- Use helper factory functions or base TestCase classes to share config setup across tests.
+
+Example Common Helpers:
+from unittest import TestCase
+
+def make_test_hw_config(tmp_data_dir="/tmp"):
     return {
         "device": {"name": "Test Device", "type": "desktop"},
         "display": {"resolution": [800, 600], "fullscreen": False},
         "paths": {
-            "games": "/tmp/games",
-            "data": "/tmp/data",
-            "config": "/tmp/config",
-            "cache": "/tmp/cache"
+            "games": f"{tmp_data_dir}/games",
+            "data": tmp_data_dir,
+            "config": f"{tmp_data_dir}/config",
+            "cache": f"{tmp_data_dir}/cache"
         },
         "performance": {"target_fps": 60, "vsync": True},
         "launcher": {"python_command": "python3"}
     }
 
-@pytest.fixture
-def test_game():
-    return Game(
-        id="test-game",
-        name="Test Game",
-        version="1.0.0",
-        description="A test game",
-        author="Test Author",
-        install_path="/tmp/games/test-game",
-        entry_point="main.py",
-        installed=True
-    )
+class BaseAppTestCase(TestCase):
+    def setUp(self):
+        # Create application with headless pygame and mocks as needed
+        self.hw_config = make_test_hw_config()
+        self.app = create_test_application(hw_config=self.hw_config)
 
-@pytest.fixture
-def mock_state_manager():
-    manager = mock.Mock(spec=StateManager)
-    manager.hw_config = test_hw_config()
-    manager.game_library = mock.Mock(spec=GameLibrary)
-    manager.config_manager = mock.Mock(spec=ConfigManager)
-    manager.input_handler = mock.Mock(spec=InputHandler)
-    return manager
+Parametrization Replacement:
+---------------------------
+Example:
+for value in [1, 2, 3]:
+    with self.subTest(value=value):
+        self.assertGreaterEqual(value, 1)
 
 Coverage Goals:
 ├─ Models: 100% (simple data classes)
@@ -328,17 +387,20 @@ Coverage Goals:
 └─ Overall Target: 85%+
 
 Running Tests:
-# All tests
-pytest tests/
+# All tests via discovery
+python3 -m unittest discover -s tests -p "test_*.py"
 
 # Unit tests only
-pytest tests/unit/
+python3 -m unittest discover -s tests/unit -p "test_*.py"
 
 # With coverage
-pytest --cov=src tests/
+coverage run -m unittest discover -s tests
+coverage report -m
+# Optional HTML report
+coverage html
 
-# Specific test file
-pytest tests/unit/test_models.py
+# Specific test module (verbose)
+python3 -m unittest -v tests.unit.test_models
 
-# Verbose output
-pytest -v tests/
+# Specific test case or method
+python3 -m unittest -v tests.unit.test_models.TestModels.test_game_to_dict

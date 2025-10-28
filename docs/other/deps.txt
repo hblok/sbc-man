@@ -6,15 +6,16 @@ Python Dependencies (requirements.txt):
 # Core dependencies
 pygame>=2.1.0           # Game framework and rendering
 requests>=2.28.0        # HTTP client for downloads
-Pillow>=9.0.0          # Image processing (optional)
+Pillow>=9.0.0           # Image processing (optional)
 
 # Development dependencies (requirements-dev.txt)
-pytest>=7.0.0          # Testing framework
-pytest-cov>=3.0.0      # Coverage reporting
-pytest-mock>=3.6.0     # Mocking utilities
-black>=22.0.0          # Code formatter
-flake8>=4.0.0          # Linter
-mypy>=0.950            # Type checker
+coverage>=7.0.0         # Coverage reporting for unittest
+black>=22.0.0           # Code formatter
+flake8>=4.0.0           # Linter
+mypy>=0.950             # Type checker
+# Note:
+# - The 'unittest' and 'unittest.mock' modules are part of the Python standard library.
+# - No pytest/pytest-cov/pytest-mock are required when using unittest.
 
 System Dependencies:
 -------------------
@@ -52,6 +53,11 @@ fi
 
 echo "Installing Python dependencies..."
 pip3 install --user -r requirements.txt
+
+# Optional: development-only tools
+if [ -f requirements-dev.txt ]; then
+  pip3 install --user -r requirements-dev.txt
+fi
 
 echo "Dependencies installed successfully!"
 
@@ -114,15 +120,15 @@ required = {
 def check_version(package, required_version):
     try:
         mod = importlib.import_module(package)
-        version = mod.__version__
-        print(f"✓ {package} {version} (>= {required_version} required)")
+        version = getattr(mod, '__version__', None)
+        if version:
+            print(f"✓ {package} {version} (>= {required_version} required)")
+        else:
+            print(f"? {package} installed but version unknown")
         return True
     except ImportError:
         print(f"✗ {package} not found (>= {required_version} required)")
         return False
-    except AttributeError:
-        print(f"? {package} installed but version unknown")
-        return True
 
 if __name__ == "__main__":
     print("Checking dependencies...")
