@@ -7,6 +7,7 @@ All methods are static - no class instantiation required.
 Based on: docs/code/class_hardware_prober.txt
 """
 
+import os
 import logging
 import shutil
 from pathlib import Path
