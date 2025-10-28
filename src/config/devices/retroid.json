@@ -1,0 +1,22 @@
+{
+  "device_type": "retroid",
+  "display": {
+    "resolution": "auto",
+    "fullscreen": true,
+    "fps_target": 60,
+    "hide_cursor": true
+  },
+  "input": {
+    "joystick_enabled": true,
+    "keyboard_enabled": true
+  },
+  "paths": {
+    "games": "/storage/emulated/0/games",
+    "data": "/storage/emulated/0/.sbc-man",
+    "config": "/storage/emulated/0/.sbc-man/config"
+  },
+  "performance": {
+    "vsync": true,
+    "hardware_acceleration": true
+  }
+}

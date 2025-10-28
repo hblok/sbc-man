@@ -1,0 +1,12 @@
+{
+  "confirm": ["BUTTON_A", "BUTTON_SOUTH", "RETURN"],
+  "cancel": ["BUTTON_B", "BUTTON_EAST", "ESCAPE"],
+  "menu": ["BUTTON_START", "ESCAPE"],
+  "up": ["DPAD_UP", "UP"],
+  "down": ["DPAD_DOWN", "DOWN"],
+  "left": ["DPAD_LEFT", "LEFT"],
+  "right": ["DPAD_RIGHT", "RIGHT"],
+  "page_up": ["BUTTON_L1", "BUTTON_LB", "PAGEUP"],
+  "page_down": ["BUTTON_R1", "BUTTON_RB", "PAGEDOWN"],
+  "select": ["BUTTON_SELECT", "BUTTON_BACK", "SPACE"]
+}

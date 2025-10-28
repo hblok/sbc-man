@@ -1,0 +1,13 @@
+{
+  "os_type": "android",
+  "system": {
+    "package_manager": "pm",
+    "shell": "/system/bin/sh"
+  },
+  "paths": {
+    "temp": "/data/local/tmp"
+  },
+  "performance": {
+    "power_management": "balanced"
+  }
+}

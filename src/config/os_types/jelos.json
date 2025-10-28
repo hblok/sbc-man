@@ -1,0 +1,14 @@
+{
+  "os_type": "jelos",
+  "system": {
+    "package_manager": "opkg",
+    "shell": "/bin/bash"
+  },
+  "paths": {
+    "temp": "/tmp",
+    "storage": "/storage"
+  },
+  "performance": {
+    "power_management": "performance"
+  }
+}
