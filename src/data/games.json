@@ -1,0 +1,45 @@
+{
+  "snake-game": {
+    "id": "snake-game",
+    "name": "Snake",
+    "version": "1.2.3",
+    "description": "A classic snake game built with pygame-ce. Eat apples, avoid walls and your tail.",
+    "author": "Retro Dev Co.",
+    "install_path": "/home/user/.local/share/game-launcher/games/snake-game",
+    "entry_point": "main.py",
+    "installed": true,
+    "download_url": "https://example.com/downloads/snake-game-1.2.3.zip",
+    "custom_input_mappings": {
+      "up": ["DPAD_UP", "K_UP"],
+      "down": ["DPAD_DOWN", "K_DOWN"],
+      "left": ["DPAD_LEFT", "K_LEFT"],
+      "right": ["DPAD_RIGHT", "K_RIGHT"],
+      "confirm": ["BUTTON_A", "K_RETURN"],
+      "cancel": ["BUTTON_B", "K_ESCAPE"],
+      "menu": ["BUTTON_START", "K_TAB"]
+    },
+    "custom_resolution": [640, 480],
+    "custom_fps": 60
+  },
+  "space-invaders": {
+    "id": "space-invaders",
+    "name": "Space Invaders Redux",
+    "version": "0.9.0",
+    "description": "Modern take on a classic. Defend Earth from waves of invaders with power-ups and boss fights.",
+    "author": "PixelSmiths",
+    "install_path": "/home/user/.local/share/game-launcher/games/space-invaders",
+    "entry_point": "run.py",
+    "installed": false,
+    "download_url": "https://cdn.example.org/games/space-invaders-redux-0.9.0.zip",
+    "custom_input_mappings": {
+      "left": ["DPAD_LEFT", "K_A"],
+      "right": ["DPAD_RIGHT", "K_D"],
+      "confirm": ["BUTTON_A", "K_SPACE"],
+      "cancel": ["BUTTON_B", "K_ESCAPE"],
+      "menu": ["BUTTON_START"],
+      "select": ["BUTTON_SELECT"]
+    },
+    "custom_resolution": [800, 600],
+    "custom_fps": 30
+  }
+}
