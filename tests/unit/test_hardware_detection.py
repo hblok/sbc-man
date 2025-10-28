@@ -62,28 +62,29 @@ class TestHardwareDetector(unittest.TestCase):
         self.assertNotIn("~", config["paths"]["home"])
         self.assertNotIn("$HOME", config["paths"]["data"])
 
-    @patch("src.hardware.detector.HardwareProber.probe_all")
-    @patch("src.hardware.detector.ConfigLoader")
-    def test_get_config(self, mock_config_loader, mock_probe_all):
+    def test_get_config(self):
         """Test complete config retrieval."""
+        from src.hardware.prober import HardwareProber
+        from src.hardware.config_loader import ConfigLoader
+        
         # Mock probe results
-        mock_probe_all.return_value = {
+        mock_probe_result = {
             "display": {"current_resolution": [1280, 720]},
             "input": {"joystick_count": 0},
             "storage": {},
             "cpu": {"core_count": 4},
         }
         
-        # Mock config loader
-        mock_loader_instance = Mock()
-        mock_loader_instance.load_config.return_value = {
+        # Mock config
+        mock_config = {
             "display": {"resolution": [1280, 720]},
             "paths": {"data": "~/.local/share/sbc-man"},
         }
-        mock_config_loader.return_value = mock_loader_instance
         
-        with patch.dict(os.environ, {"DEVICE_TYPE": "desktop", "OS_TYPE": "standard_linux"}):
-            config = HardwareDetector.get_config()
+        with patch.object(HardwareProber, 'probe_all', return_value=mock_probe_result):
+            with patch.object(ConfigLoader, 'load_config', return_value=mock_config):
+                with patch.dict(os.environ, {"DEVICE_TYPE": "desktop", "OS_TYPE": "standard_linux"}):
+                    config = HardwareDetector.get_config()
         
         self.assertIn("detected_device", config)
         self.assertIn("detected_os", config)
@@ -93,20 +94,21 @@ class TestHardwareDetector(unittest.TestCase):
 class TestHardwareProber(unittest.TestCase):
     """Test cases for HardwareProber."""
 
-    @patch("pygame.display.Info")
-    @patch("pygame.init")
-    def test_probe_display(self, mock_init, mock_display_info):
+    def test_probe_display(self):
         """Test display probing."""
+        import pygame
+        
         # Mock display info
         mock_info = Mock()
         mock_info.current_w = 1920
         mock_info.current_h = 1080
         mock_info.hw = True
         mock_info.bitsize = 32
-        mock_display_info.return_value = mock_info
+        mock_info.video_mem = 256  # Set to an integer value
         
-        with patch("pygame.display.list_modes", return_value=[]):
-            display_info = HardwareProber.probe_display()
+        with patch.object(pygame.display, 'Info', return_value=mock_info):
+            with patch.object(pygame.display, 'list_modes', return_value=[]):
+                display_info = HardwareProber.probe_display()
         
         self.assertEqual(display_info["current_resolution"], [1920, 1080])
         self.assertTrue(display_info["hardware_accelerated"])
@@ -132,11 +134,13 @@ class TestHardwareProber(unittest.TestCase):
         self.assertEqual(input_info["joystick_count"], 1)
         self.assertEqual(len(input_info["joysticks"]), 1)
 
+    @patch("os.access")
     @patch("shutil.disk_usage")
     @patch("pathlib.Path.exists")
-    def test_probe_storage(self, mock_exists, mock_disk_usage):
+    def test_probe_storage(self, mock_exists, mock_disk_usage, mock_access):
         """Test storage probing."""
         mock_exists.return_value = True
+        mock_access.return_value = True
         
         # Mock disk usage
         mock_usage = Mock()
@@ -145,8 +149,7 @@ class TestHardwareProber(unittest.TestCase):
         mock_usage.free = 500000000
         mock_disk_usage.return_value = mock_usage
         
-        with patch("os.access", return_value=True):
-            storage_info = HardwareProber.probe_storage()
+        storage_info = HardwareProber.probe_storage()
         
         # Should have at least one storage location
         self.assertGreater(len(storage_info), 0)
