@@ -1,0 +1,10 @@
+{
+  "os_type": "standard_linux",
+  "system": {
+    "package_manager": "apt",
+    "shell": "/bin/bash"
+  },
+  "paths": {
+    "temp": "/tmp"
+  }
+}

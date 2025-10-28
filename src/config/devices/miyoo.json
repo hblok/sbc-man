@@ -1,0 +1,22 @@
+{
+  "device_type": "miyoo",
+  "display": {
+    "resolution": [640, 480],
+    "fullscreen": true,
+    "fps_target": 60,
+    "hide_cursor": true
+  },
+  "input": {
+    "joystick_enabled": true,
+    "keyboard_enabled": false
+  },
+  "paths": {
+    "games": "/mnt/SDCARD/games",
+    "data": "/mnt/SDCARD/.sbc-man",
+    "config": "/mnt/SDCARD/.sbc-man/config"
+  },
+  "performance": {
+    "vsync": true,
+    "hardware_acceleration": false
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "os_type": "arkos",
+  "system": {
+    "package_manager": "pacman",
+    "shell": "/bin/bash"
+  },
+  "paths": {
+    "temp": "/tmp",
+    "roms": "/roms"
+  },
+  "performance": {
+    "power_management": "performance"
+  }
+}

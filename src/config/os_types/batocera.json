@@ -1,0 +1,14 @@
+{
+  "os_type": "batocera",
+  "system": {
+    "package_manager": "batocera-config",
+    "shell": "/bin/bash"
+  },
+  "paths": {
+    "temp": "/tmp",
+    "userdata": "/userdata"
+  },
+  "performance": {
+    "power_management": "performance"
+  }
+}

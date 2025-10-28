@@ -1,0 +1,22 @@
+{
+  "device_type": "anbernic",
+  "display": {
+    "resolution": "auto",
+    "fullscreen": true,
+    "fps_target": 60,
+    "hide_cursor": true
+  },
+  "input": {
+    "joystick_enabled": true,
+    "keyboard_enabled": false
+  },
+  "paths": {
+    "games": "/roms/ports",
+    "data": "/roms/ports/.sbc-man",
+    "config": "/roms/ports/.sbc-man/config"
+  },
+  "performance": {
+    "vsync": true,
+    "hardware_acceleration": true
+  }
+}
