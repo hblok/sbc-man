@@ -12,5 +12,5 @@ py_library(
     deps = [
         "//src/services:services",
     ],
-    python_version = "3.11",
+
 )

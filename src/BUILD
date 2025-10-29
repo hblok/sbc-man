@@ -8,7 +8,6 @@ py_binary(
     deps = [
         "//src/core:core",
     ],
-    python_version = "3.11",
 )
 
 # Configuration files

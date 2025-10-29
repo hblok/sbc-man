@@ -10,5 +10,4 @@ py_library(
         "prober.py",
     ],
     deps = [],
-    python_version = "3.11",
 )

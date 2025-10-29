@@ -6,5 +6,4 @@ py_library(
         "__init__.py",
     ],
     deps = [],
-    python_version = "3.11",
 )

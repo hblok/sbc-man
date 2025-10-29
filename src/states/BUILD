@@ -14,7 +14,6 @@ py_library(
     deps = [
         "//src/models:models",
         "//src/services:services",
-        "@pip_deps//:pygame_ce",
+        "@pip_deps//pygame_ce",
     ],
-    python_version = "3.11",
 )

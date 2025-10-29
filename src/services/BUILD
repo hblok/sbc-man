@@ -10,9 +10,8 @@ py_library(
         "process_launcher.py",
     ],
     deps = [
-        "//src/models:models",
-        "@pip_deps//:pygame_ce",
-        "@pip_deps//:requests",
+ #       "//src/models:models",
+        "@pip_deps//pygame_ce",
+        "@pip_deps//requests",
     ],
-    python_version = "3.11",
 )

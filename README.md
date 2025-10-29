@@ -47,17 +47,10 @@ sbc-man/
 ### Running Tests
 
 ```bash
-# Run all tests
-python -m pytest tests/
-
-# Run unit tests only
-python -m pytest tests/unit/
-
-# Run integration tests only
-python -m pytest tests/integration/
+TODO
 
 # Run with coverage
-coverage run -m pytest tests/
+coverage run -m test tests/
 coverage report
 ```
 

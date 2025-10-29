@@ -12,7 +12,6 @@ py_library(
         "//src/hardware:hardware",
         "//src/models:models",
         "//src/services:services",
-        "@pip_deps//:pygame_ce",
+        "@pip_deps//pygame_ce",
     ],
-    python_version = "3.11",
 )

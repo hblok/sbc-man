@@ -7,7 +7,5 @@ py_library(
         "conftest.py",
     ],
     deps = [
-        "@pip_dev_deps//:pytest",
     ],
-    python_version = "3.11",
 )

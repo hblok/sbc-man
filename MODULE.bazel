@@ -10,21 +10,32 @@ bazel_dep(name = "platforms", version = "0.0.10")
 
 # Python configuration
 python_version = "3.11"
-register_toolchains(
-    "@rules_python//python/config_settings:all",
-    "@rules_python//python/toolchains:all",
+
+#register_toolchains(
+#    "@rules_python//python/config_settings:all",
+#    "@rules_python//python/toolchains:all",
+#)
+
+# Python configuration
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = python_version,
 )
 
 # Third-party dependencies via pip
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 pip.parse(
-    name = "pip_deps",
+    hub_name = "pip_deps",
+    python_version = python_version,
     requirements_lock = "//:requirements.txt",
-    requirements_windows = "//:requirements_windows.txt",
 )
 
 # Development dependencies
 pip.parse(
-    name = "pip_dev_deps",
+    hub_name = "pip_dev_deps",
+    python_version = python_version,
     requirements_lock = "//:requirements-dev.txt",
 )
+
+# Make pip repositories visible
+use_repo(pip, "pip_deps", "pip_dev_deps")
