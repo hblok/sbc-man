@@ -1,0 +1,30 @@
+module(
+    name = "sbc_man",
+    version = "1.0.0",
+    compatibility_level = 1,
+)
+
+# Bazel module dependencies
+bazel_dep(name = "rules_python", version = "0.36.0")
+bazel_dep(name = "platforms", version = "0.0.10")
+
+# Python configuration
+python_version = "3.11"
+register_toolchains(
+    "@rules_python//python/config_settings:all",
+    "@rules_python//python/toolchains:all",
+)
+
+# Third-party dependencies via pip
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    name = "pip_deps",
+    requirements_lock = "//:requirements.txt",
+    requirements_windows = "//:requirements_windows.txt",
+)
+
+# Development dependencies
+pip.parse(
+    name = "pip_dev_deps",
+    requirements_lock = "//:requirements-dev.txt",
+)
