@@ -2,9 +2,6 @@
 Hardware Detector Module
 
 Detects device type and OS distribution for configuration selection.
-All methods are static - no class instantiation required.
-
-Based on: docs/code/class_hardware_detector.txt
 """
 
 import os
@@ -17,14 +14,11 @@ logger = logging.getLogger(__name__)
 
 class HardwareDetector:
     """
-    Static class for detecting device type and OS distribution.
-    
     Provides methods to identify the hardware platform and operating system
     to enable device-specific configuration loading.
     """
 
-    @staticmethod
-    def get_config() -> Dict[str, Any]:
+    def get_config(self) -> Dict[str, Any]:
         """
         Main entry point for hardware detection and config loading.
         
@@ -44,8 +38,8 @@ class HardwareDetector:
         logger.info("Starting hardware detection")
         
         # Detect device and OS
-        device_type = HardwareDetector._detect_device()
-        os_type = HardwareDetector._detect_os()
+        device_type = HardwareDetector().detect_device()
+        os_type = HardwareDetector().detect_os()
         
         logger.info(f"Detected device: {device_type}, OS: {os_type}")
         
@@ -61,12 +55,11 @@ class HardwareDetector:
         config["detected_os"] = os_type
         
         # Expand path variables
-        HardwareDetector._expand_paths(config)
+        HardwareDetector().expand_paths(config)
         
         return config
 
-    @staticmethod
-    def _detect_device() -> str:
+    def detect_device(self) -> str:
         """
         Detect device type from hardware identifiers.
         
@@ -112,8 +105,7 @@ class HardwareDetector:
         logger.info("No specific device detected, using desktop")
         return "desktop"
 
-    @staticmethod
-    def _detect_os() -> str:
+    def detect_os(self) -> str:
         """
         Detect OS distribution type.
         
@@ -150,8 +142,7 @@ class HardwareDetector:
         logger.info("No specific OS detected, using standard_linux")
         return "standard_linux"
 
-    @staticmethod
-    def _expand_paths(config: Dict[str, Any]) -> None:
+    def expand_paths(self, config: Dict[str, Any]) -> None:
         """
         Expand environment variables and user home in path strings.
         

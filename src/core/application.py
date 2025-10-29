@@ -92,7 +92,7 @@ class Application:
         then loads the appropriate configuration.
         """
         logger.info("Detecting hardware and loading configuration")
-        self.hw_config = HardwareDetector.get_config()
+        self.hw_config = HardwareDetector().get_config()
         logger.info(f"Configuration loaded for {self.hw_config['detected_device']}")
 
     def _initialize_pygame(self) -> None:
@@ -217,15 +217,3 @@ class Application:
         pygame.quit()
         
         logger.info("Application shutdown complete")
-
-
-def main() -> None:
-    """
-    Main entry point for the application.
-    
-    Can be used as a console script entry point.
-    """
-    from ..hardware.compat_sdl import setup_sdl_environment
-    
-    setup_sdl_environment()
-    Application().run()

@@ -20,7 +20,7 @@ class TestHardwareDetector(unittest.TestCase):
     def test_detect_device_from_environment(self):
         """Test device detection from environment variable."""
         with patch.dict(os.environ, {"DEVICE_TYPE": "anbernic"}):
-            device_type = HardwareDetector._detect_device()
+            device_type = HardwareDetector().detect_device()
             
             self.assertEqual(device_type, "anbernic")
 
@@ -28,14 +28,14 @@ class TestHardwareDetector(unittest.TestCase):
         """Test device detection falls back to desktop."""
         with patch.dict(os.environ, {}, clear=True):
             with patch("pathlib.Path.exists", return_value=False):
-                device_type = HardwareDetector._detect_device()
+                device_type = HardwareDetector().detect_device()
                 
                 self.assertEqual(device_type, "desktop")
 
     def test_detect_os_from_environment(self):
         """Test OS detection from environment variable."""
         with patch.dict(os.environ, {"OS_TYPE": "arkos"}):
-            os_type = HardwareDetector._detect_os()
+            os_type = HardwareDetector().detect_os()
             
             self.assertEqual(os_type, "arkos")
 
@@ -43,7 +43,7 @@ class TestHardwareDetector(unittest.TestCase):
         """Test OS detection falls back to standard_linux."""
         with patch.dict(os.environ, {}, clear=True):
             with patch("pathlib.Path.exists", return_value=False):
-                os_type = HardwareDetector._detect_os()
+                os_type = HardwareDetector().detect_os()
                 
                 self.assertEqual(os_type, "standard_linux")
 
@@ -56,7 +56,7 @@ class TestHardwareDetector(unittest.TestCase):
             }
         }
         
-        HardwareDetector._expand_paths(config)
+        HardwareDetector().expand_paths(config)
         
         # Paths should be expanded
         self.assertNotIn("~", config["paths"]["home"])
@@ -84,7 +84,7 @@ class TestHardwareDetector(unittest.TestCase):
         with patch.object(HardwareProber, 'probe_all', return_value=mock_probe_result):
             with patch.object(ConfigLoader, 'load_config', return_value=mock_config):
                 with patch.dict(os.environ, {"DEVICE_TYPE": "desktop", "OS_TYPE": "standard_linux"}):
-                    config = HardwareDetector.get_config()
+                    config = HardwareDetector().get_config()
         
         self.assertIn("detected_device", config)
         self.assertIn("detected_os", config)
