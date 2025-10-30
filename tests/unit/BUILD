@@ -39,6 +39,7 @@ py_test(
     deps = [
         "//src/hardware:hardware",
         "//tests:test_utils",
+        "@pip_deps//pygame_ce",	
     ],
     size = "small",
 )
@@ -47,7 +48,8 @@ py_test(
     name = "test_input_handler",
     srcs = ["test_input_handler.py"],
     deps = [
-        "//src/services:services",
+        "//src/models",
+        "//src/services",	
         "//tests:test_utils",
         "@pip_deps//pygame_ce",
     ],
@@ -68,7 +70,8 @@ py_test(
     name = "test_network_service",
     srcs = ["test_network_service.py"],
     deps = [
-        "//src/services:services",
+        "//src/models",    
+        "//src/services",
         "//tests:test_utils",
     ],
     size = "small",
