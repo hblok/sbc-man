@@ -2,8 +2,6 @@
 Base State Module
 
 Abstract base class for all application states.
-
-Based on: docs/code/class_states_base_state.txt
 """
 
 from abc import ABC, abstractmethod
@@ -104,6 +102,8 @@ class BaseState(ABC):
         Returns:
             bool: True if exit was requested
         """
+
+        # FIXME
         for event in events:
             # ESC key
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:

@@ -3,8 +3,6 @@ State Manager Module
 
 Implements the state machine pattern for application navigation.
 Manages state transitions, lifecycle, and state stack for overlays.
-
-Based on: docs/code/class_state_manager.txt
 """
 
 import logging

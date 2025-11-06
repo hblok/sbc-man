@@ -1,10 +1,6 @@
 """
-Download Manager Module
-
 Manages game downloads with observer pattern for progress tracking.
 Uses threading to keep UI responsive during downloads.
-
-Based on: docs/code/class_models_download_manager.txt
 """
 
 import logging
@@ -21,11 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class DownloadObserver:
-    """
-    Observer interface for download progress.
-    
-    Implement this interface to receive download progress updates.
-    """
+    """ Observer interface for download progress. """
 
     def on_progress(self, downloaded: int, total: int) -> None:
         """
@@ -67,8 +59,6 @@ class DownloadManager:
 
     def __init__(self, hw_config: dict):
         """
-        Initialize download manager.
-        
         Args:
             hw_config: Hardware configuration dictionary
         """
@@ -82,6 +72,7 @@ class DownloadManager:
         
         # Determine download directory
         paths = hw_config.get("paths", {})
+        # FIXME
         games_dir = Path(paths.get("games", "~/games")).expanduser()
         self.downloads_dir = games_dir / "downloads"
         self.downloads_dir.mkdir(parents=True, exist_ok=True)
@@ -128,6 +119,7 @@ class DownloadManager:
         """
         try:
             # Download file
+            # FIXME
             filename = Path(game.download_url).name
             if not filename:
                 filename = f"{game.id}.zip"
@@ -195,11 +187,13 @@ class DownloadManager:
         """
         # Determine installation directory
         paths = self.hw_config.get("paths", {})
+        # FIXME
         games_dir = Path(paths.get("games", "~/games")).expanduser()
         install_dir = games_dir / game.id
         install_dir.mkdir(parents=True, exist_ok=True)
         
         # Extract based on file type
+        # FIXME
         if archive_path.suffix == ".zip":
             with zipfile.ZipFile(archive_path, "r") as zip_ref:
                 zip_ref.extractall(install_dir)
@@ -219,22 +213,11 @@ class DownloadManager:
         return install_dir
 
     def cancel_download(self) -> None:
-        """
-        Cancel current download.
-        
-        Note: This is a best-effort cancellation. The thread may not
-        stop immediately.
-        """
         if self.is_downloading:
             logger.info("Download cancellation requested")
             self.is_downloading = False
             # Note: Thread will check is_downloading flag and exit
 
     def get_progress(self) -> float:
-        """
-        Get current download progress.
-        
-        Returns:
-            float: Progress as a value between 0.0 and 1.0
-        """
+        """ Return the current download progress as a value between 0.0 and 1.0. """
         return self.download_progress

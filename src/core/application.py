@@ -115,7 +115,7 @@ class Application:
         # Create display
         flags = pygame.FULLSCREEN if fullscreen else 0
         self.screen = pygame.display.set_mode(resolution, flags)
-        pygame.display.set_caption("SBC-Man Game Launcher")
+        pygame.display.set_caption("Max Bloks Games")
         
         # Hide cursor on handheld devices
         if display_config.get("hide_cursor", False):
@@ -126,28 +126,15 @@ class Application:
         
         logger.info(f"Display initialized: {resolution} @ {fps_target} FPS")
 
-    def _initialize_components(self) -> None:
-        """
-        Initialize all application components.
-        
-        Creates instances of ConfigManager, GameLibrary, InputHandler,
-        and StateManager with proper dependencies.
-        """
+    def _initialize_components(self):
         logger.info("Initializing application components")
         
-        # Ensure data directories exist
         self._ensure_data_directories()
         
-        # Initialize configuration manager
         self.config_manager = ConfigManager(self.hw_config)
-        
-        # Initialize game library
         self.game_library = GameLibrary(self.hw_config)
-        
-        # Initialize input handler
         self.input_handler = InputHandler(self.hw_config)
         
-        # Initialize state manager
         self.state_manager = StateManager(
             screen=self.screen,
             hw_config=self.hw_config,
@@ -158,12 +145,13 @@ class Application:
         
         logger.info("All components initialized")
 
-    def _ensure_data_directories(self) -> None:
+    def _ensure_data_directories(self):
         """
         Ensure all required data directories exist.
         
         Creates data directory structure if it doesn't exist.
         """
+        #FIXME
         paths = self.hw_config.get("paths", {})
         data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
         
@@ -178,7 +166,7 @@ class Application:
             directory.mkdir(parents=True, exist_ok=True)
             logger.debug(f"Ensured directory exists: {directory}")
 
-    def _run_game_loop(self) -> None:
+    def _run_game_loop(self):
         """
         Run the main game loop.
         

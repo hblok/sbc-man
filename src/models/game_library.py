@@ -1,13 +1,11 @@
 """
 Game Library Module
-
 Manages the collection of games with CRUD operations and persistence.
-
-Based on: docs/code/class_models_game_library.txt
 """
 
 import json
 import logging
+import pathlib
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
@@ -15,6 +13,8 @@ from .game import Game
 
 logger = logging.getLogger(__name__)
 
+
+# TODO: Add download list
 
 class GameLibrary:
     """
@@ -35,8 +35,9 @@ class GameLibrary:
         self.games: List[Game] = []
         
         # Determine games file path
+        # FIXME
         paths = hw_config.get("paths", {})
-        data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
+        data_dir = pathlib.Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
         self.games_file = data_dir / "games.json"
         
         # Load games from file
@@ -44,54 +45,56 @@ class GameLibrary:
         
         logger.info(f"GameLibrary initialized with {len(self.games)} games")
 
-    def load_games(self) -> None:
+    def load_games(self, games_file: pathlib.Path) -> list[Game]:
         """
         Load games from JSON file.
-        
-        Creates an empty games file if it doesn't exist.
+
+        Args:
+            games_file: Path to the games JSON file.
+
+        Returns:
+            List of Game objects loaded from the file, or
+            an empty games file if it doesn't exist.
         """
-        if not self.games_file.exists():
+        if not games_file.exists():
             logger.info("Games file not found, creating empty library")
-            self.games = []
-            self.save_games()
-            return
-        
+            return []
+
         try:
-            with open(self.games_file, "r") as f:
+            with open(games_file, "r") as f:
                 data = json.load(f)
-            
-            self.games = [Game.from_dict(game_data) for game_data in data]
-            logger.info(f"Loaded {len(self.games)} games from {self.games_file}")
-            
+
+            games = [Game.from_dict(game_data) for game_data in data]
+            logger.info(f"Loaded {len(games)} games from {games_file}")
+            return games
+
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON in games file: {e}")
-            self.games = []
+            return []
         except Exception as e:
             logger.error(f"Failed to load games: {e}")
-            self.games = []
+            return []
 
-    def save_games(self) -> None:
-        """
-        Save games to JSON file.
-        
-        Persists the current game library to disk.
+    def save_games(self, games: list[Game], games_file: pathlib.Path) -> None:
+        """ Save games to JSON file.
+
+        Args:
+            games: List of Game objects to save.
+            games_file: Path to the games JSON file.
         """
         try:
-            # Ensure directory exists
-            self.games_file.parent.mkdir(parents=True, exist_ok=True)
+            games_file.parent.mkdir(parents=True, exist_ok=True)
             
-            # Serialize games
-            data = [game.to_dict() for game in self.games]
-            
-            # Write to file
-            with open(self.games_file, "w") as f:
+            data = [game.to_dict() for game in games]
+
+            with open(games_file, "w") as f:
                 json.dump(data, f, indent=2)
-            
-            logger.info(f"Saved {len(self.games)} games to {self.games_file}")
-            
+
+            logger.info(f"Saved {len(games)} games to {games_file}")
+
         except Exception as e:
             logger.error(f"Failed to save games: {e}")
-
+        
     def add_game(self, game: Game) -> None:
         """
         Add a game to the library.
@@ -161,12 +164,10 @@ class GameLibrary:
         return [game for game in self.games if game.installed]
 
     def get_available_games(self) -> List[Game]:
-        """
-        Get all available (not installed) games.
-        
-        Returns:
-            list: List of available Game instances
-        """
+        """ Get all available (not installed) games. """
+        # TODO: Lazy-download list of games
+        # https://github.com/hblok/max_blocks/blob/main/LICENSE
+        # TODO: Setup access token
         return [game for game in self.games if not game.installed]
 
     def update_game(self, game: Game) -> bool:

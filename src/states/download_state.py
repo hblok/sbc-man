@@ -1,9 +1,5 @@
 """
-Download State Module
-
 State for downloading and installing games.
-
-Based on: docs/code/class_states_download_state.txt
 """
 
 import logging

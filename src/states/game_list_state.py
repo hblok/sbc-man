@@ -2,8 +2,6 @@
 Game List State Module
 
 State for browsing and selecting games from the library.
-
-Based on: docs/code/class_states_game_list_state.txt
 """
 
 import logging
