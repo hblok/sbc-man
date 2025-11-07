@@ -24,7 +24,7 @@ class SettingsState(BaseState):
     """
 
     def on_enter(self, previous_state: Optional[BaseState]) -> None:
-        """Initialize settings state."""
+        """Initialize"""
         logger.info("Entered settings state")
         self.selected_option = 0
         self.settings_options = [

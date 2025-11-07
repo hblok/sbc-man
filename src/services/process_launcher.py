@@ -28,7 +28,7 @@ class ProcessLauncher:
 
     def __init__(self, hw_config: Dict[str, Any]):
         """
-        Initialize process launcher.
+        Initialize
         
         Args:
             hw_config: Hardware configuration dictionary

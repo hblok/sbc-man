@@ -25,7 +25,7 @@ class BaseState(ABC):
 
     def __init__(self, state_manager: "StateManager"):
         """
-        Initialize base state.
+        Initialize
         
         Args:
             state_manager: Reference to the state manager

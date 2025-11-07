@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Optional, Callable, Any
 
 from ..services.network import NetworkService
+from ..hardware.paths import AppPaths
 from .game import Game
 
 logger = logging.getLogger(__name__)
@@ -65,14 +66,15 @@ class DownloadManager:
     updates via observer callbacks.
     """
 
-    def __init__(self, hw_config: dict):
+    def __init__(self, hw_config: dict, app_paths: AppPaths):
         """
-        Initialize download manager.
+        Initialize
         
         Args:
             hw_config: Hardware configuration dictionary
         """
         self.hw_config = hw_config
+        self.app_paths = app_paths
         self.network = NetworkService()
         
         # Download state
@@ -80,10 +82,10 @@ class DownloadManager:
         self.is_downloading = False
         self.download_progress = 0.0
         
-        # Determine download directory
-        paths = hw_config.get("paths", {})
+        # Use AppPaths for downloads directory
+        
         games_dir = Path(paths.get("games", "~/games")).expanduser()
-        self.downloads_dir = games_dir / "downloads"
+        self.downloads_dir = app_paths.downloads_dir
         self.downloads_dir.mkdir(parents=True, exist_ok=True)
         
         logger.info("DownloadManager initialized")
@@ -99,13 +101,13 @@ class DownloadManager:
         if self.is_downloading:
             logger.warning("Download already in progress")
             if observer:
-                observer.on_error("Download already in progress")
+            observer.on_error("Download already in progress")
             return
         
         if not game.download_url:
             logger.error(f"No download URL for game: {game.name}")
             if observer:
-                observer.on_error("No download URL available")
+            observer.on_error("No download URL available")
             return
         
         # Start download thread
@@ -130,7 +132,7 @@ class DownloadManager:
             # Download file
             filename = Path(game.download_url).name
             if not filename:
-                filename = f"{game.id}.zip"
+            filename = f"{game.id}.zip"
             
             dest_file = self.downloads_dir / filename
             
@@ -138,19 +140,19 @@ class DownloadManager:
             
             # Progress callback
             def progress_callback(downloaded: int, total: int) -> None:
-                self.download_progress = downloaded / total if total > 0 else 0
-                if observer:
-                    observer.on_progress(downloaded, total)
+            self.download_progress = downloaded / total if total > 0 else 0
+            if observer:
+            observer.on_progress(downloaded, total)
             
             # Download the file
             success = self.network.download_file(
-                game.download_url,
-                dest_file,
-                progress_callback,
+            game.download_url,
+            dest_file,
+            progress_callback,
             )
             
             if not success:
-                raise Exception("Download failed")
+            raise Exception("Download failed")
             
             # Extract archive
             logger.info(f"Extracting {dest_file}")
@@ -165,15 +167,15 @@ class DownloadManager:
             
             # Notify success
             if observer:
-                observer.on_complete(True, f"Successfully installed {game.name}")
+            observer.on_complete(True, f"Successfully installed {game.name}")
             
             logger.info(f"Download and installation complete: {game.name}")
             
         except Exception as e:
             logger.error(f"Download failed: {e}")
             if observer:
-                observer.on_error(str(e))
-                observer.on_complete(False, str(e))
+            observer.on_error(str(e))
+            observer.on_complete(False, str(e))
         
         finally:
             self.is_downloading = False
@@ -202,10 +204,10 @@ class DownloadManager:
         # Extract based on file type
         if archive_path.suffix == ".zip":
             with zipfile.ZipFile(archive_path, "r") as zip_ref:
-                zip_ref.extractall(install_dir)
+            zip_ref.extractall(install_dir)
         elif archive_path.suffix in [".tar", ".gz", ".bz2", ".xz"]:
             with tarfile.open(archive_path, "r:*") as tar_ref:
-                tar_ref.extractall(install_dir)
+            tar_ref.extractall(install_dir)
         else:
             raise Exception(f"Unsupported archive format: {archive_path.suffix}")
         

@@ -25,7 +25,7 @@ class NetworkService:
 
     def __init__(self, timeout: int = 30, max_retries: int = 3):
         """
-        Initialize network service.
+        Initialize
         
         Args:
             timeout: Request timeout in seconds

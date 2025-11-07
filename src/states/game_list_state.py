@@ -25,7 +25,7 @@ class GameListState(BaseState):
     """
 
     def on_enter(self, previous_state: Optional[BaseState]) -> None:
-        """Initialize game list state."""
+        """Initialize"""
         logger.info("Entered game list state")
         self.games = self.game_library.get_all_games()
         self.selected_index = 0

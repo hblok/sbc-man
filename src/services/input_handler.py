@@ -11,6 +11,8 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
+from ..hardware.paths import AppPaths
+
 import pygame
 
 logger = logging.getLogger(__name__)
@@ -27,22 +29,23 @@ class InputHandler:
     - Per-game mappings
     """
 
-    def __init__(self, hw_config: Dict[str, Any]):
+    def __init__(self, hw_config: Dict[str, Any], app_paths: AppPaths):
         """
-        Initialize input handler with hierarchical mappings.
+        Initialize
         
         Args:
-            hw_config: Hardware configuration dictionary
+    hw_config: Hardware configuration dictionary
         """
         self.hw_config = hw_config
+    self.app_paths = app_paths
         
         # Determine config directories
-        src_dir = Path(__file__).parent.parent
-        self.config_dir = src_dir / "config" / "input_mappings"
         
-        paths = hw_config.get("paths", {})
-        data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
-        self.data_dir = data_dir / "input_overrides"
+        self.config_dir = app_paths.input_mappings_config_dir
+        
+        
+        
+        self.data_dir = app_paths.input_overrides_dir
         
         self.current_game_id: Optional[str] = None
         self.mappings: Dict[str, List[str]] = {}
@@ -81,10 +84,10 @@ class InputHandler:
         
         # Layer 4: Per-game mappings (if game context is set)
         if self.current_game_id:
-            game_mappings = self._load_mapping_file(
-                self.data_dir / "games" / f"{self.current_game_id}.json"
-            )
-            self.mappings.update(game_mappings)
+    game_mappings = self._load_mapping_file(
+        self.data_dir / "games" / f"{self.current_game_id}.json"
+    )
+    self.mappings.update(game_mappings)
         
         logger.info(f"Loaded input mappings: {list(self.mappings.keys())}")
 
@@ -93,47 +96,47 @@ class InputHandler:
         Load a single mapping JSON file.
         
         Args:
-            path: Path to mapping file
-            
+    path: Path to mapping file
+     
         Returns:
-            dict: Mapping dictionary or empty dict if file doesn't exist
+    dict: Mapping dictionary or empty dict if file doesn't exist
         """
         if not path.exists():
-            logger.debug(f"Mapping file not found: {path}")
-            return {}
+    logger.debug(f"Mapping file not found: {path}")
+    return {}
         
         try:
-            with open(path, "r") as f:
-                data = json.load(f)
-            logger.debug(f"Loaded mappings from {path}")
-            return data
+    with open(path, "r") as f:
+        data = json.load(f)
+    logger.debug(f"Loaded mappings from {path}")
+    return data
         except json.JSONDecodeError as e:
-            logger.error(f"Invalid JSON in {path}: {e}")
-            return {}
+    logger.error(f"Invalid JSON in {path}: {e}")
+    return {}
         except Exception as e:
-            logger.error(f"Failed to load {path}: {e}")
-            return {}
+    logger.error(f"Failed to load {path}: {e}")
+    return {}
 
     def _initialize_joysticks(self) -> None:
-        """Initialize all detected joysticks."""
+        """Initialize"""
         pygame.joystick.init()
         joystick_count = pygame.joystick.get_count()
         
         for i in range(joystick_count):
-            try:
-                joystick = pygame.joystick.Joystick(i)
-                joystick.init()
-                self.joysticks.append(joystick)
-                logger.info(f"Initialized joystick {i}: {joystick.get_name()}")
-            except Exception as e:
-                logger.warning(f"Failed to initialize joystick {i}: {e}")
+    try:
+        joystick = pygame.joystick.Joystick(i)
+        joystick.init()
+        self.joysticks.append(joystick)
+        logger.info(f"Initializeget_name()}")
+    except Exception as e:
+        logger.warning(f"Failed to initialize joystick {i}: {e}")
 
     def set_game_context(self, game_id: Optional[str]) -> None:
         """
         Set current game for per-game mappings.
         
         Args:
-            game_id: Game identifier, or None to clear context
+    game_id: Game identifier, or None to clear context
         """
         self.current_game_id = game_id
         self._load_mapping_hierarchy()
@@ -148,47 +151,47 @@ class InputHandler:
         Check if action was triggered in event list.
         
         Args:
-            action: Action name (e.g., 'confirm', 'cancel', 'menu')
-            events: List of pygame events
-            
+    action: Action name (e.g., 'confirm', 'cancel', 'menu')
+    events: List of pygame events
+     
         Returns:
-            bool: True if action was triggered
+    bool: True if action was triggered
         """
         if action not in self.mappings:
-            return False
+    return False
         
         action_keys = self.mappings[action]
         
         for event in events:
-            # Check keyboard events
-            if event.type == pygame.KEYDOWN:
-                key_name = pygame.key.name(event.key).upper()
-                if key_name in action_keys:
-                    return True
-                # Also check for special keys
-                if event.key == pygame.K_RETURN and "RETURN" in action_keys:
-                    return True
-                if event.key == pygame.K_ESCAPE and "ESCAPE" in action_keys:
-                    return True
-            
-            # Check joystick button events
-            elif event.type == pygame.JOYBUTTONDOWN:
-                button_names = self._get_button_names(event.button)
-                for button_name in button_names:
-                    if button_name in action_keys:
-                        return True
-            
-            # Check joystick hat (d-pad) events
-            elif event.type == pygame.JOYHATMOTION:
-                hat_x, hat_y = event.value
-                if hat_y == 1 and "DPAD_UP" in action_keys:
-                    return True
-                if hat_y == -1 and "DPAD_DOWN" in action_keys:
-                    return True
-                if hat_x == -1 and "DPAD_LEFT" in action_keys:
-                    return True
-                if hat_x == 1 and "DPAD_RIGHT" in action_keys:
-                    return True
+    # Check keyboard events
+    if event.type == pygame.KEYDOWN:
+        key_name = pygame.key.name(event.key).upper()
+        if key_name in action_keys:
+            return True
+        # Also check for special keys
+        if event.key == pygame.K_RETURN and "RETURN" in action_keys:
+            return True
+        if event.key == pygame.K_ESCAPE and "ESCAPE" in action_keys:
+            return True
+     
+    # Check joystick button events
+    elif event.type == pygame.JOYBUTTONDOWN:
+        button_names = self._get_button_names(event.button)
+        for button_name in button_names:
+            if button_name in action_keys:
+            return True
+     
+    # Check joystick hat (d-pad) events
+    elif event.type == pygame.JOYHATMOTION:
+        hat_x, hat_y = event.value
+        if hat_y == 1 and "DPAD_UP" in action_keys:
+            return True
+        if hat_y == -1 and "DPAD_DOWN" in action_keys:
+            return True
+        if hat_x == -1 and "DPAD_LEFT" in action_keys:
+            return True
+        if hat_x == 1 and "DPAD_RIGHT" in action_keys:
+            return True
         
         return False
 
@@ -197,26 +200,26 @@ class InputHandler:
         Map button index to common semantic names.
         
         Args:
-            button_index: Physical button index
-            
+    button_index: Physical button index
+     
         Returns:
-            list: List of possible button names
+    list: List of possible button names
         """
         button_map = {
-            0: ["BUTTON_A", "BUTTON_SOUTH"],
-            1: ["BUTTON_B", "BUTTON_EAST"],
-            2: ["BUTTON_X", "BUTTON_WEST"],
-            3: ["BUTTON_Y", "BUTTON_NORTH"],
-            4: ["BUTTON_L1", "BUTTON_LB"],
-            5: ["BUTTON_R1", "BUTTON_RB"],
-            6: ["BUTTON_SELECT", "BUTTON_BACK"],
-            7: ["BUTTON_START"],
-            8: ["BUTTON_L3"],
-            9: ["BUTTON_R3"],
-            10: ["BUTTON_L2", "BUTTON_LT"],
-            11: ["BUTTON_R2", "BUTTON_RT"],
-            12: ["BUTTON_MENU"],
-            13: ["BUTTON_MENU"],  # Alternative menu button
+    0: ["BUTTON_A", "BUTTON_SOUTH"],
+    1: ["BUTTON_B", "BUTTON_EAST"],
+    2: ["BUTTON_X", "BUTTON_WEST"],
+    3: ["BUTTON_Y", "BUTTON_NORTH"],
+    4: ["BUTTON_L1", "BUTTON_LB"],
+    5: ["BUTTON_R1", "BUTTON_RB"],
+    6: ["BUTTON_SELECT", "BUTTON_BACK"],
+    7: ["BUTTON_START"],
+    8: ["BUTTON_L3"],
+    9: ["BUTTON_R3"],
+    10: ["BUTTON_L2", "BUTTON_LT"],
+    11: ["BUTTON_R2", "BUTTON_RT"],
+    12: ["BUTTON_MENU"],
+    13: ["BUTTON_MENU"],  # Alternative menu button
         }
         
         names = button_map.get(button_index, [])
@@ -229,18 +232,18 @@ class InputHandler:
         Save custom input mapping.
         
         Args:
-            action: Action name
-            keys: List of key identifiers
-            scope: 'device' or 'game'
+    action: Action name
+    keys: List of key identifiers
+    scope: 'device' or 'game'
         """
         # Update current mappings
         self.mappings[action] = keys
         
         # Determine save path
         if scope == "game" and self.current_game_id:
-            save_path = self.data_dir / "games" / f"{self.current_game_id}.json"
+    save_path = self.data_dir / "games" / f"{self.current_game_id}.json"
         else:
-            save_path = self.data_dir / "device.json"
+    save_path = self.data_dir / "device.json"
         
         # Ensure directory exists
         save_path.parent.mkdir(parents=True, exist_ok=True)
@@ -253,17 +256,17 @@ class InputHandler:
         
         # Save to file
         try:
-            with open(save_path, "w") as f:
-                json.dump(existing, f, indent=2)
-            logger.info(f"Saved mapping for {action} to {save_path}")
+    with open(save_path, "w") as f:
+        json.dump(existing, f, indent=2)
+    logger.info(f"Saved mapping for {action} to {save_path}")
         except Exception as e:
-            logger.error(f"Failed to save mapping: {e}")
+    logger.error(f"Failed to save mapping: {e}")
 
     def get_current_mappings(self) -> Dict[str, List[str]]:
         """
         Get current active mappings for display.
         
         Returns:
-            dict: Copy of current mappings
+    dict: Copy of current mappings
         """
         return self.mappings.copy()

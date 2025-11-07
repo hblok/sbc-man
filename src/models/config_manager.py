@@ -11,6 +11,10 @@ import logging
 from pathlib import Path
 from typing import Any, Optional, Dict
 
+from ..hardware.paths import AppPaths
+
+from ..hardware.paths import AppPaths
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,20 +26,18 @@ class ConfigManager:
     convenient get/set operations with dot notation support.
     """
 
-    def __init__(self, hw_config: Dict[str, Any]):
+    def __init__(self, hw_config: Dict[str, Any], app_paths: AppPaths):
         """
-        Initialize configuration manager.
+        Initialize
         
         Args:
             hw_config: Hardware configuration from HardwareDetector
         """
         self.hw_config = hw_config
+        self.app_paths = app_paths
         self.runtime_config: Dict[str, Any] = {}
         
-        # Determine config file path
-        paths = hw_config.get("paths", {})
-        data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
-        self.config_file = data_dir / "config.json"
+        self.config_file = app_paths.config_file
         
         # Load runtime config
         self._load_runtime_config()
@@ -56,7 +58,7 @@ class ConfigManager:
         
         try:
             with open(self.config_file, "r") as f:
-                self.runtime_config = json.load(f)
+            self.runtime_config = json.load(f)
             logger.info(f"Loaded runtime config from {self.config_file}")
             
         except json.JSONDecodeError as e:
@@ -118,7 +120,7 @@ class ConfigManager:
             
             # Write to file
             with open(self.config_file, "w") as f:
-                json.dump(self.runtime_config, f, indent=2)
+            json.dump(self.runtime_config, f, indent=2)
             
             logger.info(f"Saved runtime config to {self.config_file}")
             
@@ -141,9 +143,9 @@ class ConfigManager:
         
         for k in keys:
             if isinstance(value, dict) and k in value:
-                value = value[k]
+            value = value[k]
             else:
-                return None
+            return None
         
         return value
 
@@ -164,7 +166,7 @@ class ConfigManager:
         # Navigate to parent of target key
         for k in keys[:-1]:
             if k not in current:
-                current[k] = {}
+            current[k] = {}
             current = current[k]
         
         # Set the value
@@ -196,8 +198,8 @@ class ConfigManager:
         
         for key, value in override.items():
             if key in result and isinstance(result[key], dict) and isinstance(value, dict):
-                result[key] = self._deep_merge(result[key], value)
+            result[key] = self._deep_merge(result[key], value)
             else:
-                result[key] = value
+            result[key] = value
         
         return result

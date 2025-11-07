@@ -34,7 +34,7 @@ class Game:
         custom_fps: Optional[int] = None,
     ):
         """
-        Initialize game instance with metadata.
+        Initialize
         
         Args:
             game_id: Unique identifier for the game

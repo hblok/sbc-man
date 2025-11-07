@@ -30,9 +30,10 @@ class StateManager:
         config: "ConfigManager",
         game_library: "GameLibrary",
         input_handler: "InputHandler",
+    app_paths: "AppPaths",
     ):
         """
-        Initialize state manager with dependencies.
+        Initialize
         
         Args:
             screen: Pygame display surface
@@ -46,6 +47,11 @@ class StateManager:
         self.config = config
         self.game_library = game_library
         self.input_handler = input_handler
+        self.app_paths = app_paths
+        self.app_paths = app_paths
+        self.app_paths = app_paths
+        self.app_paths = app_paths
+        self.app_paths = app_paths
         
         self.states: Dict[str, "BaseState"] = {}
         self.current_state: Optional["BaseState"] = None

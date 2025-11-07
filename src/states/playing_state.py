@@ -26,10 +26,10 @@ class PlayingState(BaseState):
     """
 
     def on_enter(self, previous_state: Optional[BaseState]) -> None:
-        """Initialize playing state and launch game."""
+        """Initialize"""
         logger.info("Entered playing state")
         
-        # Get the selected game from game_list_state
+        # Get selected game from game_list_state
         # For now, we'll just show a placeholder
         self.game_running = True
         self.launcher = ProcessLauncher(self.hw_config)

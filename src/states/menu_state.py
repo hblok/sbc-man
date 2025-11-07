@@ -25,7 +25,7 @@ class MenuState(BaseState):
     """
 
     def on_enter(self, previous_state: Optional[BaseState]) -> None:
-        """Initialize menu state."""
+        """Initialize"""
         logger.info("Entered menu state")
         self.selected_option = 0
         self.menu_options = [

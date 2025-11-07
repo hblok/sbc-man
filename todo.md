@@ -1,34 +1,41 @@
-# SBC-Man Development Phases 4 & 5 Implementation
+# Path Management Refactoring Plan
 
-## Phase 4: Services and Views Testing
+## Phase 1: Analysis and Discovery ✅
+- [x] Examine existing AppPaths class in src/hardware/paths.py
+- [x] Find all hardcoded paths throughout the codebase
+- [x] Identify all files that use "~" expansion or hardcoded paths
+- [x] Analyze current dependency injection patterns
 
-### Services Testing
-- [x] Create unit tests for NetworkService
-- [x] Create unit tests for DownloadManager
-- [x] Fix failing service tests
+## Phase 2: Extend AppPaths Class ✅
+- [x] Enhance AppPaths to handle all identified paths
+- [x] Convert to use pathlib exclusively
+- [x] Add proper home directory expansion handling
+- [x] Add any missing path utility methods
 
-### Views Testing
-- [x] Create unit tests for download_state.py
-- [x] Create unit tests for other state modules
-- [x] Fix failing view tests
+## Phase 3: Refactor Code Under src/
+- [ ] Update Application class to use AppPaths via constructor injection
+- [ ] Update ConfigManager to use AppPaths via constructor injection
+- [ ] Update DownloadManager to use AppPaths via constructor injection
+- [ ] Update GameLibrary to use AppPaths via constructor injection
+- [ ] Update InputHandler to use AppPaths via constructor injection
+- [ ] Update StateManager to pass AppPaths to states
+- [ ] Replace all hardcoded paths with AppPaths references
+- [ ] Remove "~" expansion usage throughout codebase
 
-## Phase 5: Download and Install flows
+## Phase 4: Clean Up Documentation
+- [ ] Remove verbose docstrings from simple methods
+- [ ] Convert to single-line docstrings where appropriate
+- [ ] Remove obvious documentation for getters/setters
+- [ ] Keep docstrings for complex logic and public APIs
 
-### Download Flow Implementation
-- [x] Implement download functionality in download_state.py
-- [x] Add proper error handling for download failures
-- [x] Add progress tracking UI elements
+## Phase 5: Update Tests
+- [ ] Update all relevant tests for AppPaths injection
+- [ ] Mock AppPaths in unit tests
+- [ ] Ensure all existing tests pass
+- [ ] Add tests for new AppPaths functionality
 
-### Install Flow Implementation
-- [x] Implement installation functionality in download_state.py
-- [x] Add proper error handling for installation failures
-- [x] Add post-installation UI updates
-
-## Testing and Validation
-- [x] Run all unit tests to ensure they pass
-- [x] Create integration tests for download and install flows
-- [x] Verify functionality works as expected
-
-## Documentation
-- [x] Update any necessary documentation
-- [x] Add docstrings to new test files
+## Phase 6: Validation and PR Creation
+- [ ] Run full test suite
+- [ ] Verify all functionality preserved
+- [ ] Create comprehensive commit
+- [ ] Create pull request to main branch

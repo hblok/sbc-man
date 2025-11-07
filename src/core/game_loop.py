@@ -26,7 +26,7 @@ class GameLoop:
     """
 
     def __init__(self) -> None:
-        """Initialize game loop."""
+        """Initialize"""
         self.running = False
 
     def run(

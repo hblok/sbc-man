@@ -28,7 +28,7 @@ class ConfigLoader:
 
     def __init__(self, device_type: str, os_type: str, probed_hardware: Dict[str, Any]):
         """
-        Initialize configuration loader.
+        Initialize
         
         Args:
             device_type: Detected device type identifier
