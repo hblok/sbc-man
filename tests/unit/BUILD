@@ -34,17 +34,6 @@ py_test(
 )
 
 py_test(
-    name = "test_hardware_detection",
-    srcs = ["test_hardware_detection.py"],
-    deps = [
-        "//src/hardware:hardware",
-        "//tests:test_utils",
-        "@pip_deps//pygame_ce",	
-    ],
-    size = "small",
-)
-
-py_test(
     name = "test_input_handler",
     srcs = ["test_input_handler.py"],
     deps = [
@@ -52,17 +41,6 @@ py_test(
         "//src/services",	
         "//tests:test_utils",
         "@pip_deps//pygame_ce",
-    ],
-    size = "small",
-)
-
-py_test(
-    name = "test_models",
-    srcs = ["test_models.py"],
-    deps = [
-        "//src/hardware:hardware",
-        "//src/models:models",
-        "//tests:test_utils",
     ],
     size = "small",
 )
@@ -78,11 +56,114 @@ py_test(
     size = "small",
 )
 
+# Split test_models.py into separate files
 py_test(
-    name = "test_states",
-    srcs = ["test_states.py"],
+    name = "test_game",
+    srcs = ["test_game.py"],
     deps = [
         "//src/models:models",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_game_library",
+    srcs = ["test_game_library.py"],
+    deps = [
+        "//src/hardware:hardware",
+        "//src/models:models",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_config_manager",
+    srcs = ["test_config_manager.py"],
+    deps = [
+        "//src/hardware:hardware",
+        "//src/models:models",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+# Split test_hardware_detection.py into separate files
+py_test(
+    name = "test_hardware_detector",
+    srcs = ["test_hardware_detector.py"],
+    deps = [
+        "//src/hardware:hardware",
+        "//tests:test_utils",
+        "@pip_deps//pygame_ce",	
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_hardware_prober",
+    srcs = ["test_hardware_prober.py"],
+    deps = [
+        "//src/hardware:hardware",
+        "//tests:test_utils",
+        "@pip_deps//pygame_ce",	
+    ],
+    size = "small",
+)
+
+# Split test_states.py into separate files
+py_test(
+    name = "test_base_state",
+    srcs = ["test_base_state.py"],
+    deps = [
+        "//src/states:states",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_menu_state",
+    srcs = ["test_menu_state.py"],
+    deps = [
+        "//src/services:services",
+        "//src/states:states",
+        "//tests:test_utils",
+        "@pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_game_list_state",
+    srcs = ["test_game_list_state.py"],
+    deps = [
+        "//src/models:models",
+        "//src/services:services",
+        "//src/states:states",
+        "//tests:test_utils",
+        "@pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_playing_state",
+    srcs = ["test_playing_state.py"],
+    deps = [
+        "//src/services:services",
+        "//src/states:states",
+        "//tests:test_utils",
+        "@pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_settings_state",
+    srcs = ["test_settings_state.py"],
+    deps = [
         "//src/services:services",
         "//src/states:states",
         "//tests:test_utils",
