@@ -23,6 +23,7 @@ jobs:
           path: |
             ~/.cache/bazel
             ~/.cache/bazelisk
+          key: bazel
       
       - name: Run tests
         run: bazel test ...
