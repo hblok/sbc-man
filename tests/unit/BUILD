@@ -40,7 +40,7 @@ py_test(
         "//src/models",
         "//src/services",	
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//pygame_ce",
     ],
     size = "small",
 )
@@ -96,7 +96,7 @@ py_test(
     deps = [
         "//src/hardware:hardware",
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",	
+        "@sbc_man_pip_deps//pygame_ce",	
     ],
     size = "small",
 )
@@ -107,7 +107,7 @@ py_test(
     deps = [
         "//src/hardware:hardware",
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",	
+        "@sbc_man_pip_deps//pygame_ce",	
     ],
     size = "small",
 )
@@ -130,7 +130,7 @@ py_test(
         "//src/services:services",
         "//src/states:states",
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//pygame_ce",
     ],
     size = "small",
 )
@@ -143,7 +143,7 @@ py_test(
         "//src/services:services",
         "//src/states:states",
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//pygame_ce",
     ],
     size = "small",
 )
@@ -155,7 +155,7 @@ py_test(
         "//src/services:services",
         "//src/states:states",
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//pygame_ce",
     ],
     size = "small",
 )
@@ -167,7 +167,7 @@ py_test(
         "//src/services:services",
         "//src/states:states",
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//pygame_ce",
     ],
     size = "small",
 )

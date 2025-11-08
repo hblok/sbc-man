@@ -51,7 +51,7 @@ py_test(
         "//src/services:services",
         "//src/states:states",
         "//tests:test_utils",
-        "@pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//pygame_ce",
     ],
     size = "medium",
 )

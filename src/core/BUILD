@@ -12,6 +12,6 @@ py_library(
         "//src/hardware:hardware",
         "//src/models:models",
         "//src/services:services",
-        "@pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//pygame_ce",
     ],
 )

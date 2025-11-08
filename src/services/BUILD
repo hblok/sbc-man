@@ -11,7 +11,7 @@ py_library(
     ],
     deps = [
  #       "//src/models:models",
-        "@pip_deps//pygame_ce",
-        "@pip_deps//requests",
+        "@sbc_man_pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//requests",
     ],
 )
