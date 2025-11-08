@@ -171,3 +171,12 @@ py_test(
     ],
     size = "small",
 )
+
+py_test(
+    name = "test_protobuf_api",
+    srcs = ["test_protobuf_api.py"],
+    deps = [
+        "//google",
+    ],
+    size = "small",
+)

@@ -16,8 +16,6 @@ from ..hardware.paths import AppPaths
 logger = logging.getLogger(__name__)
 
 
-# TODO: Add download list
-
 class GameLibrary:
     """
     Game library manager.
@@ -27,27 +25,18 @@ class GameLibrary:
     """
 
     def __init__(self, hw_config: Dict[str, Any], app_paths: AppPaths):
-        """
-        Initialize game library.
-        
-        Args:
-            hw_config: Hardware configuration dictionary
-        """
         self.hw_config = hw_config
         self.app_paths = app_paths
         self.games: List[Game] = []
         
-        # Determine games file path
-        # FIXME
-        #paths = hw_config.get("paths", {})
-        #data_dir = pathlib.Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
-        #self.games_file = data_dir / "games.json"
-        self.games_file = app_paths.games_file
+        self.local_games_file = app_paths.local_games_file
+        self.all_games_file = app_paths.all_games_file
         
-        # Load games from file
-        self.games = self.load_games(self.games_file)
-        
-        #logger.info(f"GameLibrary initialized with {len(self.games)} games")
+        self.local_games = self.load_games(self.local_games_file)
+        self.all_games = self.load_games(self.all_games_file)
+
+        if self.local_games:
+            logger.info(f"GameLibrary initialized with {len(self.local_games)} games")
 
     def load_games(self, games_file: pathlib.Path) -> list[Game]:
         """
@@ -101,7 +90,7 @@ class GameLibrary:
     
     def save_games(self) -> None:
         """Save current games to the default games file."""
-        self._save_games_to_file(self.games, self.games_file)
+        self._save_games_to_file(self.local_games, self.local_games_file)
         
     def add_game(self, game: Game) -> None:
         """
@@ -116,7 +105,7 @@ class GameLibrary:
             logger.warning(f"Game {game.id} already exists, updating")
             self.remove_game(game.id)
         
-        self.games.append(game)
+        self.local_games.append(game)
         logger.info(f"Added game: {game.name}")
 
     def remove_game(self, game_id: str) -> bool:
@@ -129,9 +118,9 @@ class GameLibrary:
         Returns:
             bool: True if game was removed, False if not found
         """
-        for i, game in enumerate(self.games):
+        for i, game in enumerate(self.local_games):
             if game.id == game_id:
-                removed = self.games.pop(i)
+                removed = self.local_games.pop(i)
                 logger.info(f"Removed game: {removed.name}")
                 return True
         
@@ -148,7 +137,7 @@ class GameLibrary:
         Returns:
             Game: Game instance if found, None otherwise
         """
-        for game in self.games:
+        for game in self.local_games:
             if game.id == game_id:
                 return game
         return None
@@ -160,7 +149,7 @@ class GameLibrary:
         Returns:
             list: List of all Game instances
         """
-        return self.games.copy()
+        return self.local_games.copy()
 
     def get_installed_games(self) -> List[Game]:
         """
@@ -169,14 +158,14 @@ class GameLibrary:
         Returns:
             list: List of installed Game instances
         """
-        return [game for game in self.games if game.installed]
+        return [game for game in self.local_games if game.installed]
 
     def get_available_games(self) -> List[Game]:
         """ Get all available (not installed) games. """
         # TODO: Lazy-download list of games
         # https://github.com/hblok/max_blocks/blob/main/LICENSE
         # TODO: Setup access token
-        return [game for game in self.games if not game.installed]
+        return [game for game in self.local_games if not game.installed]
 
     def update_game(self, game: Game) -> bool:
         """
@@ -188,9 +177,9 @@ class GameLibrary:
         Returns:
             bool: True if game was updated, False if not found
         """
-        for i, existing_game in enumerate(self.games):
+        for i, existing_game in enumerate(self.local_games):
             if existing_game.id == game.id:
-                self.games[i] = game
+                self.local_games[i] = game
                 logger.info(f"Updated game: {game.name}")
                 return True
         

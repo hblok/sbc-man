@@ -57,9 +57,14 @@ class AppPaths:
         return self.data_games_dir / "available.json"
     
     @property
-    def games_file(self) -> pathlib.Path:
-        """Main games database file"""
-        return self.data_games_dir / "games.json"
+    def local_games_file(self) -> pathlib.Path:
+        """ Games database file for existing locally downloaded games."""
+        return self.data_games_dir / "local_games.json"
+
+    @property
+    def all_games_file(self) -> pathlib.Path:
+        """ Games database file for all available games."""
+        return self.data_games_dir / "all_games.json"    
     
     @property
     def config_file(self) -> pathlib.Path:
