@@ -8,6 +8,7 @@ import unittest
 import tempfile
 import os
 import zipfile
+from src.hardware.paths import AppPaths
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
@@ -48,7 +49,7 @@ class TestDownloadManager(unittest.TestCase):
                 "games": self.temp_dir,
             }
         }
-        self.download_manager = DownloadManager(self.hw_config)
+        self.download_manager = DownloadManager(self.hw_config, AppPaths())
         
     def tearDown(self):
         """Clean up test fixtures."""
@@ -83,7 +84,7 @@ class TestDownloadManager(unittest.TestCase):
         mock_unlink.return_value = None
         
         # Reinitialize the download manager with the mocked network service
-        self.download_manager = DownloadManager(self.hw_config)
+        self.download_manager = DownloadManager(self.hw_config, AppPaths())
         
         # Create a test game
         game = Game(

@@ -9,6 +9,7 @@ import logging
 from typing import Dict, Optional, List
 
 import pygame
+from ..hardware.paths import AppPaths
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,7 @@ class StateManager:
         config: "ConfigManager",
         game_library: "GameLibrary",
         input_handler: "InputHandler",
+        app_paths: AppPaths,
     ):
         """
         Initialize state manager with dependencies.
@@ -38,12 +40,14 @@ class StateManager:
             config: Configuration manager instance
             game_library: Game library manager instance
             input_handler: Input handler service instance
+            app_paths: Application paths instance
         """
         self.screen = screen
         self.hw_config = hw_config
         self.config = config
         self.game_library = game_library
         self.input_handler = input_handler
+        self.app_paths = app_paths
         
         self.states: Dict[str, "BaseState"] = {}
         self.current_state: Optional["BaseState"] = None

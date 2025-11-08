@@ -34,6 +34,7 @@ class BaseState(ABC):
         self.config = state_manager.config
         self.game_library = state_manager.game_library
         self.input_handler = state_manager.input_handler
+        self.app_paths = state_manager.app_paths
 
     @abstractmethod
     def on_enter(self, previous_state: Optional["BaseState"]) -> None:

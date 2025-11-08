@@ -45,7 +45,7 @@ class GameLibrary:
         self.games_file = app_paths.games_file
         
         # Load games from file
-        self.load_games(self.games_file)
+        self.games = self.load_games(self.games_file)
         
         logger.info(f"GameLibrary initialized with {len(self.games)} games")
 
@@ -79,7 +79,7 @@ class GameLibrary:
             logger.error(f"Failed to load games: {e}")
             return []
 
-    def save_games(self, games: list[Game], games_file: pathlib.Path) -> None:
+    def _save_games_to_file(self, games: list[Game], games_file: pathlib.Path) -> None:
         """ Save games to JSON file.
 
         Args:
@@ -98,6 +98,10 @@ class GameLibrary:
 
         except Exception as e:
             logger.error(f"Failed to save games: {e}")
+    
+    def save_games(self) -> None:
+        """Save current games to the default games file."""
+        self._save_games_to_file(self.games, self.games_file)
         
     def add_game(self, game: Game) -> None:
         """

@@ -13,6 +13,7 @@ import shutil
 
 from src.services.input_handler import InputHandler
 from src.hardware.paths import AppPaths
+import pathlib
 
 
 class TestInputHandler(unittest.TestCase):
@@ -58,7 +59,32 @@ class TestInputHandler(unittest.TestCase):
             }
         }
 
-        self.handler = InputHandler(self.hw_config, AppPaths())
+        # Create a custom AppPaths for testing
+        class TestAppPaths(AppPaths):
+            def __init__(self, temp_dir):
+                self._temp_dir = pathlib.Path(temp_dir)
+                self._base_dir = pathlib.Path(temp_dir) / "data"
+                self._temp_dir_name = temp_dir
+            
+            @property
+            def config_dir(self):
+                return pathlib.Path(self._temp_dir_name) / "config"
+            
+            @property
+            def config_input_mappings(self):
+                return pathlib.Path(self._temp_dir_name) / "config" / "input_mappings"
+            
+            @property
+            def input_mappings(self):
+                return pathlib.Path(self._temp_dir_name) / "config" / "input_mappings"
+            
+            @property
+            def input_overrides(self):
+                return pathlib.Path(self._temp_dir_name) / "data" / "input_overrides"
+        
+        app_paths = TestAppPaths(self.temp_dir)
+        
+        self.handler = InputHandler(self.hw_config, app_paths)
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
@@ -69,8 +95,7 @@ class TestInputHandler(unittest.TestCase):
         """Test input handler initialization."""
         mock_get_count.return_value = 0
         
-        # Manually set config_dir for testing
-        self.handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
+        # Load mapping hierarchy (already configured in setUp)
         self.handler._load_mapping_hierarchy()
         
         self.assertIsNotNone(self.handler.mappings)
@@ -109,7 +134,7 @@ class TestInputHandler(unittest.TestCase):
         # Clear context
         self.handler.clear_game_context()
         
-        self.assertIsNone(handler.current_game_id)
+        self.assertIsNone(self.handler.current_game_id)
 
     @patch("pygame.joystick.get_count")
     @patch("pygame.joystick.init")
@@ -119,7 +144,7 @@ class TestInputHandler(unittest.TestCase):
         
         mock_get_count.return_value = 0
 
-        self.handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
+        # Load mapping hierarchy (already configured in setUp)
         self.handler._load_mapping_hierarchy()
         
         # Test with "cancel" action which has ESCAPE in default mapping
@@ -144,7 +169,7 @@ class TestInputHandler(unittest.TestCase):
         
         mock_get_count.return_value = 0
 
-        self.handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
+        # Load mapping hierarchy (already configured in setUp)
         self.handler._load_mapping_hierarchy()
         
         # Mock joystick button event (button 0 = A button)
@@ -167,7 +192,7 @@ class TestInputHandler(unittest.TestCase):
         self.handler.save_mapping("confirm", ["BUTTON_X", "SPACE"], scope="device")
         
         # Check that file was created
-        device_mapping_file = Path(self.hw_config["paths"]["data"]) / "input_overrides" / "device.json"
+        device_mapping_file = self.handler.app_paths.input_overrides / "device.json"
         self.assertTrue(device_mapping_file.exists())
         
         # Check content

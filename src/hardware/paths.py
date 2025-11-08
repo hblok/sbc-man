@@ -51,5 +51,35 @@ class AppPaths:
         return self.data_games_dir / "available.json"
     
     @property
+    def games_file(self) -> pathlib.Path:
+        """Main games database file"""
+        return self.data_games_dir / "games.json"
+    
+    @property
     def config_file(self) -> pathlib.Path:
         return self.data_dir / "config.json"
+    
+    @property
+    def input_mappings(self) -> pathlib.Path:
+        """Alias for config_input_mappings for backward compatibility"""
+        return self.config_input_mappings
+    
+    @property
+    def input_overrides(self) -> pathlib.Path:
+        """Directory for user input override configurations"""
+        return self.data_dir / "input_overrides"
+    
+    @property
+    def src_config_dir(self) -> pathlib.Path:
+        """Source configuration directory (relative to source code)"""
+        return pathlib.Path(__file__).parent.parent / "config"
+    
+    @property
+    def games_dir(self) -> pathlib.Path:
+        """Directory for installed games"""
+        return self.home / "games"
+    
+    @property
+    def downloads_dir(self) -> pathlib.Path:
+        """Directory for game downloads"""
+        return self.games_dir / "downloads"

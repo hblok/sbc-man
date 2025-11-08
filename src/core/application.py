@@ -94,6 +94,7 @@ class Application:
         """
         logger.info("Detecting hardware and loading configuration")
         self.hw_config = HardwareDetector().get_config()
+        self.app_paths = AppPaths()  # Initialize AppPaths
         logger.info(f"Configuration loaded for {self.hw_config['detected_device']}")
 
     def _initialize_pygame(self) -> None:
@@ -142,6 +143,7 @@ class Application:
             config=self.config_manager,
             game_library=self.game_library,
             input_handler=self.input_handler,
+            app_paths=self.app_paths,
         )
         
         logger.info("All components initialized")
@@ -152,15 +154,11 @@ class Application:
         
         Creates data directory structure if it doesn't exist.
         """
-        #FIXME
-        paths = self.hw_config.get("paths", {})
-        data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
-        
-        # Create directory structure
+        # Create directory structure using AppPaths
         directories = [
-            data_dir,
-            data_dir / "input_overrides",
-            data_dir / "input_overrides" / "games",
+            self.app_paths.data_dir,
+            self.app_paths.input_overrides,
+            self.app_paths.input_overrides / "games",
         ]
         
         for directory in directories:
