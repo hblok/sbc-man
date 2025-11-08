@@ -1,0 +1,98 @@
+# Task: Refactor Python Test Suite - Split Combined Test Classes
+
+## Context
+I have a Python repository where multiple TestCase classes have been combined into single test module files. For example, `tests/unit/test_models.py` contains `TestGame`, `TestGameLibrary`, and `TestConfigManager` classes all in one file.
+
+## Objective
+Refactor the test suite so that each TestCase class resides in its own dedicated test module file with corresponding naming conventions.
+
+## Requirements
+
+### File Structure
+- **One TestCase per module**: Each test module should contain exactly one TestCase class
+- **Naming convention**: Module name should match the TestCase class name
+  - Example: `TestGame` class → `test_game.py` file
+  - Example: `TestGameLibrary` class → `test_game_library.py` file
+- **Preserve all existing tests**: No tests should be lost during the split
+
+### Code Standards
+- **No test documentation**: Do not add docstrings to test methods
+- **No main blocks**: Do not add `if __name__ == '__main__':` or `unittest.main()` calls
+- **Maintain imports**: Ensure all necessary imports are included in each new file
+- **Preserve test functionality**: Each test must pass after splitting
+
+### Build Configuration
+- **Update BUILD files**: Modify Bazel test targets to reflect the new test module structure
+- **Existing BUILD files**: BUILD files already exist in the repository - update them rather than creating new ones
+
+## Workflow
+
+1. **Setup**: Create a git feature branch with a descriptive name (e.g., `refactor/split-test-classes`)
+
+2. **Identify**: List all test modules that contain multiple TestCase classes
+
+3. **Split iteratively**: For each module with multiple TestCases:
+   - Create new test module files with appropriate names
+   - Move each TestCase class to its own file
+   - Update imports and dependencies
+   - Run tests to verify functionality: `python -m pytest <new_test_file>` (or equivalent)
+   - If tests fail, debug and fix before proceeding
+
+4. **Update BUILD files**: Modify Bazel test targets to include all new test modules
+
+5. **Verify**: Run the complete test suite with `bazel test //tests/...` (or appropriate target)
+   - If Bazel is not available or fails, document this and use alternative test runner
+
+6. **Commit strategy**: Make logical commits after each module is successfully split and tested
+
+7. **Finalize**: Create a Pull Request against the main branch with:
+   - Clear description of changes
+   - Confirmation that all tests pass
+   - List of files created/modified
+
+## Deliverables
+
+Please provide:
+1. **Step-by-step execution log** showing:
+   - Which files were split
+   - New files created
+   - Test results after each change
+   - Any issues encountered and how they were resolved
+
+2. **Summary of changes**:
+   - Number of test modules before/after
+   - List of all new test files created
+   - Changes made to BUILD files
+
+3. **Final verification**: Confirmation that all tests pass with both individual test runs and full Bazel test suite
+
+4. **Git information**: Feature branch name and PR details
+
+## Notes
+- If you encounter failing tests that were already broken, document them but proceed with the refactoring
+- Maintain the original test logic exactly - this is a structural refactoring only
+- If any ambiguity arises, ask for clarification before proceeding
+
+## Current structure
+This is the current source code and test structure:
+src
+├── assets
+│   ├── fonts
+│   ├── icons
+│   └── themes
+├── config
+│   ├── devices
+│   ├── input_mappings
+│   └── os_types
+├── core
+├── data
+├── hardware
+├── models
+├── services
+├── states
+└── views
+    └── widgets
+tests
+├── integration
+└── unit
+
