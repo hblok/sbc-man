@@ -30,7 +30,7 @@ class StateManager:
         config: "ConfigManager",
         game_library: "GameLibrary",
         input_handler: "InputHandler",
-    app_paths: "AppPaths",
+        app_paths: "AppPaths",
     ):
         """
         Initialize
@@ -48,11 +48,6 @@ class StateManager:
         self.game_library = game_library
         self.input_handler = input_handler
         self.app_paths = app_paths
-        self.app_paths = app_paths
-        self.app_paths = app_paths
-        self.app_paths = app_paths
-        self.app_paths = app_paths
-        
         self.states: Dict[str, "BaseState"] = {}
         self.current_state: Optional["BaseState"] = None
         self.state_stack: List["BaseState"] = []

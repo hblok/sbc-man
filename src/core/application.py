@@ -41,7 +41,7 @@ class Application:
     def __init__(self) -> None:
         """Initialize"""
         self.hw_config: Optional[dict] = None
-    self.app_paths: Optional[AppPaths] = None
+        self.app_paths: Optional[AppPaths] = None
         self.screen: Optional[pygame.Surface] = None
         self.clock: Optional[pygame.time.Clock] = None
         self.config_manager: Optional[ConfigManager] = None
@@ -64,27 +64,27 @@ class Application:
         5. Cleanup and shutdown
         """
         try:
-    logger.info("Starting SBC-Man Game Launcher")
+            logger.info("Starting SBC-Man Game Launcher")
      
-    # Phase 1: Hardware detection and configuration
-    self._detect_hardware()
+            # Phase 1: Hardware detection and configuration
+            self._detect_hardware()
      
-    # Phase 2: Initialize pygame
-    self._initialize_pygame()
+            # Phase 2: Initialize pygame
+            self._initialize_pygame()
      
-    # Phase 3: Initialize components
-    self._initialize_components()
+            # Phase 3: Initialize components
+            self._initialize_components()
      
-    # Phase 4: Run main game loop
-    self._run_game_loop()
+            # Phase 4: Run main game loop
+            self._run_game_loop()
      
         except KeyboardInterrupt:
-    logger.info("Application interrupted by user")
+            logger.info("Application interrupted by user")
         except Exception as e:
-    logger.error(f"Fatal error: {e}", exc_info=True)
-    sys.exit(1)
+            logger.error(f"Fatal error: {e}", exc_info=True)
+            sys.exit(1)
         finally:
-    self._shutdown()
+            self._shutdown()
 
     def _detect_hardware(self) -> None:
         """
@@ -95,7 +95,7 @@ class Application:
         """
         logger.info("Detecting hardware and loading configuration")
         self.hw_config = HardwareDetector.get_config()
-    self.app_paths = AppPaths(self.hw_config)
+        self.app_paths = AppPaths(self.hw_config)
         logger.info(f"Configuration loaded for {self.hw_config['detected_device']}")
 
     def _initialize_pygame(self) -> None:
@@ -122,7 +122,7 @@ class Application:
         
         # Hide cursor on handheld devices
         if display_config.get("hide_cursor", False):
-    pygame.mouse.set_visible(False)
+            pygame.mouse.set_visible(False)
         
         # Create clock for FPS limiting
         self.clock = pygame.time.Clock()
@@ -152,24 +152,24 @@ class Application:
         
         # Initialize state manager
         self.state_manager = StateManager(
-    screen=self.screen,
-    hw_config=self.hw_config,
-    config=self.config_manager,
-    game_library=self.game_library,
-    input_handler=self.input_handler,
-        app_paths=self.app_paths,
+            screen=self.screen,
+            hw_config=self.hw_config,
+            config=self.config_manager,
+            game_library=self.game_library,
+            input_handler=self.input_handler,
+            app_paths=self.app_paths,
         )
         
         logger.info("All components initialized")
         directories = [
-    data_dir,
-    data_dir / "input_overrides",
-    data_dir / "input_overrides" / "games",
+            data_dir,
+            data_dir / "input_overrides",
+            data_dir / "input_overrides" / "games",
         ]
         
         for directory in directories:
-    directory.mkdir(parents=True, exist_ok=True)
-    logger.debug(f"Ensured directory exists: {directory}")
+            directory.mkdir(parents=True, exist_ok=True)
+            logger.debug(f"Ensured directory exists: {directory}")
 
     def _run_game_loop(self) -> None:
         """
@@ -195,16 +195,16 @@ class Application:
         
         # Save any pending data
         if self.game_library:
-    try:
-        self.game_library.save_games()
-    except Exception as e:
-        logger.error(f"Failed to save game library: {e}")
+            try:
+                self.game_library.save_games()
+            except Exception as e:
+                logger.error(f"Failed to save game library: {e}")
         
         if self.config_manager:
-    try:
-        self.config_manager.save()
-    except Exception as e:
-        logger.error(f"Failed to save configuration: {e}")
+            try:
+                self.config_manager.save()
+            except Exception as e:
+                logger.error(f"Failed to save configuration: {e}")
         
         # Quit pygame
         pygame.quit()
