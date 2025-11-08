@@ -24,6 +24,13 @@ jobs:
             ~/.cache/bazel
             ~/.cache/bazelisk
           key: bazel
-      
+          
+      - name: List
+        run: |
+            ls ${{ github.workspace }}
+            cat /etc/issue
+            
       - name: Run tests
-        run: bazel test ...
+        run: |
+          cd ${{ github.workspace }}
+          bazel test ...
