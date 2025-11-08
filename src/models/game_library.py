@@ -10,6 +10,8 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from .game import Game
+from ..hardware.paths import AppPaths
+
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ class GameLibrary:
     and persistence to JSON file.
     """
 
-    def __init__(self, hw_config: Dict[str, Any]):
+    def __init__(self, hw_config: Dict[str, Any], app_paths: AppPaths):
         """
         Initialize game library.
         
@@ -32,16 +34,18 @@ class GameLibrary:
             hw_config: Hardware configuration dictionary
         """
         self.hw_config = hw_config
+        self.app_paths = app_paths
         self.games: List[Game] = []
         
         # Determine games file path
         # FIXME
-        paths = hw_config.get("paths", {})
-        data_dir = pathlib.Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
-        self.games_file = data_dir / "games.json"
+        #paths = hw_config.get("paths", {})
+        #data_dir = pathlib.Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
+        #self.games_file = data_dir / "games.json"
+        self.games_file = app_paths.games_file
         
         # Load games from file
-        self.load_games()
+        self.load_games(self.games_file)
         
         logger.info(f"GameLibrary initialized with {len(self.games)} games")
 

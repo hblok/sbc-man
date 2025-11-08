@@ -5,7 +5,7 @@ py_test(
     name = "test_config_loader",
     srcs = ["test_config_loader.py"],
     deps = [
-        "//src/hardware:hardware",
+        "//src/hardware:hardware",    
         "//tests:test_utils",
     ],
     size = "small",
@@ -60,6 +60,7 @@ py_test(
     name = "test_models",
     srcs = ["test_models.py"],
     deps = [
+        "//src/hardware:hardware",
         "//src/models:models",
         "//tests:test_utils",
     ],

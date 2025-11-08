@@ -9,8 +9,10 @@ import tempfile
 import json
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
+import shutil
 
 from src.services.input_handler import InputHandler
+from src.hardware.paths import AppPaths
 
 
 class TestInputHandler(unittest.TestCase):
@@ -56,9 +58,9 @@ class TestInputHandler(unittest.TestCase):
             }
         }
 
+        self.handler = InputHandler(self.hw_config, AppPaths())
+
     def tearDown(self):
-        """Clean up test fixtures."""
-        import shutil
         shutil.rmtree(self.temp_dir)
 
     @patch("pygame.joystick.get_count")
@@ -67,27 +69,22 @@ class TestInputHandler(unittest.TestCase):
         """Test input handler initialization."""
         mock_get_count.return_value = 0
         
-        handler = InputHandler(self.hw_config)
-        
         # Manually set config_dir for testing
-        handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
-        handler._load_mapping_hierarchy()
+        self.handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
+        self.handler._load_mapping_hierarchy()
         
-        self.assertIsNotNone(handler.mappings)
-        self.assertIn("confirm", handler.mappings)
+        self.assertIsNotNone(self.handler.mappings)
+        self.assertIn("confirm", self.handler.mappings)
 
     def test_get_button_names(self):
-        """Test button name mapping."""
-        handler = InputHandler(self.hw_config)
-        
         # Test button 0 (A button)
-        names = handler._get_button_names(0)
+        names = self.handler._get_button_names(0)
         self.assertIn("BUTTON_A", names)
         self.assertIn("BUTTON_SOUTH", names)
         self.assertIn("BUTTON_0", names)
         
         # Test button 7 (Start button)
-        names = handler._get_button_names(7)
+        names = self.handler._get_button_names(7)
         self.assertIn("BUTTON_START", names)
 
     @patch("pygame.joystick.get_count")
@@ -96,12 +93,10 @@ class TestInputHandler(unittest.TestCase):
         """Test setting game context for per-game mappings."""
         mock_get_count.return_value = 0
         
-        handler = InputHandler(self.hw_config)
-        
         # Set game context
-        handler.set_game_context("test-game")
+        self.handler.set_game_context("test-game")
         
-        self.assertEqual(handler.current_game_id, "test-game")
+        self.assertEqual(self.handler.current_game_id, "test-game")
 
     @patch("pygame.joystick.get_count")
     @patch("pygame.joystick.init")
@@ -109,11 +104,10 @@ class TestInputHandler(unittest.TestCase):
         """Test clearing game context."""
         mock_get_count.return_value = 0
         
-        handler = InputHandler(self.hw_config)
-        handler.set_game_context("test-game")
+        self.handler.set_game_context("test-game")
         
         # Clear context
-        handler.clear_game_context()
+        self.handler.clear_game_context()
         
         self.assertIsNone(handler.current_game_id)
 
@@ -124,20 +118,20 @@ class TestInputHandler(unittest.TestCase):
         import pygame
         
         mock_get_count.return_value = 0
-        handler = InputHandler(self.hw_config)
-        handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
-        handler._load_mapping_hierarchy()
+
+        self.handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
+        self.handler._load_mapping_hierarchy()
         
         # Test with "cancel" action which has ESCAPE in default mapping
         # and is not overridden by device mapping
-        self.assertIn("cancel", handler.mappings)
+        self.assertIn("cancel", self.handler.mappings)
         
         # Mock keyboard event for ESCAPE key
         event = Mock()
         event.type = pygame.KEYDOWN
         event.key = pygame.K_ESCAPE
         
-        result = handler.is_action_pressed("cancel", [event])
+        result = self.handler.is_action_pressed("cancel", [event])
         
         # Should match because K_ESCAPE is checked explicitly in the code
         self.assertTrue(result)
@@ -149,16 +143,16 @@ class TestInputHandler(unittest.TestCase):
         import pygame
         
         mock_get_count.return_value = 0
-        handler = InputHandler(self.hw_config)
-        handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
-        handler._load_mapping_hierarchy()
+
+        self.handler.config_dir = Path(self.temp_dir) / "config" / "input_mappings"
+        self.handler._load_mapping_hierarchy()
         
         # Mock joystick button event (button 0 = A button)
         event = Mock()
         event.type = pygame.JOYBUTTONDOWN
         event.button = 0
         
-        result = handler.is_action_pressed("confirm", [event])
+        result = self.handler.is_action_pressed("confirm", [event])
         
         # Should match because button 0 maps to BUTTON_A
         self.assertTrue(result)
@@ -168,10 +162,9 @@ class TestInputHandler(unittest.TestCase):
     def test_save_mapping(self, mock_joystick_init, mock_get_count):
         """Test saving custom input mapping."""
         mock_get_count.return_value = 0
-        handler = InputHandler(self.hw_config)
         
         # Save a custom mapping
-        handler.save_mapping("confirm", ["BUTTON_X", "SPACE"], scope="device")
+        self.handler.save_mapping("confirm", ["BUTTON_X", "SPACE"], scope="device")
         
         # Check that file was created
         device_mapping_file = Path(self.hw_config["paths"]["data"]) / "input_overrides" / "device.json"
@@ -182,7 +175,3 @@ class TestInputHandler(unittest.TestCase):
             saved_mapping = json.load(f)
         
         self.assertEqual(saved_mapping["confirm"], ["BUTTON_X", "SPACE"])
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -3,23 +3,23 @@ Application Module
 
 Main application orchestrator that manages the startup lifecycle,
 component initialization, and application shutdown.
-
-Based on: docs/code/package_core.txt and docs/other/sequence_startup.txt
 """
 
-import sys
-import logging
 from pathlib import Path
 from typing import Optional
+import logging
+import sys
 
 import pygame
 
 from ..hardware.detector import HardwareDetector
+from ..hardware.paths import AppPaths
 from ..models.config_manager import ConfigManager
 from ..models.game_library import GameLibrary
 from ..services.input_handler import InputHandler
-from .state_manager import StateManager
 from .game_loop import GameLoop
+from .state_manager import StateManager
+
 
 # Configure logging
 logging.basicConfig(
@@ -40,6 +40,7 @@ class Application:
     def __init__(self) -> None:
         """Initialize the application (does not start it)."""
         self.hw_config: Optional[dict] = None
+        self.app_paths: Optional[AppPaths] = None
         self.screen: Optional[pygame.Surface] = None
         self.clock: Optional[pygame.time.Clock] = None
         self.config_manager: Optional[ConfigManager] = None
@@ -131,9 +132,9 @@ class Application:
         
         self._ensure_data_directories()
         
-        self.config_manager = ConfigManager(self.hw_config)
-        self.game_library = GameLibrary(self.hw_config)
-        self.input_handler = InputHandler(self.hw_config)
+        self.config_manager = ConfigManager(self.hw_config, self.app_paths)
+        self.game_library = GameLibrary(self.hw_config, self.app_paths)
+        self.input_handler = InputHandler(self.hw_config, self.app_paths)
         
         self.state_manager = StateManager(
             screen=self.screen,

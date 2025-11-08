@@ -1,0 +1,18 @@
+
+# Class structure
+- Define all paths in a common class, with @property methods returning pathlib.Path
+
+# Python style
+- Prefered custom classes and datastructures over dicts
+- Use pathlib instead of os.path
+- import the module, not the class
+- keep methods minimal, factor out locigal sections to sub-methods
+- If possible, avoid importing inside methods.
+
+# Tests
+- Only one TestCase class per module.
+- Never document test methods.
+- Do not at main() or call unittest.main() in the test module
+
+# Doc strings
+

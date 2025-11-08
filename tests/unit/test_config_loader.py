@@ -4,13 +4,15 @@ Unit Tests for ConfigLoader
 Tests for configuration hierarchy loading and merging.
 """
 
-import unittest
-import tempfile
-import json
 from pathlib import Path
 from unittest.mock import Mock, patch
+import json
+import shutil
+import tempfile
+import unittest
 
 from src.hardware.config_loader import ConfigLoader
+from src.hardware.paths import AppPaths
 
 
 class TestConfigLoader(unittest.TestCase):
@@ -69,8 +71,6 @@ class TestConfigLoader(unittest.TestCase):
             json.dump(os_config, f)
 
     def tearDown(self):
-        """Clean up test fixtures."""
-        import shutil
         shutil.rmtree(self.temp_dir)
 
     def test_load_default_config(self):
@@ -185,7 +185,3 @@ class TestConfigLoader(unittest.TestCase):
         self.assertTrue(config["display"]["fullscreen"])  # From device
         self.assertEqual(config["display"]["fps_target"], 30)  # From OS (overrides default)
         self.assertTrue(config["display"]["hide_cursor"])  # From device
-
-
-if __name__ == "__main__":
-    unittest.main()

@@ -15,6 +15,9 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, Optional
 
+from ..hardware.paths import AppPaths
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -26,7 +29,7 @@ class ConfigLoader:
     according to a defined hierarchy, with later sources overriding earlier ones.
     """
 
-    def __init__(self, device_type: str, os_type: str, probed_hardware: Dict[str, Any]):
+    def __init__(self, device_type: str, os_type: str, probed_hardware: Dict[str, Any], app_paths: AppPaths):
         """
         Initialize configuration loader.
         
@@ -38,6 +41,7 @@ class ConfigLoader:
         self.device_type = device_type
         self.os_type = os_type
         self.probed_hardware = probed_hardware
+        self.app_paths = app_paths
         
         # Determine config directory (relative to src/)
         self.config_dir = Path(__file__).parent.parent / "config"

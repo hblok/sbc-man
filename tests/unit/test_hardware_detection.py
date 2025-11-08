@@ -10,12 +10,14 @@ import tempfile
 from pathlib import Path
 from unittest.mock import Mock, patch, MagicMock
 
+import pygame
+
 from src.hardware.detector import HardwareDetector
 from src.hardware.prober import HardwareProber
+from src.hardware.config_loader import ConfigLoader
 
 
 class TestHardwareDetector(unittest.TestCase):
-    """Test cases for HardwareDetector."""
 
     def test_detect_device_from_environment(self):
         """Test device detection from environment variable."""
@@ -66,8 +68,6 @@ class TestHardwareDetector(unittest.TestCase):
 
     def test_get_config(self):
         """Test complete config retrieval."""
-        from src.hardware.prober import HardwareProber
-        from src.hardware.config_loader import ConfigLoader
         
         # Mock probe results
         mock_probe_result = {
@@ -98,7 +98,6 @@ class TestHardwareProber(unittest.TestCase):
 
     def test_probe_display(self):
         """Test display probing."""
-        import pygame
         
         # Mock display info
         mock_info = Mock()

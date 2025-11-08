@@ -13,6 +13,9 @@ from typing import Dict, Any, List, Optional
 
 import pygame
 
+from ..hardware.paths import AppPaths
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -27,7 +30,7 @@ class InputHandler:
     - Per-game mappings
     """
 
-    def __init__(self, hw_config: Dict[str, Any]):
+    def __init__(self, hw_config: Dict[str, Any], app_paths: AppPaths):
         """
         Initialize input handler with hierarchical mappings.
         
@@ -35,14 +38,17 @@ class InputHandler:
             hw_config: Hardware configuration dictionary
         """
         self.hw_config = hw_config
+        self.app_paths = app_paths
         
         # Determine config directories
-        src_dir = Path(__file__).parent.parent
-        self.config_dir = src_dir / "config" / "input_mappings"
+        #src_dir = Path(__file__).parent.parent
+        #self.config_dir = src_dir / "config" / "input_mappings"
+        self.config_dir = self.app_paths.input_mappings
         
-        paths = hw_config.get("paths", {})
-        data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
-        self.data_dir = data_dir / "input_overrides"
+        #paths = hw_config.get("paths", {})
+        #data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
+        #self.data_dir = data_dir / "input_overrides"
+        self.data_dir = self.app_paths.input_overrides
         
         self.current_game_id: Optional[str] = None
         self.mappings: Dict[str, List[str]] = {}
