@@ -5,16 +5,17 @@ module(
 )
 
 # Bazel module dependencies
-bazel_dep(name = "rules_python", version = "0.36.0")
-bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_python", version = "0.40.0")
+bazel_dep(name = "platforms", version = "0.0.11")
 
 # Python configuration
 python_version = "3.11"
 
-#register_toolchains(
-#    "@rules_python//python/config_settings:all",
-#    "@rules_python//python/toolchains:all",
-#)
+# Toolchain
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    python_version = python_version,
+)
 
 # Python configuration
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
@@ -24,18 +25,19 @@ python.toolchain(
 
 # Third-party dependencies via pip
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+
 pip.parse(
-    hub_name = "pip_deps",
+    hub_name = "sbc_man_pip_deps",
     python_version = python_version,
     requirements_lock = "//:requirements.txt",
 )
 
 # Development dependencies
 pip.parse(
-    hub_name = "pip_dev_deps",
+    hub_name = "sbc_man_pip_dev_deps",
     python_version = python_version,
     requirements_lock = "//:requirements-dev.txt",
 )
 
 # Make pip repositories visible
-use_repo(pip, "pip_deps", "pip_dev_deps")
+use_repo(pip, "sbc_man_pip_deps", "sbc_man_pip_dev_deps")
