@@ -13,18 +13,15 @@ import pygame
 from src.core.application import Application
 from src.hardware.detector import HardwareDetector
 from src.models.game_library import GameLibrary
+from src.hardware.paths import AppPaths
 
 
 class TestStartupFlow(unittest.TestCase):
-    """Integration tests for application startup flow."""
 
     def setUp(self):
-        """Set up test fixtures."""
-        # Initialize pygame for testing
         pygame.init()
 
     def tearDown(self):
-        """Clean up test fixtures."""
         pygame.quit()
 
     @patch('src.hardware.detector.HardwareDetector.get_config')
@@ -62,13 +59,9 @@ class TestStartupFlow(unittest.TestCase):
             games_dir = Path(temp_dir) / "games"
             data_dir.mkdir()
             games_dir.mkdir()
-            
-            # Mock the paths
-            mock_get_config.return_value["paths"]["data"] = str(data_dir)
-            mock_get_config.return_value["paths"]["games"] = str(games_dir)
-            
-            # Create application instance
-            app = Application()
+
+            app_paths = AppPaths(data_dir, games_dir)
+            app = Application(app_paths)
             
             # Mock the _ensure_data_directories method to avoid actual directory creation
             with patch.object(app, '_ensure_data_directories') as mock_ensure_dirs:

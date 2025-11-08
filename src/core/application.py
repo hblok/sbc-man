@@ -37,10 +37,10 @@ class Application:
     component creation, and the main game loop.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, app_paths):
         """Initialize the application (does not start it)."""
         self.hw_config: Optional[dict] = None
-        self.app_paths: Optional[AppPaths] = None
+        self.app_paths = app_paths
         self.screen: Optional[pygame.Surface] = None
         self.clock: Optional[pygame.time.Clock] = None
         self.config_manager: Optional[ConfigManager] = None
@@ -94,7 +94,6 @@ class Application:
         """
         logger.info("Detecting hardware and loading configuration")
         self.hw_config = HardwareDetector().get_config()
-        self.app_paths = AppPaths()  # Initialize AppPaths
         logger.info(f"Configuration loaded for {self.hw_config['detected_device']}")
 
     def _initialize_pygame(self) -> None:

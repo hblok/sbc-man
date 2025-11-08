@@ -3,16 +3,22 @@ import pathlib
 
 class AppPaths:
     
-    def __init__(self, base_dir: pathlib.Path | None = None):
+    def __init__(self,
+                 base_dir: pathlib.Path | None = None,
+                 home_dir: pathlib.Path | None = None,):
         if base_dir is None:
             base_dir = pathlib.Path.home() / ".game_manager"
+
+        if home_dir is None:
+            home_dir = pathlib.Path.home()
         
         self._base_dir = base_dir
+        self._home_dir = home_dir
         self._temp_dir = pathlib.Path("/tmp") / "game_manager"
     
     @property
     def home(self) -> pathlib.Path:
-        return pathlib.Path.home()
+        return self._home_dir
     
     @property
     def temp_dir(self) -> pathlib.Path:

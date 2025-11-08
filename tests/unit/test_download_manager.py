@@ -4,13 +4,14 @@ Unit Tests for DownloadManager
 Tests for download management, installation, and observer pattern implementation.
 """
 
-import unittest
-import tempfile
-import os
-import zipfile
-from src.hardware.paths import AppPaths
 from pathlib import Path
+from src.hardware.paths import AppPaths
 from unittest.mock import Mock, patch, MagicMock
+import os
+import pathlib
+import tempfile
+import unittest
+import zipfile
 
 from src.models.download_manager import DownloadManager, DownloadObserver
 from src.models.game import Game
@@ -43,13 +44,15 @@ class TestDownloadManager(unittest.TestCase):
     
     def setUp(self):
         """Set up test fixtures."""
-        self.temp_dir = tempfile.mkdtemp()
+        self.temp_dir = pathlib.Path(tempfile.mkdtemp())
         self.hw_config = {
             "paths": {
                 "games": self.temp_dir,
             }
         }
-        self.download_manager = DownloadManager(self.hw_config, AppPaths())
+
+        app_paths = AppPaths(self.temp_dir, self.temp_dir)
+        self.download_manager = DownloadManager(self.hw_config, app_paths)
         
     def tearDown(self):
         """Clean up test fixtures."""

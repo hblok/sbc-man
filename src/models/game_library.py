@@ -47,7 +47,7 @@ class GameLibrary:
         # Load games from file
         self.games = self.load_games(self.games_file)
         
-        logger.info(f"GameLibrary initialized with {len(self.games)} games")
+        #logger.info(f"GameLibrary initialized with {len(self.games)} games")
 
     def load_games(self, games_file: pathlib.Path) -> list[Game]:
         """
