@@ -12,8 +12,9 @@ Usage:
 
 #from src.hardware.compat_sdl import setup_sdl_environment
 from src.core.application import Application
+from src.hardware.paths import AppPaths
 
 
 if __name__ == "__main__":
 #    setup_sdl_environment()
-    Application().run()
+    Application(AppPaths()).run()
