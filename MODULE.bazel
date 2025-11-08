@@ -17,12 +17,6 @@ python.toolchain(
     python_version = python_version,
 )
 
-# Python configuration
-python = use_extension("@rules_python//python/extensions:python.bzl", "python")
-python.toolchain(
-    python_version = python_version,
-)
-
 # Third-party dependencies via pip
 pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
 
