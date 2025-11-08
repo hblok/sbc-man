@@ -27,6 +27,19 @@ class TestConfigLoader(unittest.TestCase):
         (self.config_dir / "devices").mkdir(parents=True)
         (self.config_dir / "os_types").mkdir(parents=True)
         
+        # Create test AppPaths
+        class TestAppPaths(AppPaths):
+            def __init__(self, temp_dir):
+                self._temp_dir = temp_dir
+                self._base_dir = Path(temp_dir) / "data"
+                self._temp_dir_name = temp_dir
+            
+            @property
+            def src_config_dir(self):
+                return Path(self._temp_dir_name) / "config"
+        
+        self.app_paths = TestAppPaths(self.temp_dir)
+        
         # Create default config
         default_config = {
             "device_type": "default",
@@ -75,7 +88,7 @@ class TestConfigLoader(unittest.TestCase):
 
     def test_load_default_config(self):
         """Test loading default configuration."""
-        loader = ConfigLoader("desktop", "standard_linux", {})
+        loader = ConfigLoader("desktop", "standard_linux", {}, self.app_paths)
         loader.config_dir = self.config_dir
         
         # Mock user config path to return None
@@ -89,7 +102,7 @@ class TestConfigLoader(unittest.TestCase):
 
     def test_deep_merge(self):
         """Test deep merge of configurations."""
-        loader = ConfigLoader("desktop", "standard_linux", {})
+        loader = ConfigLoader("desktop", "standard_linux", {}, self.app_paths)
         
         base = {
             "display": {
@@ -122,7 +135,7 @@ class TestConfigLoader(unittest.TestCase):
 
     def test_load_json_nonexistent(self):
         """Test loading non-existent JSON file."""
-        loader = ConfigLoader("desktop", "standard_linux", {})
+        loader = ConfigLoader("desktop", "standard_linux", {}, self.app_paths)
         
         result = loader._load_json(Path("/nonexistent/file.json"))
         
@@ -130,7 +143,7 @@ class TestConfigLoader(unittest.TestCase):
 
     def test_load_json_invalid(self):
         """Test loading invalid JSON file."""
-        loader = ConfigLoader("desktop", "standard_linux", {})
+        loader = ConfigLoader("desktop", "standard_linux", {}, self.app_paths)
         
         # Create invalid JSON file
         invalid_file = Path(self.temp_dir) / "invalid.json"
@@ -149,7 +162,7 @@ class TestConfigLoader(unittest.TestCase):
             }
         }
         
-        loader = ConfigLoader("desktop", "standard_linux", probed_hardware)
+        loader = ConfigLoader("desktop", "standard_linux", probed_hardware, self.app_paths)
         
         config = {
             "display": {
@@ -168,7 +181,7 @@ class TestConfigLoader(unittest.TestCase):
     def test_hierarchy_merge_order(self):
         """Test that configuration hierarchy is applied in correct order."""
         # Use empty probed hardware to avoid auto-resolution
-        loader = ConfigLoader("anbernic", "arkos", {"display": {}})
+        loader = ConfigLoader("anbernic", "arkos", {"display": {}}, self.app_paths)
         loader.config_dir = self.config_dir
         
         # Mock user config path to return None (no user config)

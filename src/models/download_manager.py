@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Optional, Callable, Any
 
 from ..services.network import NetworkService
+from ..hardware.paths import AppPaths
 from .game import Game
 
 logger = logging.getLogger(__name__)
@@ -57,12 +58,14 @@ class DownloadManager:
     updates via observer callbacks.
     """
 
-    def __init__(self, hw_config: dict):
+    def __init__(self, hw_config: dict, app_paths: AppPaths):
         """
         Args:
             hw_config: Hardware configuration dictionary
+            app_paths: Application paths instance
         """
         self.hw_config = hw_config
+        self.app_paths = app_paths
         self.network = NetworkService()
         
         # Download state
@@ -70,11 +73,8 @@ class DownloadManager:
         self.is_downloading = False
         self.download_progress = 0.0
         
-        # Determine download directory
-        paths = hw_config.get("paths", {})
-        # FIXME
-        games_dir = Path(paths.get("games", "~/games")).expanduser()
-        self.downloads_dir = games_dir / "downloads"
+        # Use AppPaths for download directory
+        self.downloads_dir = self.app_paths.downloads_dir
         self.downloads_dir.mkdir(parents=True, exist_ok=True)
         
         logger.info("DownloadManager initialized")
@@ -185,11 +185,8 @@ class DownloadManager:
         Raises:
             Exception: If extraction fails
         """
-        # Determine installation directory
-        paths = self.hw_config.get("paths", {})
-        # FIXME
-        games_dir = Path(paths.get("games", "~/games")).expanduser()
-        install_dir = games_dir / game.id
+        # Use AppPaths for installation directory
+        install_dir = self.app_paths.games_dir / game.id
         install_dir.mkdir(parents=True, exist_ok=True)
         
         # Extract based on file type

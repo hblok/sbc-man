@@ -43,8 +43,8 @@ class ConfigLoader:
         self.probed_hardware = probed_hardware
         self.app_paths = app_paths
         
-        # Determine config directory (relative to src/)
-        self.config_dir = Path(__file__).parent.parent / "config"
+        # Use AppPaths for config directory
+        self.config_dir = self.app_paths.src_config_dir
         
         logger.info(f"ConfigLoader initialized: device={device_type}, os={os_type}")
 
@@ -184,8 +184,5 @@ class ConfigLoader:
         Returns:
             Path: Path to user_config.json, or None if paths not configured
         """
-        if "paths" not in config or "data" not in config["paths"]:
-            return None
-        
-        data_dir = Path(config["paths"]["data"]).expanduser()
-        return data_dir / "user_config.json"
+        # Use AppPaths for user config location
+        return self.app_paths.data_dir / "user_config.json"

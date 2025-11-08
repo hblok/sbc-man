@@ -9,6 +9,10 @@ import logging
 from pathlib import Path
 from typing import Dict, Any
 
+from .config_loader import ConfigLoader
+from .paths import AppPaths
+from .prober import HardwareProber
+
 logger = logging.getLogger(__name__)
 
 
@@ -47,7 +51,7 @@ class HardwareDetector:
         probed_hardware = HardwareProber.probe_all()
         
         # Load and merge configuration
-        config_loader = ConfigLoader(device_type, os_type, probed_hardware)
+        config_loader = ConfigLoader(device_type, os_type, probed_hardware, AppPaths())
         config = config_loader.load_config()
         
         # Add detection metadata

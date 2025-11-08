@@ -10,6 +10,7 @@ import json
 import shutil
 import tempfile
 import unittest
+from src.hardware.paths import AppPaths
 
 from src.hardware.paths import AppPaths
 from src.models.config_manager import ConfigManager
@@ -92,7 +93,7 @@ class TestGameLibrary(unittest.TestCase):
             }
         }
 
-        self.library = GameLibrary(self.hw_config)
+        self.library = GameLibrary(self.hw_config, AppPaths())
 
     def tearDown(self):
         shutil.rmtree(self.temp_dir)
@@ -107,7 +108,7 @@ class TestGameLibrary(unittest.TestCase):
         self.library.add_game(game)
         
         self.assertEqual(len(self.library.games), 1)
-        self.assertEqual(library.games[0].id, "test-game")
+        self.assertEqual(self.library.games[0].id, "test-game")
 
     def test_get_game(self):
         game = Game(game_id="test-game", name="Test Game")
@@ -141,10 +142,10 @@ class TestGameLibrary(unittest.TestCase):
     def test_save_and_load_games(self):
         game = Game(game_id="test-game", name="Test Game", installed=True)
         self.library.add_game(game)
-        self.library.save_games(self.library.games, self.library.games_file)
+        self.library.save_games()
         
         # Create new library instance
-        library2 = GameLibrary(self.hw_config)
+        library2 = GameLibrary(self.hw_config, AppPaths())
         library2.games = library2.load_games(library2.games_file)
         
         self.assertEqual(len(library2.games), 1)
@@ -188,7 +189,7 @@ class TestConfigManager(unittest.TestCase):
 
     def test_get_with_default(self):
         """Test getting non-existent value with default."""
-        value = config.get("nonexistent.key", "default_value")
+        value = self.config.get("nonexistent.key", "default_value")
         
         self.assertEqual(value, "default_value")
 
