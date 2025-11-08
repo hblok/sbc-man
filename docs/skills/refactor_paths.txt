@@ -1,0 +1,71 @@
+I need help refactoring a Python codebase to consistently use the `hardware.paths.AppPaths` class for all file and directory path management.
+
+
+
+**Current Situation:**
+
+- I have partially implemented `hardware.paths.AppPaths` for path management
+
+- Some parts of the code use AppPaths correctly (as reference examples)
+
+- Other parts still use hardcoded paths or alternative path management approaches
+
+- The codebase is currently broken - many modules don't run and tests are failing
+
+
+
+**Your Task:**
+
+1. Analyze the codebase to identify all locations where file/directory paths are defined or accessed
+
+2. Refactor ALL path references to use `AppPaths` consistently, following the patterns already established in the working portions of code
+
+3. Ensure the refactoring maintains the same functional behavior
+
+4. Fix any broken imports or dependencies caused by the incomplete migration
+
+
+
+**Testing Requirements:**
+
+- Run the existing test suite after each significant change to verify functionality
+
+- Do NOT add `main()` functions or `unittest.main()` calls to test modules
+
+- Ensure all tests pass before considering the work complete
+
+- If tests reveal issues, fix them as part of the refactoring
+
+
+
+**Code Quality:**
+
+- Follow existing code style and conventions
+
+- Maintain or improve code readability
+
+- Add comments where the AppPaths usage might not be immediately obvious
+
+
+
+**Deliverable:**
+
+Please provide:
+
+1. A summary of all files modified and the changes made
+
+2. The complete refactored code for each modified file
+
+3. Confirmation that all tests pass
+
+4. Any notes about edge cases or decisions made during refactoring
+
+
+
+Please create a Pull Request against the main branch with your changes.
+
+
+
+**Repository Structure:**
+
+This is the current code and test structure:

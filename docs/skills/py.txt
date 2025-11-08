@@ -25,4 +25,5 @@
 - Keep docstrings for complex logic only
 
 **Delivery**
-- Create a Pull Request against the main branch
+- Work on a git feature branch.
+- Create a Pull Request against the main branch.
