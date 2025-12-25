@@ -7,6 +7,8 @@ module(
 # Bazel module dependencies
 bazel_dep(name = "rules_python", version = "0.40.0")
 bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "rules_proto", version = "7.0.2")
+bazel_dep(name = "protobuf", version = "29.0")
 
 # Python configuration
 python_version = "3.11"
