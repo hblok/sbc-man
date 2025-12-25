@@ -1,17 +1,19 @@
 load("@rules_proto//proto:defs.bzl", "proto_library")
+load("@rules_python//python:proto.bzl", "py_proto_library")
 
 # Define the proto library
 proto_library(
     name = "person_proto",
     srcs = ["person.proto"],
+    visibility = ["//visibility:public"],
 )
 
-# Generate Python bindings using protobuf's rule directly
-load("@protobuf//bazel:py_proto_library.bzl", "py_proto_library")
-
+# Generate Python bindings using rules_python's py_proto_library
+# This provides the proper PyInfo provider
 py_proto_library(
     name = "person_py_pb2",
     deps = [":person_proto"],
+    visibility = ["//visibility:public"],
 )
 
 # Python test
