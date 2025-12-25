@@ -1,0 +1,12 @@
+
+
+5. **Git workflow**: 
+Attach to the repo:
+gh repo clone hblok/sbc-man
+
+When done, push back to a new branch.
+
+
+
+
+
