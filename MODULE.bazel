@@ -8,7 +8,7 @@ module(
 bazel_dep(name = "rules_python", version = "0.40.0")
 bazel_dep(name = "platforms", version = "0.0.11")
 bazel_dep(name = "rules_proto", version = "7.0.2")
-bazel_dep(name = "protobuf", version = "29.0")
+bazel_dep(name = "protobuf", version = "29.0", repo_name="com_google_protobuf")
 
 # Python configuration
 python_version = "3.11"
@@ -30,12 +30,10 @@ pip.parse(
     requirements_lock = "//:requirements.txt",
 )
 
-# Development dependencies
 pip.parse(
     hub_name = "sbc_man_pip_dev_deps",
     python_version = python_version,
     requirements_lock = "//:requirements-dev.txt",
 )
 
-# Make pip repositories visible
 use_repo(pip, "sbc_man_pip_deps", "sbc_man_pip_dev_deps")

@@ -1,6 +1,6 @@
 import unittest
 from google.protobuf import json_format
-from person_pb2 import Person, AddressBook
+from proto.person_pb2 import Person, AddressBook
 
 
 class PersonTest(unittest.TestCase):
