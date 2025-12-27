@@ -29,18 +29,27 @@ filegroup(
 )
 
 py_library(
-    name = "sbc_man",
+    name = "sbcman",
     srcs = ["main.py"],
     deps = [
-        "//sbcman/core:core",
-    ],    
+        "//sbcman/core",
+	"//sbcman/hardware",
+	"//sbcman/models",
+	"//sbcman/services",
+	"//sbcman/states",
+	"//sbcman/views",
+	"//sbcman/views/widgets",		
+    ],
+    data = [
+    	 "//sbcman:config_files"
+    ]
 )
 
 py_package(
     name = "sbc_man_package",
-    packages = ["sbcman.core", "google"],
+    packages = ["sbcman", "google"],
     deps = [
-      "//sbcman/core:core",
+      "//sbcman",
       "//google",
     ]
 )
