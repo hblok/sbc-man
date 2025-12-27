@@ -11,8 +11,8 @@ import shutil
 import tempfile
 import unittest
 
-from src.hardware.config_loader import ConfigLoader
-from src.hardware.paths import AppPaths
+from sbcman.hardware.config_loader import ConfigLoader
+from sbcman.hardware.paths import AppPaths
 
 
 class TestConfigLoader(unittest.TestCase):

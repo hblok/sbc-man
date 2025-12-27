@@ -10,7 +10,7 @@ py_library(
         "process_launcher.py",
     ],
     deps = [
- #       "//src/models:models",
+ #       "//sbcman/models:models",
         "@sbc_man_pip_deps//pygame_ce",
         "@sbc_man_pip_deps//requests",
     ],

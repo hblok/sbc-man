@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.states.settings_state import SettingsState
+from sbcman.states.settings_state import SettingsState
 
 
 class TestSettingsState(unittest.TestCase):

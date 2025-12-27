@@ -12,9 +12,9 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.hardware.detector import HardwareDetector
-from src.hardware.prober import HardwareProber
-from src.hardware.config_loader import ConfigLoader
+from sbcman.hardware.detector import HardwareDetector
+from sbcman.hardware.prober import HardwareProber
+from sbcman.hardware.config_loader import ConfigLoader
 
 
 class TestHardwareDetector(unittest.TestCase):

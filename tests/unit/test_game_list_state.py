@@ -11,8 +11,8 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.states.game_list_state import GameListState
-from src.models.game import Game
+from sbcman.states.game_list_state import GameListState
+from sbcman.models.game import Game
 
 
 class TestGameListState(unittest.TestCase):

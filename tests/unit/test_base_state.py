@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.states.base_state import BaseState
+from sbcman.states.base_state import BaseState
 
 
 class TestBaseState(unittest.TestCase):

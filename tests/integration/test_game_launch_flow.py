@@ -10,9 +10,9 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.states.game_list_state import GameListState
-from src.states.playing_state import PlayingState
-from src.models.game import Game
+from sbcman.states.game_list_state import GameListState
+from sbcman.states.playing_state import PlayingState
+from sbcman.models.game import Game
 
 
 class TestGameLaunchFlow(unittest.TestCase):

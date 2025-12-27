@@ -9,9 +9,9 @@ py_library(
         "state_manager.py",
     ],
     deps = [
-        "//src/hardware:hardware",
-        "//src/models:models",
-        "//src/services:services",
+        "//sbcman/hardware:hardware",
+        "//sbcman/models:models",
+        "//sbcman/services:services",
         "@sbc_man_pip_deps//pygame_ce",
     ],
 )

@@ -10,9 +10,9 @@ Usage:
     python main.py
 """
 
-#from src.hardware.compat_sdl import setup_sdl_environment
-from src.core.application import Application
-from src.hardware.paths import AppPaths
+#from sbcman.hardware.compat_sdl import setup_sdl_environment
+from sbcman.core.application import Application
+from sbcman.hardware.paths import AppPaths
 
 
 if __name__ == "__main__":

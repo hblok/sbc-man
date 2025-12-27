@@ -12,7 +12,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.hardware.prober import HardwareProber
+from sbcman.hardware.prober import HardwareProber
 
 
 class TestHardwareProber(unittest.TestCase):

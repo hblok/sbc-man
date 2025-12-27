@@ -4,8 +4,8 @@ py_library(
     name = "models",
     srcs = glob(["*.py"]),    
     deps = [
-        "//src/hardware:hardware",        
-        "//src/services:services",
+        "//sbcman/hardware:hardware",        
+        "//sbcman/services:services",
     ],
 
 )

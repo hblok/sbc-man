@@ -7,7 +7,7 @@ Tests for Game class.
 from unittest.mock import Mock, patch, MagicMock
 import unittest
 
-from src.models.game import Game
+from sbcman.models.game import Game
 
 
 class TestGame(unittest.TestCase):

@@ -12,8 +12,8 @@ py_library(
         "settings_state.py",
     ],
     deps = [
-        "//src/models:models",
-        "//src/services:services",
+        "//sbcman/models:models",
+        "//sbcman/services:services",
         "@sbc_man_pip_deps//pygame_ce",
     ],
 )

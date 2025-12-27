@@ -17,7 +17,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import requests
 
-from src.services.network import NetworkService
+from sbcman.services.network import NetworkService
 
 
 class TestNetworkService(unittest.TestCase):

@@ -11,8 +11,8 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.states.download_state import DownloadState
-from src.models.game import Game
+from sbcman.states.download_state import DownloadState
+from sbcman.models.game import Game
 
 
 class TestDownloadState(unittest.TestCase):

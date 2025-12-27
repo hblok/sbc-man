@@ -14,7 +14,7 @@ py_binary(
     srcs = ["main.py"],
     main = "main.py",
     deps = [
-        "//src/core:core",
+        "//sbcman/core:core",
     ],
 )
 
@@ -32,15 +32,15 @@ py_library(
     name = "sbc_man",
     srcs = ["main.py"],
     deps = [
-        "//src/core:core",
+        "//sbcman/core:core",
     ],    
 )
 
 py_package(
     name = "sbc_man_package",
-    packages = ["src.core", "google"],
+    packages = ["sbcman.core", "google"],
     deps = [
-      "//src/core:core",
+      "//sbcman/core:core",
       "//google",
     ]
 )
@@ -52,7 +52,4 @@ py_wheel(
     deps = [
     	 ":sbc_man_package"
 	 ],
-     strip_path_prefixes = [
-        "src",
-    ],
 )

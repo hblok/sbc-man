@@ -10,10 +10,10 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.core.application import Application
-from src.hardware.detector import HardwareDetector
-from src.models.game_library import GameLibrary
-from src.hardware.paths import AppPaths
+from sbcman.core.application import Application
+from sbcman.hardware.detector import HardwareDetector
+from sbcman.models.game_library import GameLibrary
+from sbcman.hardware.paths import AppPaths
 
 
 class TestStartupFlow(unittest.TestCase):
@@ -24,10 +24,10 @@ class TestStartupFlow(unittest.TestCase):
     def tearDown(self):
         pygame.quit()
 
-    @patch('src.hardware.detector.HardwareDetector.get_config')
-    @patch('src.models.game_library.GameLibrary.load_games')
-    @patch('src.models.game_library.GameLibrary.save_games')
-    @patch('src.core.game_loop.GameLoop.run')
+    @patch('sbcman.hardware.detector.HardwareDetector.get_config')
+    @patch('sbcman.models.game_library.GameLibrary.load_games')
+    @patch('sbcman.models.game_library.GameLibrary.save_games')
+    @patch('sbcman.core.game_loop.GameLoop.run')
     def test_application_startup_flow(self, mock_game_loop_run, mock_save_games, mock_load_games, mock_get_config):
         """Test the complete application startup workflow."""
         # Mock hardware detection

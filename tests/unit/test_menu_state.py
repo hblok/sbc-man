@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.states.menu_state import MenuState
+from sbcman.states.menu_state import MenuState
 
 
 class TestMenuState(unittest.TestCase):

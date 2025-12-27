@@ -10,9 +10,9 @@ import json
 import shutil
 import tempfile
 import unittest
-from src.hardware.paths import AppPaths
+from sbcman.hardware.paths import AppPaths
 
-from src.models.config_manager import ConfigManager
+from sbcman.models.config_manager import ConfigManager
 
 
 class TestConfigManager(unittest.TestCase):

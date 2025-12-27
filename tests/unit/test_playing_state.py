@@ -11,7 +11,7 @@ from unittest.mock import Mock, patch, MagicMock
 
 import pygame
 
-from src.states.playing_state import PlayingState
+from sbcman.states.playing_state import PlayingState
 
 
 class TestPlayingState(unittest.TestCase):

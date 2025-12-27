@@ -10,10 +10,10 @@ import json
 import shutil
 import tempfile
 import unittest
-from src.hardware.paths import AppPaths
+from sbcman.hardware.paths import AppPaths
 
-from src.models.game_library import GameLibrary
-from src.models.game import Game
+from sbcman.models.game_library import GameLibrary
+from sbcman.models.game import Game
 
 
 class TestGameLibrary(unittest.TestCase):

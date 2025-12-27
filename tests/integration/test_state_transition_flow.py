@@ -11,12 +11,12 @@ import unittest
 
 import pygame
 
-from src.core.state_manager import StateManager
-from src.hardware.paths import AppPaths
-from src.states.download_state import DownloadState
-from src.states.game_list_state import GameListState
-from src.states.menu_state import MenuState
-from src.states.settings_state import SettingsState
+from sbcman.core.state_manager import StateManager
+from sbcman.hardware.paths import AppPaths
+from sbcman.states.download_state import DownloadState
+from sbcman.states.game_list_state import GameListState
+from sbcman.states.menu_state import MenuState
+from sbcman.states.settings_state import SettingsState
 
 
 class TestStateTransitionFlow(unittest.TestCase):
