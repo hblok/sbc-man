@@ -10,6 +10,8 @@ Usage:
     python main.py
 """
 
+import pathlib
+
 #from sbcman.hardware.compat_sdl import setup_sdl_environment
 from sbcman.core.application import Application
 from sbcman.hardware.paths import AppPaths
@@ -17,4 +19,6 @@ from sbcman.hardware.paths import AppPaths
 
 if __name__ == "__main__":
 #    setup_sdl_environment()
-    Application(AppPaths()).run()
+    sbc_dir = pathlib.Path(__file__).resolve().parent
+    print(sbc_dir)
+    Application(AppPaths(sbc_dir)).run()

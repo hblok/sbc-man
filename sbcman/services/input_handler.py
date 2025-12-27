@@ -160,6 +160,7 @@ class InputHandler:
         Returns:
             bool: True if action was triggered
         """
+        #print("> is_action_pressed", action)
         if action not in self.mappings:
             return False
         
