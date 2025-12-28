@@ -32,11 +32,13 @@ jobs:
           cp bazel-bin/sbcman/sbc_man-*.whl release_artifacts/
         
       - name: Create Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
         with:
           files: release_artifacts/*.whl
-          generate_release_notes: true
+          generate_release_notes: false
           draft: false
           prerelease: false
+          token: ${{ secrets.CUSTOM_GITHUB_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
