@@ -73,6 +73,7 @@ class StateManager:
         from ..states.download_state import DownloadState
         from ..states.settings_state import SettingsState
         from ..states.playing_state import PlayingState
+        from ..states.update_state import UpdateState
         
         # Create state instances
         self.states["menu"] = MenuState(self)
@@ -80,6 +81,7 @@ class StateManager:
         self.states["download"] = DownloadState(self)
         self.states["settings"] = SettingsState(self)
         self.states["playing"] = PlayingState(self)
+        self.states["update"] = UpdateState(self)
         
         logger.info(f"Initialized {len(self.states)} states")
 
