@@ -1,0 +1,16 @@
+[
+  {
+    "id": "test-game",
+    "name": "Test Game",
+    "version": "1.0.0",
+    "description": "",
+    "author": "",
+    "install_path": ".",
+    "entry_point": "main.py",
+    "installed": true,
+    "download_url": "",
+    "custom_input_mappings": {},
+    "custom_resolution": null,
+    "custom_fps": null
+  }
+]
