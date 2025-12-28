@@ -25,9 +25,18 @@ jobs:
       
       - name: Build Release
         run: bazel build //sbcman:sbc_man_wheel
-      
+
+      - name: Prepare Artifacts
+        run: |
+          mkdir -p release_artifacts
+          cp bazel-bin/sbcman/sbc_man-*.whl release_artifacts/
+        
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: bazel-bin/sbcman/sbc_man-0.1.0-py3-none-any.whl
+          files: release_artifacts/*.whl
           generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
