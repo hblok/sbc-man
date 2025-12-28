@@ -31,6 +31,7 @@ class MenuState(BaseState):
         self.menu_options = [
             "Browse Games",
             "Download Games",
+            "Self-Update",
             "Settings",
             "Exit",
         ]
@@ -69,6 +70,8 @@ class MenuState(BaseState):
             self.state_manager.change_state("game_list")
         elif option == "Download Games":
             self.state_manager.change_state("download")
+        elif option == "Self-Update":
+            self.state_manager.change_state("update")
         elif option == "Settings":
             self.state_manager.change_state("settings")
         elif option == "Exit":

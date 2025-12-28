@@ -1,22 +1,24 @@
-{
-  "device_type": "default",
-  "display": {
-    "resolution": "auto",
-    "fullscreen": false,
-    "fps_target": 60,
-    "hide_cursor": false
-  },
-  "input": {
-    "joystick_enabled": true,
-    "keyboard_enabled": true
-  },
-  "paths": {
-    "games": "~/games",
-    "data": "~/.local/share/sbc-man",
-    "config": "~/.config/sbc-man"
-  },
-  "performance": {
-    "vsync": true,
-    "hardware_acceleration": true
+"device_type": "default",
+    "display": {
+      "resolution": "auto",
+      "fullscreen": false,
+      "fps_target": 60,
+      "hide_cursor": false
+    },
+    "input": {
+      "joystick_enabled": true,
+      "keyboard_enabled": true
+    },
+    "paths": {
+      "games": "~/games",
+      "data": "~/.local/share/sbc-man",
+      "config": "~/.config/sbc-man"
+    },
+    "performance": {
+      "vsync": true,
+      "hardware_acceleration": true
+    },
+    "update": {
+      "repository_url": "https://github.com/hblok/sbc-man"
+    }
   }
-}
