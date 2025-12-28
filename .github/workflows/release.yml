@@ -31,5 +31,3 @@ jobs:
         with:
           files: bazel-bin/sbcman/sbc_man-0.1.0-py3-none-any.whl
           generate_release_notes: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
