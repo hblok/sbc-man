@@ -1,4 +1,5 @@
-"device_type": "default",
+{
+    "device_type": "default",
     "display": {
       "resolution": "auto",
       "fullscreen": false,
@@ -21,4 +22,4 @@
     "update": {
       "repository_url": "https://github.com/hblok/sbc-man"
     }
-  }
+}
