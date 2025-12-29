@@ -1,3 +1,6 @@
+# Copyright (C) 2025 H. Blok
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """
 Game Library Module
 Manages the collection of games with CRUD operations and persistence.

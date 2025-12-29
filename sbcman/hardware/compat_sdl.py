@@ -1,3 +1,6 @@
+# Copyright (C) 2025 H. Blok
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # compat_sdl.py
 # Safe SDL/pygame bootstrap for handhelds and desktops
 # - No ctypes or direct SDL2 calls (prevents ABI mismatches with pygame)
