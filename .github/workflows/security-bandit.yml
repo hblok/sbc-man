@@ -41,17 +41,10 @@ jobs:
         id: bandit
         run: |
           # Scan all Python files, exclude tests and venv
-          bandit -r . \
-            -ll \
-            --exclude ./venv,./tests,./build,./dist \
-            -f json \
-            -o bandit-report.json || true
+          bandit -c bandit.yaml -r . -ll -f json -o bandit-report.json || true
           
           # Also generate human-readable report
-          bandit -r . \
-            -ll \
-            --exclude ./venv,./tests,./build,./dist \
-            -f txt
+          bandit -c bandit.yaml -r . -ll -f txt
 
       - name: Upload Bandit report
         if: always()
