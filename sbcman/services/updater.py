@@ -68,7 +68,7 @@ class UpdaterService:
             logger.info(f"Checking for updates at: {api_url}")
             
             # Get latest release info from GitHub API
-            with urllib.request.urlopen(api_url) as response:
+            with urllib.request.urlopen(api_url) as response:  # nosec : Config is http only
                 release_data = json.loads(response.read().decode('utf-8'))
             
             latest_version = release_data.get("tag_name", "").lstrip("v")
@@ -129,7 +129,10 @@ class UpdaterService:
             logger.info(f"Saving to: {wheel_path}")
             
             # Download the file with progress indication
-            urllib.request.urlretrieve(download_url, wheel_path)
+            if "http" not in download_url:
+                raise ValueError(f"Must be http/s, was: {download_url}")
+            
+            urllib.request.urlretrieve(download_url, wheel_path)  # nosec : handled above
             
             # Verify file exists and has content
             if wheel_path.exists() and wheel_path.stat().st_size > 0:

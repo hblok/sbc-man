@@ -199,11 +199,11 @@ class DownloadManager:
         if archive_path.suffix == ".zip":
             with zipfile.ZipFile(archive_path, "r") as zip_ref:
                 safe_members = self.get_secure_zip_members(zip_ref)
-                zip_ref.extractall(install_dir, members=safe_members)
+                zip_ref.extractall(install_dir, members=safe_members)  # nosec : handled in get_secure_zip_members
         elif archive_path.suffix in [".tar", ".gz", ".bz2", ".xz"]:
             with tarfile.open(archive_path, "r:*") as tar_ref:
                 safe_members = self.get_secure_tar_members(tar_ref)
-                tar_ref.extractall(install_dir, members=safe_members)
+                tar_ref.extractall(install_dir, members=safe_members)  # nosec : handled in get_secure_tar_members
         else:
             raise Exception(f"Unsupported archive format: {archive_path.suffix}")
         
