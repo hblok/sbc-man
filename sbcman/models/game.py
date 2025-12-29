@@ -22,7 +22,7 @@ class Game:
         self,
         game_id: str,
         name: str,
-        version: str = "1.0.0",
+        version: str = "",
         description: str = "",
         author: str = "",
         install_path: str = "",
@@ -99,7 +99,7 @@ class Game:
         return Game(
             game_id=data["id"],
             name=data["name"],
-            version=data.get("version", "1.0.0"),
+            version=data.get("version", ""),
             description=data.get("description", ""),
             author=data.get("author", ""),
             install_path=data.get("install_path", ""),

@@ -5,5 +5,5 @@ A cross-platform game launcher designed for handheld gaming devices with
 adaptive hardware detection, customizable UI, and game management.
 """
 
-__version__ = "1.0.0"
+__version__ = "0.0.1"
 __author__ = "SBC-Man Contributors"

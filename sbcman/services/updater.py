@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Optional, Tuple, Dict, Any
 import urllib.request
 import urllib.error
+import traceback
 
 from ..models.config_manager import ConfigManager
 from ..hardware.paths import AppPaths
@@ -45,10 +46,7 @@ class UpdaterService:
         self.current_version = "1.0.0"  # Current version from pyproject.toml
         
         # Get update repository URL from config (default to sbc-man GitHub)
-        self.update_repo_url = config_manager.get(
-            "update.repository_url", 
-            "https://github.com/hblok/sbc-man"
-        )
+        self.update_repo_url = config_manager.get("update.repository_url")
         
         logger.info(f"UpdaterService initialized with repo: {self.update_repo_url}")
 
@@ -95,6 +93,7 @@ class UpdaterService:
             return update_available, latest_version, download_url
             
         except urllib.error.URLError as e:
+            print(traceback.format_exc())
             logger.error(f"Network error checking for updates: {e}")
             return False, None, None
         except json.JSONDecodeError as e:
