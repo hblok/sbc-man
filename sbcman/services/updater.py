@@ -46,7 +46,7 @@ class UpdaterService:
         """
         self.config_manager = config_manager
         self.app_paths = app_paths
-        self.current_version = "1.0.0"  # Current version from pyproject.toml
+        self.current_version = ""
         
         # Get update repository URL from config (default to sbc-man GitHub)
         self.update_repo_url = config_manager.get("update.repository_url")
