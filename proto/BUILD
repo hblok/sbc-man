@@ -1,3 +1,6 @@
+# Copyright (C) 2025 H. Blok
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
 load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 load("@rules_python//python:py_test.bzl", "py_test")

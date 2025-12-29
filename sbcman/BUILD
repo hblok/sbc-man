@@ -1,3 +1,6 @@
+# Copyright (C) 2025 H. Blok
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 # See:
 # https://github.com/bazel-contrib/rules_python/blob/main/python/packaging.bzl
 # https://rules-python.readthedocs.io/en/0.32.0/api/packaging.html
