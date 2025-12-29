@@ -1,3 +1,6 @@
+# Copyright (C) 2025 H. Blok
+# SPDX-License-Identifier: GPL-3.0-or-later
+
 """
 Manages game downloads with observer pattern for progress tracking.
 Uses threading to keep UI responsive during downloads.
