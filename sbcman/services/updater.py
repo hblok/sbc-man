@@ -61,14 +61,20 @@ class UpdaterService:
             Tuple of (update_available, latest_version, download_url)
         """
         try:
-            # For now, we'll use GitHub API to get latest release
-            # In a real implementation, this could query a custom endpoint
-            api_url = f"{self.update_repo_url}/releases/latest"
+            # Use GitHub API to get latest release information
+            # Convert GitHub URL to API format
+            if "github.com" in self.update_repo_url:
+                # Extract owner/repo from GitHub URL
+                # Example: https://github.com/hblok/sbc-man -> hblok/sbc-man
+                github_parts = self.update_repo_url.replace("https://github.com/", "").strip("/")
+                api_url = f"https://api.github.com/repos/{github_parts}/releases/latest"
+            else:
+                # Fallback to original format (may not work for non-GitHub repos)
+                api_url = f"{self.update_repo_url}/releases/latest"
             
             logger.info(f"Checking for updates at: {api_url}")
             
             # Get latest release info from GitHub API
-            # TODO: FIXME: This is not json, is it.
             with urllib.request.urlopen(api_url) as response:  # nosec : Config is http only
                 release_data = json.loads(response.read().decode('utf-8'))
             
