@@ -22,7 +22,7 @@ class AppPaths:
         tmpdir = tempfile.mkdtemp()
         self._temp_dir = pathlib.Path(tmpdir) / "game_manager"
         self._temp_dir.mkdir(exist_ok=True)
-        self._temp_dir.chmod(0x700)
+        #self._temp_dir.chmod(0x700)
     
     @property
     def home(self) -> pathlib.Path:

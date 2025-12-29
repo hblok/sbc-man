@@ -68,6 +68,7 @@ class UpdaterService:
             logger.info(f"Checking for updates at: {api_url}")
             
             # Get latest release info from GitHub API
+            # TODO: FIXME: This is not json, is it.
             with urllib.request.urlopen(api_url) as response:  # nosec : Config is http only
                 release_data = json.loads(response.read().decode('utf-8'))
             
