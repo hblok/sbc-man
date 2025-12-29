@@ -111,12 +111,14 @@ class ProcessLauncher:
         for cmd in pre_commands:
             try:
                 logger.info(f"Running pre-launch command: {cmd}")
-                subprocess.run(cmd, shell=True, check=True, timeout=30)
+                # shell=False
+                subprocess.run(cmd, shell=False, check=True, timeout=30)
             except subprocess.TimeoutExpired:
                 logger.warning(f"Pre-launch command timed out: {cmd}")
             except subprocess.CalledProcessError as e:
                 logger.warning(f"Pre-launch command failed: {cmd} - {e}")
 
+    # TODO: Pasta from the method above. Consider a generic "_run" method
     def _run_post_commands(self, game: Game) -> None:
         """
         Execute post-launch commands.
@@ -130,7 +132,8 @@ class ProcessLauncher:
         for cmd in post_commands:
             try:
                 logger.info(f"Running post-launch command: {cmd}")
-                subprocess.run(cmd, shell=True, check=True, timeout=30)
+                # shell=False
+                subprocess.run(cmd, shell=False, check=True, timeout=30)
             except subprocess.TimeoutExpired:
                 logger.warning(f"Post-launch command timed out: {cmd}")
             except subprocess.CalledProcessError as e:

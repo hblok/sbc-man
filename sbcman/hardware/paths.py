@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import pathlib
+import tempfile
 
 
 class AppPaths:
@@ -17,7 +18,11 @@ class AppPaths:
         
         self._base_dir = base_dir
         self._home_dir = home_dir
-        self._temp_dir = pathlib.Path("/tmp") / "game_manager"
+
+        tmpdir = tempfile.mkdtemp()
+        self._temp_dir = pathlib.Path(tmpdir) / "game_manager"
+        self._temp_dir.mkdir(exist_ok=True)
+        self._temp_dir.chmod(0x700)
     
     @property
     def home(self) -> pathlib.Path:

@@ -12,6 +12,8 @@ import zipfile
 import tarfile
 from pathlib import Path
 from typing import Optional, Callable, Any
+import os
+import zipfile
 
 from ..services.network import NetworkService
 from ..hardware.paths import AppPaths
@@ -196,10 +198,12 @@ class DownloadManager:
         # FIXME
         if archive_path.suffix == ".zip":
             with zipfile.ZipFile(archive_path, "r") as zip_ref:
-                zip_ref.extractall(install_dir)
+                safe_members = self.get_secure_zip_members(zip_ref)
+                zip_ref.extractall(install_dir, members=safe_members)
         elif archive_path.suffix in [".tar", ".gz", ".bz2", ".xz"]:
             with tarfile.open(archive_path, "r:*") as tar_ref:
-                tar_ref.extractall(install_dir)
+                safe_members = self.get_secure_tar_members(tar_ref)
+                tar_ref.extractall(install_dir, members=safe_members)
         else:
             raise Exception(f"Unsupported archive format: {archive_path.suffix}")
         
@@ -211,6 +215,160 @@ class DownloadManager:
             entry_point.chmod(0o755)
         
         return install_dir
+    
+    def _validate_path(self, member_name: str) -> bool:
+        """Validate member path for security issues."""
+        # Check for absolute paths
+        if member_name.startswith('/'):
+            print(f"Absolute path: {member_name}")
+            return False
+        
+        # Check for path traversal
+        if '..' in member_name.split(os.sep):
+            print(f"Path traversal: {member_name}")
+            return False
+        
+        # Normalize and check again
+        normalized = os.path.normpath(member_name)
+        if normalized.startswith('..'):
+            print(f"Normalized path traversal: {member_name}")
+            return False
+        
+        # Check for null bytes (null injection)
+        if '\x00' in member_name:
+            print(f"Null byte in path: {member_name}")
+            return False
+        
+        return True
+    
+    def get_secure_zip_members(self, zip_file: zipfile.ZipFile):
+        """
+        Get list of safe members from zip archive.
+        
+        Returns:
+            List of validated member names
+        """
+        safe_members = []
+        total_size = 0
+
+
+        rejected_count = 0
+        accepted_count = 0
+        
+        for member_info in zip_file.infolist():
+            member_name = member_info.filename
+            
+            # Run all validation checks
+            if not self._validate_path(member_name):
+                rejected_count += 1
+                continue
+            
+            if not self._validate_compression(member_info):
+                rejected_count += 1
+                continue
+            
+            if not self._validate_size(member_info, total_size):
+                rejected_count += 1
+                continue
+            
+            # All checks passed
+            if not member_name.endswith('/'):
+                print(f"✓ {member_name} ({member_info.file_size} bytes)")
+                total_size += member_info.file_size
+                accepted_count += 1
+            
+            safe_members.append(member_name)
+        
+        return safe_members
+
+    def _validate_size(self, member_info: zipfile.ZipInfo, 
+                      current_total: int) -> bool:
+        """Validate member size."""
+
+        max_total_size: int = 1024*1024*1024         # 1GB
+        max_file_size: int = 100*1024*1024           # 100MB
+        
+        if member_info.file_size > max_file_size:
+            print(f"File too large ({member_info.file_size} bytes): {member_info.filename}")
+            return False
+        
+        if current_total + member_info.file_size > max_total_size:
+            print(f"Total size would exceed limit: {member_info.filename}")
+            return False
+        
+        return True
+    
+    def _validate_compression(self, member_info: zipfile.ZipInfo) -> bool:
+        """Detect compression bombs."""
+        max_compression_ratio: float = 100  # Zip bomb detection
+        
+        if member_info.compress_size > 0:
+            ratio = member_info.file_size / member_info.compress_size
+            if ratio > max_compression_ratio:
+                print(f"Suspicious compression ratio ({ratio:.1f}x): {member_info.filename}")
+                return False
+        
+        return True
+    
+    def get_secure_tar_members(self, tar, targetpath="."):
+        """
+        Filter tar members to prevent security vulnerabilities.
+        Returns a list of safe members to extract.
+        """
+        safe_members = []
+
+        for member in tar.getmembers():
+            # Prevent absolute paths
+            if member.name.startswith('/'):
+                print(f"Skipping absolute path: {member.name}")
+                continue
+
+            # Prevent path traversal (../)
+            if '..' in member.name.split(os.sep):
+                print(f"Skipping path traversal: {member.name}")
+                continue
+
+            # Prevent symlinks
+            if member.issym() or member.islnk():
+                print(f"Skipping symlink: {member.name}")
+                continue
+
+            # Prevent device files
+            if member.isdev() or member.ischr() or member.isblk():
+                print(f"Skipping device file: {member.name}")
+                continue
+
+            safe_members.append(member)
+
+        return safe_members
+    
+    # Python 3.12
+    def secure_filter(self, tarinfo, targetpath):
+        """
+        Secure filter to prevent path traversal and dangerous extractions.
+        """
+        # Prevent absolute paths
+        if tarinfo.name.startswith('/'):
+            raise tarfile.ExtractError(f"Absolute path not allowed: {tarinfo.name}")
+
+        # Prevent path traversal (../)
+        if '..' in tarinfo.name.split(os.sep):
+            raise tarfile.ExtractError(f"Path traversal not allowed: {tarinfo.name}")
+
+        # Prevent symlinks
+        if tarinfo.issym() or tarinfo.islnk():
+            raise tarfile.ExtractError(f"Symlinks not allowed: {tarinfo.name}")
+
+        # Prevent device files
+        if tarinfo.isdev():
+            raise tarfile.ExtractError(f"Device files not allowed: {tarinfo.name}")
+
+        # Prevent character/block devices
+        if tarinfo.ischr() or tarinfo.isblk():
+            raise tarfile.ExtractError(f"Device files not allowed: {tarinfo.name}")
+
+        return tarinfo
+
 
     def cancel_download(self) -> None:
         if self.is_downloading:
