@@ -48,9 +48,12 @@ class TestDownloadManager(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.temp_dir = pathlib.Path(tempfile.mkdtemp())
+        self.games_dir = self.temp_dir / "games"
+        self.games_dir.mkdir(exist_ok=True)
+        
         self.hw_config = {
             "paths": {
-                "games": self.temp_dir,
+                "games": str(self.games_dir),
             }
         }
 
@@ -90,7 +93,8 @@ class TestDownloadManager(unittest.TestCase):
         mock_unlink.return_value = None
         
         # Reinitialize the download manager with the mocked network service
-        self.download_manager = DownloadManager(self.hw_config, AppPaths())
+        app_paths = AppPaths(self.temp_dir, self.temp_dir)
+        self.download_manager = DownloadManager(self.hw_config, app_paths)
         
         # Create a test game
         game = Game(
