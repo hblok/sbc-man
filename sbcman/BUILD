@@ -60,7 +60,7 @@ py_package(
 py_wheel(
     name = "sbc_man_wheel",
     distribution = "sbc_man",
-    version = "0.1.0",
+    version = "0.0.12",
     deps = [
     	 ":sbc_man_package"
 	 ],

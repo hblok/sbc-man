@@ -198,7 +198,8 @@ class UpdaterService:
             # Install using pip with system packages override
             cmd = [
                 pip_command, 
-                "install", 
+                "install",
+                "-v",
                 "--break-system-packages", 
                 "--force-reinstall", 
                 str(wheel_path)
@@ -215,6 +216,8 @@ class UpdaterService:
             
             if result.returncode == 0:
                 logger.info("Pip installation successful")
+                logger.debug("\n\n" + str(result.stdout))
+                logger.debug("\n\n" + str(result.stderr))
                 return True, "Pip installation successful"
             else:
                 error_msg = result.stderr or result.stdout
