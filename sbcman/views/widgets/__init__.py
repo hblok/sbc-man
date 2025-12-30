@@ -7,7 +7,6 @@ Widgets Layer
 Reusable UI widgets for views.
 """
 
-# Widgets are currently integrated into states for simplicity
-# This package is reserved for future widget extraction if needed
+from .scrollable_list import ScrollableList
 
-__all__ = []
+__all__ = ['ScrollableList']
