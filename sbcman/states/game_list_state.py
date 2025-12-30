@@ -47,7 +47,7 @@ class GameListState(BaseState):
         """Update game list logic."""
         pass
 
-    def handle_events(self, List[pygame.event.Event]) -> None:
+    def handle_events(self, events: List[pygame.event.Event]) -> None:
         """Handle game list input."""
         # Check for back/exit
         if self.input_handler.is_action_pressed("cancel", events) or self._handle_exit_input(events):

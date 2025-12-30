@@ -69,7 +69,7 @@ class TestDownloadState(unittest.TestCase):
         self.download_state.on_enter(None)
         
         self.assertIsNotNone(self.download_state.download_manager)
-        self.assertEqual(self.download_state.selected_index, 0)
+        self.assertEqual(self.download_stategame_list.selected_index, 0)
         self.assertFalse(self.download_state.downloading)
         self.assertEqual(self.download_state.download_progress, 0.0)
         self.assertEqual(self.download_state.download_message, "")
@@ -93,7 +93,7 @@ class TestDownloadState(unittest.TestCase):
         
         # Verify available games were loaded
         self.assertEqual(self.download_state.available_games, test_games)
-        self.assertEqual(self.download_state.selected_index, 0)
+        self.assertEqual(self.download_stategame_list.selected_index, 0)
         self.assertFalse(self.download_state.downloading)
     
     def test_on_enter_without_available_games(self):
@@ -109,7 +109,7 @@ class TestDownloadState(unittest.TestCase):
         
         # Verify available games list is empty
         self.assertEqual(self.download_state.available_games, [])
-        self.assertEqual(self.download_state.selected_index, 0)
+        self.assertEqual(self.download_stategame_list.selected_index, 0)
         self.assertFalse(self.download_state.downloading)
     
     def test_on_exit(self):
@@ -236,10 +236,10 @@ class TestDownloadState(unittest.TestCase):
         self.download_state.handle_events(mock_events)
         
         # Verify selected index was decremented (wrapped around)
-        self.assertEqual(self.download_state.selected_index, 2)
+        self.assertEqual(self.download_stategame_list.selected_index, 2)
         
         # Test navigating up
-        self.download_state.selected_index = 2
+        self.download_stategame_list.selected_index = 2
         self.mock_input_handler.is_action_pressed.side_effect = [
             False,  # cancel
             False,  # up
@@ -251,7 +251,7 @@ class TestDownloadState(unittest.TestCase):
         self.download_state.handle_events(mock_events)
         
         # Verify selected index was incremented
-        self.assertEqual(self.download_state.selected_index, 0)
+        self.assertEqual(self.download_stategame_list.selected_index, 0)
     
     def test_handle_events_confirm_download(self):
         """Test handling confirm action to start download."""

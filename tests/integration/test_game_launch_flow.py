@@ -95,7 +95,7 @@ class TestGameLaunchFlow(unittest.TestCase):
         
         # Verify games were loaded
         self.assertEqual(len(game_list_state.games), 2)
-        self.assertEqual(game_list_state.selected_index, 0)
+        self.assertEqual(game_list_state.game_list.selected_index, 0)
 
     def test_game_selection_navigation(self):
         """Test game selection navigation in game list state."""
@@ -130,7 +130,7 @@ class TestGameLaunchFlow(unittest.TestCase):
         game_list_state.on_enter(None)
         
         # Verify initial selection
-        self.assertEqual(game_list_state.selected_index, 0)
+        self.assertEqual(game_list_state.game_list.selected_index, 0)
         
         # Mock input handler to simulate down navigation
         with patch.object(self.mock_input_handler, 'is_action_pressed') as mock_action:
@@ -140,7 +140,7 @@ class TestGameLaunchFlow(unittest.TestCase):
             game_list_state.handle_events(mock_events)
             
             # Verify selection moved
-            self.assertEqual(game_list_state.selected_index, 1)
+            self.assertEqual(game_list_state.game_list.selected_index, 1)
 
     def test_playing_state_initialization(self):
         """Test playing state initialization."""
