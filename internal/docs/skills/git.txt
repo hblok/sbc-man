@@ -8,5 +8,8 @@ When done, push back to a new branch.
 
 
 
+**Repository Information:**
+- Clone command: `gh repo clone hblok/sbc-man`
+- For pushing changes, use: `git remote set-url origin https://x-access-token:$GITHUB_TOKEN@github.com/hblok/sbc-man.git`
 
 
