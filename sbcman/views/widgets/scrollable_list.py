@@ -4,8 +4,8 @@
 """
 Scrollable List Widget Module
 
-Provides a reusable scrolling component for lists that need to fit
-within constrained screen dimensions (640x480).
+Provides a reusable scrolling component for lists that adapts to available screen space.
+Only shows scroll indicators when content exceeds available vertical space.
 """
 
 import pygame
@@ -17,10 +17,10 @@ logger = logging.getLogger(__name__)
 
 class ScrollableList:
     """
-    A scrollable list widget for displaying items within constrained screen space.
+    An adaptive scrollable list widget that only scrolls when necessary.
     
-    Designed specifically for 640x480 resolution devices where content may
-    exceed available vertical space and requires scrolling functionality.
+    Automatically detects if content fits within available space and hides
+    scroll indicators when not needed. Adapts to different screen sizes.
     """
     
     def __init__(self, 
@@ -32,13 +32,13 @@ class ScrollableList:
                  font_size: int = 32,
                  padding: int = 10):
         """
-        Initialize the scrollable list.
+        Initialize the adaptive scrollable list.
         
         Args:
             x: X position of the list
             y: Y position of the list
             width: Width of the list
-            height: Height of the list (visible area)
+            height: Height of the list (maximum available area)
             item_height: Height of each list item
             font_size: Font size for text rendering
             padding: Internal padding
@@ -57,6 +57,10 @@ class ScrollableList:
         self.scroll_offset = 0
         self.visible_items_count = (height - 2 * padding) // item_height
         
+        # Adaptive layout state
+        self.needs_scrolling = False
+        self.actual_height = height  # Will be reduced if no scrolling needed
+        
         # Visual settings
         self.bg_color = (20, 20, 30)
         self.selected_bg_color = (50, 50, 80)
@@ -68,13 +72,13 @@ class ScrollableList:
         # Fonts
         self.font = pygame.font.Font(None, font_size)
         
-        # Scroll indicators
-        self.show_scroll_indicators = True
+        # Scroll indicators (only shown when needed)
+        self.show_scroll_indicators = False
         self.scroll_indicator_color = (100, 100, 100)
         
     def set_items(self, items: List[str], item_states: Optional[List[bool]] = None) -> None:
         """
-        Set the list items.
+        Set the list items and determine if scrolling is needed.
         
         Args:
             items: List of item strings to display
@@ -85,8 +89,47 @@ class ScrollableList:
         self.scroll_offset = 0
         self.item_states = item_states or [True] * len(items)
         
+        # Determine if scrolling is needed
+        self._calculate_layout_requirements()
+        
         # Ensure scroll offset is valid
         self._validate_scroll_offset()
+        
+    def _calculate_layout_requirements(self) -> None:
+        """
+        Calculate if scrolling is needed and adjust layout accordingly.
+        """
+        if not self.items:
+            self.needs_scrolling = False
+            self.show_scroll_indicators = False
+            self.actual_height = self.height
+            return
+            
+        # Calculate how much space the items need
+        total_item_height = len(self.items) * self.item_height
+        available_space = self.height - 2 * self.padding
+        
+        # Determine if scrolling is needed
+        self.needs_scrolling = total_item_height > available_space
+        
+        if self.needs_scrolling:
+            # Use full height and show scroll indicators
+            self.actual_height = self.height
+            self.visible_items_count = available_space // self.item_height
+            self.show_scroll_indicators = True
+        else:
+            # Reduce height to fit content exactly and hide scroll indicators
+            self.actual_height = total_item_height + 2 * self.padding
+            self.visible_items_count = len(self.items)
+            self.show_scroll_indicators = False
+            
+            # Center the content vertically if it doesn't fill the available space
+            if self.actual_height < self.height:
+                vertical_offset = (self.height - self.actual_height) // 2
+                self.y += vertical_offset
+        
+        logger.debug(f"Layout: {len(self.items)} items, needs_scrolling={self.needs_scrolling}, "
+                    f"actual_height={self.actual_height}, visible_items={self.visible_items_count}")
         
     def scroll_up(self) -> bool:
         """
@@ -133,6 +176,9 @@ class ScrollableList:
         
     def _ensure_selection_visible(self) -> None:
         """Ensure the selected item is visible in the viewport."""
+        if not self.needs_scrolling:
+            return  # No scrolling needed, everything is visible
+            
         if self.selected_index < self.scroll_offset:
             self.scroll_offset = self.selected_index
         elif self.selected_index >= self.scroll_offset + self.visible_items_count:
@@ -142,32 +188,40 @@ class ScrollableList:
         
     def _validate_scroll_offset(self) -> None:
         """Ensure scroll offset is within valid bounds."""
+        if not self.needs_scrolling:
+            self.scroll_offset = 0
+            return
+            
         max_offset = max(0, len(self.items) - self.visible_items_count)
         self.scroll_offset = max(0, min(self.scroll_offset, max_offset))
         
     def render(self, surface: pygame.Surface) -> None:
         """
-        Render the scrollable list to the surface.
+        Render the adaptive scrollable list to the surface.
         
         Args:
             surface: Pygame surface to render on
         """
-        # Draw background
-        pygame.draw.rect(surface, self.bg_color, (self.x, self.y, self.width, self.height))
+        # Draw background with adaptive height
+        pygame.draw.rect(surface, self.bg_color, (self.x, self.y, self.width, self.actual_height))
         
-        # Draw border
-        pygame.draw.rect(surface, self.border_color, (self.x, self.y, self.width, self.height), 2)
+        # Draw border with adaptive height
+        pygame.draw.rect(surface, self.border_color, (self.x, self.y, self.width, self.actual_height), 2)
         
         if not self.items:
             # Draw empty state
             empty_text = self.font.render("No items available", True, self.disabled_text_color)
-            text_rect = empty_text.get_rect(center=(self.x + self.width // 2, self.y + self.height // 2))
+            text_rect = empty_text.get_rect(center=(self.x + self.width // 2, self.y + self.actual_height // 2))
             surface.blit(empty_text, text_rect)
             return
             
         # Calculate visible range
-        start_idx = self.scroll_offset
-        end_idx = min(start_idx + self.visible_items_count, len(self.items))
+        if self.needs_scrolling:
+            start_idx = self.scroll_offset
+            end_idx = min(start_idx + self.visible_items_count, len(self.items))
+        else:
+            start_idx = 0
+            end_idx = len(self.items)
         
         # Render visible items
         current_y = self.y + self.padding
@@ -195,8 +249,8 @@ class ScrollableList:
             
             current_y += self.item_height
             
-        # Draw scroll indicators if needed
-        if self.show_scroll_indicators and len(self.items) > self.visible_items_count:
+        # Draw scroll indicators only if needed
+        if self.show_scroll_indicators and self.needs_scrolling:
             self._render_scroll_indicators(surface)
             
     def _truncate_text(self, text: str, max_width: int) -> str:
@@ -252,7 +306,7 @@ class ScrollableList:
         # Draw scroll bar on the right side
         bar_x = self.x + self.width - 15
         bar_width = 8
-        bar_height = self.height - 20
+        bar_height = self.actual_height - 20
         bar_y = self.y + 10
         
         # Background bar
@@ -262,7 +316,7 @@ class ScrollableList:
         # Scroll thumb
         if len(self.items) > 0:
             thumb_height = max(20, int(bar_height * self.visible_items_count / len(self.items)))
-            thumb_y = bar_y + int((self.height - 20 - thumb_height) * self.scroll_offset / 
+            thumb_y = bar_y + int((self.actual_height - 20 - thumb_height) * self.scroll_offset / 
                                 (len(self.items) - self.visible_items_count))
             
             pygame.draw.rect(surface, (200, 200, 200), 
@@ -285,14 +339,16 @@ class ScrollableList:
                 return self.scroll_down()
             elif event.key == pygame.K_PAGEUP:
                 # Page up - move by visible items count
-                self.selected_index = max(0, self.selected_index - self.visible_items_count)
-                self._ensure_selection_visible()
+                if self.needs_scrolling:
+                    self.selected_index = max(0, self.selected_index - self.visible_items_count)
+                    self._ensure_selection_visible()
                 return True
             elif event.key == pygame.K_PAGEDOWN:
                 # Page down - move by visible items count
-                self.selected_index = min(len(self.items) - 1, 
-                                        self.selected_index + self.visible_items_count)
-                self._ensure_selection_visible()
+                if self.needs_scrolling:
+                    self.selected_index = min(len(self.items) - 1, 
+                                            self.selected_index + self.visible_items_count)
+                    self._ensure_selection_visible()
                 return True
             elif event.key == pygame.K_HOME:
                 # Home - go to first item

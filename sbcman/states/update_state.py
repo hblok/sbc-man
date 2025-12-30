@@ -6,6 +6,7 @@ Update State Module
 
 Handles the self-update process including checking for updates,
 downloading, and installing with user feedback.
+Features adaptive layout that only scrolls when necessary.
 
 Based on: docs/code/class_states_update_state.txt
 """
@@ -23,11 +24,11 @@ logger = logging.getLogger(__name__)
 
 class UpdateState(BaseState):
     """
-    Update state for handling self-updating functionality.
+    Update state for handling self-updating functionality with adaptive layout.
     
     Provides UI for checking, downloading, and installing updates
-    with progress indication and error handling.
-    Now optimized for 640x480 resolution with scrolling for long messages.
+    with progress indication and error handling. Automatically adapts
+    to screen size and only shows scroll indicators when needed.
     """
 
     def __init__(self, state_manager: "StateManager"):
@@ -46,17 +47,20 @@ class UpdateState(BaseState):
         self.selected_option = 0
         self.options = []
         
-        # Scrolling for long messages
+        # Scrolling for long messages (only when needed)
         self.message_lines = []
         self.message_scroll_offset = 0
-        self.max_visible_message_lines = 6  # For 640x480 constraint
+        
+        # Adaptive layout state
+        self._last_surface_width = 640
+        self._last_surface_height = 480
 
     def on_enter(self, previous_state: Optional[BaseState]) -> None:
         """Initialize update state."""
         logger.info("Entered update state")
         
-        # Initialize scrollable list for options
-        self._setup_scrollable_list()
+        # Initialize adaptive scrollable list for options
+        self._setup_adaptive_scrollable_list()
         
         # Start update check
         self._start_update_check()
@@ -84,25 +88,105 @@ class UpdateState(BaseState):
         elif self.stage in ["complete", "error"]:
             self._handle_completion_stage_events(events)
 
-    def _setup_scrollable_list(self, surface_height: int = 480) -> None:
-        """Setup the scrollable list for options."""
-        # Options list positioned at bottom of screen
+    def _setup_adaptive_scrollable_list(self) -> None:
+        """
+        Setup the adaptive scrollable list for options.
+        
+        The options list will automatically adapt to screen size and
+        will only show scroll indicators when content exceeds available space.
+        """
+        # Use default dimensions that will be updated in render
+        surface_width = 640
+        surface_height = 480
+        
+        # Calculate adaptive dimensions for options area
+        bottom_padding = 80  # Space for instructions
+        available_height = surface_height - bottom_padding
+        
+        # Options list positioned at bottom of screen with adaptive sizing
+        options_height = min(120, available_height // 3)  # Max 1/3 of available space
+        
+        max_width = min(500, surface_width - 80)
+        options_width = max(300, max_width)
+        options_x = (surface_width - options_width) // 2
+        options_y = available_height - options_height
+        
+        # Create adaptive scrollable list
         self.options_list = ScrollableList(
-            x=80,   # Centered
-            y=380,  # Near bottom for options
-            width=480,
-            height=80,  # Small area for 1-2 options
+            x=options_x,
+            y=options_y,
+            width=options_width,
+            height=options_height,  # Maximum available space
             item_height=40,
             font_size=28,
             padding=10
         )
+        
+        # Store dimensions for potential updates
+        self._last_surface_width = surface_width
+        self._last_surface_height = surface_height
+
+    def _update_adaptive_layout(self, surface_width: int, surface_height: int) -> None:
+        """
+        Update layout dimensions if screen size changed.
+        
+        Args:
+            surface_width: Current surface width
+            surface_height: Current surface height
+        """
+        # Only update if dimensions actually changed
+        if (surface_width != self._last_surface_width or 
+            surface_height != self._last_surface_height):
+            
+            # Recalculate adaptive dimensions
+            bottom_padding = 80
+            available_height = surface_height - bottom_padding
+            options_height = min(120, available_height // 3)
+            
+            max_width = min(500, surface_width - 80)
+            options_width = max(300, max_width)
+            options_x = (surface_width - options_width) // 2
+            options_y = available_height - options_height
+            
+            # Update scrollable list properties
+            self.options_list.x = options_x
+            self.options_list.y = options_y
+            self.options_list.width = options_width
+            self.options_list.height = options_height
+            
+            # Recalculate layout requirements
+            self.options_list._calculate_layout_requirements()
+            
+            # Store new dimensions
+            self._last_surface_width = surface_width
+            self._last_surface_height = surface_height
+            
+            logger.debug(f"Updated adaptive layout for {surface_width}x{surface_height}")
 
     def _update_options_list(self) -> None:
-        """Update the options scrollable list."""
+        """Update the adaptive options scrollable list."""
         if not hasattr(self, 'options_list'):
             return
 
         self.options_list.set_items(self.options, [True] * len(self.options))
+
+    def _calculate_adaptive_message_lines(self, surface_width: int) -> int:
+        """
+        Calculate maximum visible message lines based on screen size.
+        
+        Args:
+            surface_width: Current surface width
+            
+        Returns:
+            Maximum visible message lines
+        """
+        # Base calculation on screen size - more space on larger screens
+        if surface_width >= 1024:
+            return 12  # Larger screens can show more lines
+        elif surface_width >= 800:
+            return 8   # Medium screens
+        else:
+            return 6   # Small screens (640x480)
 
     def _wrap_message(self, message: str, max_width: int = 50) -> List[str]:
         """Wrap message text to fit within screen width."""
@@ -149,11 +233,13 @@ class UpdateState(BaseState):
 
     def _handle_completion_stage_events(self, events: List[pygame.event.Event]) -> None:
         """Handle events when update is complete or failed."""
-        # Handle scrolling through long messages
+        # Handle scrolling through long messages (only if needed)
+        max_visible_lines = self._calculate_adaptive_message_lines(self._last_surface_width)
+        
         if self.input_handler.is_action_pressed("up", events):
             self.message_scroll_offset = max(0, self.message_scroll_offset - 1)
         elif self.input_handler.is_action_pressed("down", events):
-            max_scroll = max(0, len(self.message_lines) - self.max_visible_message_lines)
+            max_scroll = max(0, len(self.message_lines) - max_visible_lines)
             self.message_scroll_offset = min(max_scroll, self.message_scroll_offset + 1)
 
         # Handle option selection
@@ -278,68 +364,84 @@ class UpdateState(BaseState):
         self.message_scroll_offset = 0
 
     def render(self, surface: pygame.Surface) -> None:
-        """Render the update screen optimized for 640x480."""
+        """Render the update screen with adaptive layout."""
         surface.fill((20, 20, 30))
         
-        # Render title
-        font_large = pygame.font.Font(None, 64)  # Slightly smaller for space
+        # Get actual surface dimensions
+        surface_width = surface.get_width()
+        surface_height = surface.get_height()
+        
+        # Update adaptive layout if screen size changed
+        if hasattr(self, 'options_list'):
+            self._update_adaptive_layout(surface_width, surface_height)
+        else:
+            # Initialize if not done yet
+            self._setup_adaptive_scrollable_list()
+        
+        # Render title with adaptive font size
+        title_font_size = min(64, max(48, surface_width // 10))
+        font_large = pygame.font.Font(None, title_font_size)
         title = font_large.render("Self-Update", True, (255, 255, 255))
-        title_rect = title.get_rect(center=(surface.get_width() // 2, 50))
+        title_rect = title.get_rect(center=(surface_width // 2, 50))
         surface.blit(title, title_rect)
         
-        # Render current version info
-        font_medium = pygame.font.Font(None, 28)  # Smaller for space
+        # Render current version info with adaptive font size
+        version_font_size = min(28, max(20, surface_width // 25))
+        font_medium = pygame.font.Font(None, version_font_size)
         current_version_text = f"Current version: {self.updater.current_version}"
         version_text = font_medium.render(current_version_text, True, (200, 200, 200))
-        version_rect = version_text.get_rect(center=(surface.get_width() // 2, 90))
+        version_rect = version_text.get_rect(center=(surface_width // 2, 85))
         surface.blit(version_text, version_rect)
         
-        # Calculate message area (constrained for 640x480)
-        message_area_start = 140
-        message_area_height = 180  # Constrained height
-        message_area_end = message_area_start + message_area_height
+        # Calculate adaptive message area
+        message_area_start = 120
+        options_list_bottom = self.options_list.y + self.options_list.actual_height if hasattr(self, 'options_list') else surface_height - 100
+        message_area_height = options_list_bottom - message_area_start - 20
         
-        # Render status message with scrolling support
-        font = pygame.font.Font(None, 32)  # Slightly smaller for more content
+        # Render status message with adaptive scrolling support
+        font = pygame.font.Font(None, min(32, max(24, surface_width // 20)))
+        max_visible_lines = self._calculate_adaptive_message_lines(surface_width)
         
         if self.message_lines:
             # Calculate visible range
             start_idx = self.message_scroll_offset
-            end_idx = min(start_idx + self.max_visible_message_lines, len(self.message_lines))
+            end_idx = min(start_idx + max_visible_lines, len(self.message_lines))
             
             y_offset = message_area_start
             for i in range(start_idx, end_idx):
                 line = self.message_lines[i]
                 color = self._get_message_color()
                 text = font.render(line, True, color)
-                text_rect = text.get_rect(center=(surface.get_width() // 2, y_offset))
+                text_rect = text.get_rect(center=(surface_width // 2, y_offset))
                 surface.blit(text, text_rect)
-                y_offset += 30
+                y_offset += min(30, surface_height // 16)
             
-            # Show scroll indicators if needed
-            if len(self.message_lines) > self.max_visible_message_lines:
-                self._render_scroll_indicators(surface, message_area_start, message_area_end)
+            # Show scroll indicators only if needed
+            if len(self.message_lines) > max_visible_lines:
+                self._render_scroll_indicators(surface, message_area_start, y_offset)
         
         # Render progress indicator for active stages
         if self.stage in ["checking", "downloading", "installing"]:
             self._render_progress_indicator(surface)
         
-        # Initialize and render options list
-        if not hasattr(self, 'options_list'):
-            self._setup_scrollable_list(surface.get_height())
-        
+        # Render the adaptive options list
         self._update_options_list()
         self.options_list.render(surface)
         
-        # Render instructions at the bottom
-        font_instruction = pygame.font.Font(None, 22)
-        if self.stage in ["complete", "error"] and len(self.message_lines) > self.max_visible_message_lines:
+        # Render adaptive instructions at the bottom
+        instruction_font_size = min(22, max(16, surface_width // 35))
+        font_instruction = pygame.font.Font(None, instruction_font_size)
+        
+        if (self.stage in ["complete", "error"] and 
+            len(self.message_lines) > max_visible_lines):
             instructions = "↑↓ Scroll Message  |  A/Confirm Continue"
+        elif self.options_list.needs_scrolling and self.options_list.show_scroll_indicators:
+            instructions = "↑↓ Navigate  |  A/Confirm Select  |  PageUp/Down Fast Scroll"
         else:
             instructions = "A/Confirm Select  |  B/Cancel Back"
         
         inst_surface = font_instruction.render(instructions, True, (150, 150, 150))
-        inst_rect = inst_surface.get_rect(center=(surface.get_width() // 2, surface.get_height() - 15))
+        inst_rect = inst_surface.get_rect(center=(surface_width // 2, surface_height - 15))
         surface.blit(inst_surface, inst_rect)
 
     def _render_scroll_indicators(self, surface: pygame.Surface, top: int, bottom: int) -> None:
@@ -352,7 +454,8 @@ class UpdateState(BaseState):
             surface.blit(up_arrow, (surface.get_width() - 30, top))
         
         # Down indicator
-        max_scroll = max(0, len(self.message_lines) - self.max_visible_message_lines)
+        max_visible_lines = self._calculate_adaptive_message_lines(surface.get_width())
+        max_scroll = max(0, len(self.message_lines) - max_visible_lines)
         if self.message_scroll_offset < max_scroll:
             down_arrow = font_small.render("▼", True, (150, 150, 150))
             surface.blit(down_arrow, (surface.get_width() - 30, bottom - 20))
@@ -373,7 +476,8 @@ class UpdateState(BaseState):
         dot_count = int(time.time() * 2) % 4
         dots = "." * dot_count
         
-        font = pygame.font.Font(None, 36)
+        font = pygame.font.Font(None, min(36, max(28, surface.get_width() // 18)))
         progress_text = font.render(dots, True, (255, 255, 0))
-        progress_rect = progress_text.get_rect(center=(surface.get_width() // 2, 340))
+        progress_rect = progress_text.get_rect(center=(surface.get_width() // 2, 
+                                                      self.options_list.y - 30))
         surface.blit(progress_text, progress_rect)
