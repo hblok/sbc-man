@@ -36,12 +36,12 @@ jobs:
       - name: Build Release
         run: |
           VERSION=$(./tools/get_version.sh | tr ' ' '=')
-          bazel build --define=$VERSION //sbcman:sbc_man_wheel
+          bazel build --define=$VERSION //sbcman:sbcman_wheel
 
       - name: Prepare Artifacts
         run: |
           mkdir -p release_artifacts
-          cp bazel-bin/sbcman/sbc_man-*.whl release_artifacts/
+          cp bazel-bin/sbcman/sbcman-*.whl release_artifacts/
         
       - name: Create Release
         uses: softprops/action-gh-release@v2
