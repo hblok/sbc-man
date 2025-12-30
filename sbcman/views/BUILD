@@ -5,8 +5,6 @@ package(default_visibility = ["//visibility:public"])
 
 py_library(
     name = "views",
-    srcs = [
-        "__init__.py",
-    ],
+    srcs = glob(["*.py"]),
     deps = [],
 )
