@@ -1,8 +1,8 @@
 def _gen_version_impl(ctx):
-    """Generate version.py from git"""
+    """Generate version.py """
     
     # Get version from workspace status
-    version = ctx.var.get("STABLE_VERSION", "0.0.0-dev")
+    version = ctx.var.get("SBCMAN_VERSION", "0.0.0-dev")
     
     output = ctx.actions.declare_file("version.py")
     ctx.actions.write(

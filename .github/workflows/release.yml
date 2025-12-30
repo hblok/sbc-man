@@ -23,7 +23,7 @@ jobs:
             ~/.cache/bazelisk
           key: bazel
 
-      # TODO: Use script instead here?
+      # TODO: Remove?
       - name: Extract Version
         id: version
         run: |
@@ -34,7 +34,9 @@ jobs:
           echo "Version: $VERSION"
           
       - name: Build Release
-        run: bazel build //sbcman:sbc_man_wheel --workspace_status_command="tools/get_version.sh"
+        run: |
+          VERSION=$(./tools/get_version.sh | tr ' ' '=')
+          bazel build --define=$VERSION //sbcman:sbc_man_wheel
 
       - name: Prepare Artifacts
         run: |

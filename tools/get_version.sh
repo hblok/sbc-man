@@ -9,4 +9,4 @@ else
     VERSION="${VERSION#v}"
 fi
 
-echo "STABLE_VERSION $VERSION"
+echo "SBCMAN_VERSION $VERSION"

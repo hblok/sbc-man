@@ -1,0 +1,2 @@
+build --define=SBCMAN_VERSION=0.0.0
+test --define=SBCMAN_VERSION=0.0.0
