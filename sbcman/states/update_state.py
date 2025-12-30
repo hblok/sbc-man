@@ -160,21 +160,33 @@ class UpdateState(BaseState):
             # Install the update
             success, message = self.updater.install_update(wheel_path)
             
-            if success:
+            # Ensure we have valid success state and message
+            if success is True and message:
                 self.stage = "complete"
-                self.message = "Update installed successfully!\nRestart the application to apply changes."
+                self.message = f"Update installed successfully!\n{message}\n\nRestart the application to apply changes."
                 self.options = ["OK"]
                 self.selected_option = 0
+                logger.info("Update installation completed successfully")
             else:
+                # Handle failure case with detailed error information
                 self.stage = "error"
-                self.message = f"Installation failed: {message}"
+                error_message = message if message else "Unknown installation error"
+                self.message = f"Installation failed: {error_message}"
                 self.options = ["OK"]
                 self.selected_option = 0
+                logger.error(f"Update installation failed: {error_message}")
                 
         except Exception as e:
-            logger.error(f"Error installing update: {e}")
+            # Catch any unexpected exceptions during the installation process
+            import traceback
+            error_details = str(e)
+            error_traceback = traceback.format_exc()
+            
+            logger.error(f"Unexpected error installing update: {error_details}")
+            logger.error(f"Full traceback: {error_traceback}")
+            
             self.stage = "error"
-            self.message = f"Error installing update: {str(e)}"
+            self.message = f"Unexpected error during installation: {error_details}"
             self.options = ["OK"]
             self.selected_option = 0
 
