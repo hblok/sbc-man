@@ -195,15 +195,22 @@ class UpdaterService:
             if not pip_command:
                 return False, "pip not found"
             
-            # Install using pip with system packages override
+            # Check if pip supports --break-system-packages (introduced in pip 23.0)
+            supports_break_system_packages = self._check_pip_break_system_packages_support(pip_command)
+            
+            # Build pip install command with conditional --break-system-packages option
             cmd = [
                 pip_command, 
                 "install",
                 "-v",
-                "--break-system-packages", 
-                "--force-reinstall", 
-                str(wheel_path)
+                "--force-reinstall"
             ]
+            
+            # Add --break-system-packages only if supported
+            if supports_break_system_packages:
+                cmd.append("--break-system-packages")
+            
+            cmd.append(str(wheel_path))
             
             logger.info(f"Installing with pip: {' '.join(cmd)}")
             
@@ -216,8 +223,8 @@ class UpdaterService:
             
             if result.returncode == 0:
                 logger.info("Pip installation successful")
-                logger.debug("\n\n" + str(result.stdout))
-                logger.debug("\n\n" + str(result.stderr))
+                logger.debug("\\n\\n" + str(result.stdout))
+                logger.debug("\\n\\n" + str(result.stderr))
                 return True, "Pip installation successful"
             else:
                 error_msg = result.stderr or result.stdout
@@ -231,6 +238,70 @@ class UpdaterService:
         except Exception as e:
             logger.error(f"Unexpected error with pip installation: {e}")
             return False, f"Pip error: {e}"
+
+    def _check_pip_break_system_packages_support(self, pip_command: str) -> bool:
+        """
+        Check if pip supports the --break-system-packages option.
+        
+        The --break-system-packages option was introduced in pip 23.0.
+        This method checks the pip version to determine support.
+        
+        Args:
+            pip_command: The pip command to check (e.g., 'pip', 'pip3')
+            
+        Returns:
+            True if --break-system-packages is supported, False otherwise
+        """
+        try:
+            # Get pip version
+            result = subprocess.run(
+                [pip_command, "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            if result.returncode != 0:
+                logger.warning(f"Could not determine pip version for {pip_command}")
+                return False
+            
+            # Parse version from output like "pip X.Y.Z from ..."
+            version_output = result.stdout.strip()
+            if "pip " not in version_output:
+                logger.warning(f"Unexpected pip version output: {version_output}")
+                return False
+            
+            # Extract version number
+            version_str = version_output.split("pip ")[1].split(" ")[0]
+            
+            # Parse version components
+            version_parts = version_str.split(".")
+            if len(version_parts) < 2:
+                logger.warning(f"Could not parse pip version: {version_str}")
+                return False
+            
+            try:
+                major = int(version_parts[0])
+                minor = int(version_parts[1])
+                
+                # --break-system-packages was introduced in pip 23.0
+                if major > 23 or (major == 23 and minor >= 0):
+                    logger.info(f"pip {version_str} supports --break-system-packages")
+                    return True
+                else:
+                    logger.info(f"pip {version_str} does not support --break-system-packages")
+                    return False
+                    
+            except ValueError:
+                logger.warning(f"Invalid pip version format: {version_str}")
+                return False
+                
+        except subprocess.TimeoutExpired:
+            logger.warning("Timeout checking pip version")
+            return False
+        except Exception as e:
+            logger.error(f"Error checking pip version support: {e}")
+            return False
 
     def _install_with_extraction(self, wheel_path: Path) -> Tuple[bool, str]:
         """
