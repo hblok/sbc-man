@@ -8,8 +8,15 @@
 # https://realpython.com/python-wheels/
 
 load("@rules_python//python:packaging.bzl", "py_wheel", "py_package")
+load("//tools:version.bzl", "version_file")
 
 package(default_visibility = ["//visibility:public"])
+
+# Generate version file
+version_file(
+    name = "version_gen",
+    version = "{STABLE_VERSION}",
+)
 
 # Main entry point
 py_binary(
@@ -60,7 +67,7 @@ py_package(
 py_wheel(
     name = "sbc_man_wheel",
     distribution = "sbc_man",
-    version = "0.0.12",
+    version = "{STABLE_VERSION}",
     deps = [
     	 ":sbc_man_package"
 	 ],

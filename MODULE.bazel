@@ -37,3 +37,6 @@ pip.parse(
 )
 
 use_repo(pip, "sbc_man_pip_deps", "sbc_man_pip_dev_deps")
+
+git_tag_ver = use_extension("//tools:git_tag_version.bzl", "git_tag_version")
+

@@ -22,9 +22,19 @@ jobs:
             ~/.cache/bazel
             ~/.cache/bazelisk
           key: bazel
-      
+
+      # TODO: Use script instead here?
+      - name: Extract Version
+        id: version
+        run: |
+          VERSION=$(git describe --tags --always)
+          # Remove 'v' prefix
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Version: $VERSION"
+          
       - name: Build Release
-        run: bazel build //sbcman:sbc_man_wheel
+        run: bazel build //sbcman:sbc_man_wheel --workspace_status_command="tools/get_version.sh"
 
       - name: Prepare Artifacts
         run: |
@@ -36,6 +46,8 @@ jobs:
         if: github.ref_type == 'tag'
         with:
           files: release_artifacts/*.whl
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.version.outputs.version }}    
           generate_release_notes: false
           draft: false
           prerelease: false
