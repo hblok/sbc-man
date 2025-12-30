@@ -1,1 +1,1 @@
-exports_files(["version.bzl"])
+exports_files(["version.bzl", "version_gen.bzl"])

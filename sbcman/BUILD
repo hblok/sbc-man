@@ -8,14 +8,13 @@
 # https://realpython.com/python-wheels/
 
 load("@rules_python//python:packaging.bzl", "py_wheel", "py_package")
-load("//tools:version.bzl", "version_file")
+load("//tools:version_gen.bzl", "gen_version")
 
 package(default_visibility = ["//visibility:public"])
 
 # Generate version file
-version_file(
-    name = "version_gen",
-    version = "{STABLE_VERSION}",
+gen_version(
+    name = "gen_version",
 )
 
 # Main entry point
@@ -42,13 +41,14 @@ py_library(
     name = "sbcman",
     srcs = ["main.py"],
     deps = [
+        ":gen_version",
         "//sbcman/core",
 	"//sbcman/hardware",
 	"//sbcman/models",
 	"//sbcman/services",
 	"//sbcman/states",
 	"//sbcman/views",
-	"//sbcman/views/widgets",		
+	"//sbcman/views/widgets",
     ],
     data = [
     	 "//sbcman:config_files"

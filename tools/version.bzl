@@ -6,10 +6,15 @@ def _version_file_impl(ctx):
 __version__ = "{}"
 '''.format(version)
     
-    ctx.file("__init__.py", content)
+    # Create the output file
+    output_file = ctx.actions.declare_file("version.py")
+    ctx.actions.write(
+        output = output_file,
+        content = content,
+    )
     
     return [
-        DefaultInfo(files = depset([ctx.outputs.out])),
+        DefaultInfo(files = depset([output_file])),
     ]
 
 version_file = rule(
@@ -18,6 +23,6 @@ version_file = rule(
         "version": attr.string(mandatory = True),
     },
     outputs = {
-        "out": "%{name}.py",
+        "out": "version.py",
     },
 )
