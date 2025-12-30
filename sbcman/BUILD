@@ -9,6 +9,7 @@
 
 load("@rules_python//python:packaging.bzl", "py_wheel", "py_package")
 load("//tools:version_gen.bzl", "gen_version")
+load("//tools:py_wheel_stamped.bzl", "py_wheel_stamped")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -64,11 +65,34 @@ py_package(
     ]
 )
 
+#py_wheel_stamped(
+#    name = "sbc_man_wheel",
+#    distribution = "sbcman",
+#    deps = [
+#    	 ":sbc_man_package"#
+#	 ],
+#)
+
+# Create the base wheel
 py_wheel(
-    name = "sbc_man_wheel",
+    name = "sbc_man_wheel_base",
     distribution = "sbc_man",
-    version = "{STABLE_VERSION}",
+    version = "$(STABLE_VERSION)",  # Placeholder
     deps = [
-    	 ":sbc_man_package"
-	 ],
+        ":sbc_man_package",
+    ],
+)
+
+# Rename it with the stamped version
+py_wheel_stamped(
+    name = "sbc_man_wheel",
+    wheel = ":sbc_man_wheel_base",
+    distribution = "sbc_man",
+)
+
+genrule(
+    name = "sbc_man_wheel_versioned",
+    srcs = [":sbc_man_wheel_base"],
+    outs = ["sbc_man-$(STABLE_VERSION)-py3-none-any.whl"],
+    cmd = "cp $< $@",
 )
