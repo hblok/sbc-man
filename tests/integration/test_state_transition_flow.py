@@ -76,11 +76,18 @@ class TestStateTransitionFlow(unittest.TestCase):
         # Verify initial state is menu
         self.assertIsInstance(self.state_manager.current_state, MenuState)
         
+        # Configure mock game library to return an empty list
+        self.mock_game_library.get_available_games.return_value = []
+        self.mock_game_library.games = []
+        
         # Test changing state to game_list
         self.state_manager.change_state('game_list')
         self.assertIsInstance(self.state_manager.current_state, GameListState)
 
     def test_menu_to_download_transition(self):
+        # Configure mock game library to return an empty list
+        self.mock_game_library.get_available_games.return_value = []
+        
         # Test changing state to download
         self.state_manager.change_state('download')
         self.assertIsInstance(self.state_manager.current_state, DownloadState)
@@ -93,6 +100,10 @@ class TestStateTransitionFlow(unittest.TestCase):
     def test_state_stack_operations(self):
         # Verify initial state is menu
         self.assertIsInstance(self.state_manager.current_state, MenuState)
+        
+        # Configure mock game library to return an empty list
+        self.mock_game_library.get_available_games.return_value = []
+        self.mock_game_library.games = []
         
         # Save the initial state
         initial_state = self.state_manager.current_state

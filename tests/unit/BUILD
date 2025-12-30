@@ -183,3 +183,35 @@ py_test(
     ],
     size = "small",
 )
+
+# Additional test files for missing coverage
+py_test(
+    name = "test_application",
+    srcs = ["test_application.py"],
+    deps = [
+        "//sbcman/core:core",
+        "//sbcman/hardware:hardware",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_paths",
+    srcs = ["test_paths.py"],
+    deps = [
+        "//sbcman/hardware:hardware",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_file_ops",
+    srcs = ["test_file_ops.py"],
+    deps = [
+        "//sbcman/services:services",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
