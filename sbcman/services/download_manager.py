@@ -15,9 +15,9 @@ from typing import Optional, Callable, Any
 import os
 import zipfile
 
-from sbcman.services.network import NetworkService
-from sbcman.path.paths import AppPaths
-from sbcman.models.game import Game
+from ..services.network import NetworkService
+from ..path.paths import AppPaths
+from .game import Game
 
 logger = logging.getLogger(__name__)
 

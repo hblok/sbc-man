@@ -10,7 +10,7 @@ py_library(
         "//sbcman/models",
         "//sbcman/views",
         "//sbcman/views/widgets",		
-        "//sbcman/services:services",
+        "//sbcman/services",
         "@sbc_man_pip_deps//pygame_ce",
     ],
 )

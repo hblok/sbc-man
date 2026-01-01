@@ -6,10 +6,12 @@ import tempfile
 
 
 class AppPaths:
-    
+
+    # TODO: Avoid defaults
     def __init__(self,
                  base_dir: pathlib.Path | None = None,
                  home_dir: pathlib.Path | None = None,):
+        
         if base_dir is None:
             base_dir = pathlib.Path(".")
 
@@ -23,6 +25,11 @@ class AppPaths:
         self._temp_dir = pathlib.Path(tmpdir) / "game_manager"
         self._temp_dir.mkdir(exist_ok=True)
         #self._temp_dir.chmod(0x700)
+
+    # TODO: Should probably not give away this one
+    @property
+    def base_dir(self):
+        return self._base_dir
     
     @property
     def home(self) -> pathlib.Path:

@@ -20,8 +20,7 @@ py_test(
     srcs = ["test_download_manager.py"],
     deps = [
         "//sbcman/models:models",
-        "//sbcman/services:services",
-        "//services:services",
+        "//sbcman/services",
         "//tests:test_utils",
     ],
     size = "medium",
@@ -33,7 +32,7 @@ py_test(
     deps = [
         "//sbcman/models:models",
         "//sbcman/states:states",
-        "//services:services",
+        "//sbcman/services",
         "//tests:test_utils",
     ],
     size = "small",
@@ -137,9 +136,8 @@ py_test(
     name = "test_menu_state",
     srcs = ["test_menu_state.py"],
     deps = [
-        "//sbcman/services:services",
         "//sbcman/states:states",
-        "//services:services",
+        "//sbcman/services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
@@ -151,9 +149,8 @@ py_test(
     srcs = ["test_game_list_state.py"],
     deps = [
         "//sbcman/models:models",
-        "//sbcman/services:services",
         "//sbcman/states:states",
-        "//services:services",
+        "//sbcman/services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
@@ -164,9 +161,8 @@ py_test(
     name = "test_playing_state",
     srcs = ["test_playing_state.py"],
     deps = [
-        "//sbcman/services:services",
         "//sbcman/states:states",
-        "//services:services",
+        "//sbcman/services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
@@ -177,9 +173,8 @@ py_test(
     name = "test_settings_state",
     srcs = ["test_settings_state.py"],
     deps = [
-        "//sbcman/services:services",
         "//sbcman/states:states",
-        "//services:services",
+        "//sbcman/services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
@@ -222,7 +217,7 @@ py_test(
     name = "test_file_ops",
     srcs = ["test_file_ops.py"],
     deps = [
-        "//sbcman/services:services",
+        "//sbcman/services",
         "//tests:test_utils",
     ],
     size = "small",
