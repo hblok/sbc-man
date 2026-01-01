@@ -16,7 +16,7 @@ from pathlib import Path
 
 from sbcman.services.updater import UpdaterService
 from sbcman.models.config_manager import ConfigManager
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 class TestUpdaterService(unittest.TestCase):

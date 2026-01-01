@@ -23,7 +23,7 @@ import urllib.error
 import traceback
 
 from ..models.config_manager import ConfigManager
-from ..hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 logger = logging.getLogger(__name__)
 

@@ -15,7 +15,7 @@ from unittest.mock import Mock, patch, MagicMock
 import shutil
 
 from sbcman.services.input_handler import InputHandler
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 import pathlib
 
 

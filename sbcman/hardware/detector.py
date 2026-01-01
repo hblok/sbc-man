@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 from .config_loader import ConfigLoader
-from .paths import AppPaths
+from ..sbcman.path.paths import AppPaths
 from .prober import HardwareProber
 
 logger = logging.getLogger(__name__)

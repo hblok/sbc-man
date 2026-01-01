@@ -13,7 +13,7 @@ import json
 import shutil
 import tempfile
 import unittest
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 from sbcman.models.config_manager import ConfigManager
 

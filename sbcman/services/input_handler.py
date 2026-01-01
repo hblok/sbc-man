@@ -16,7 +16,7 @@ from typing import Dict, Any, List, Optional
 
 import pygame
 
-from ..hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 logger = logging.getLogger(__name__)

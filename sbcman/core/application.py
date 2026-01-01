@@ -16,7 +16,7 @@ import sys
 import pygame
 
 from ..hardware.detector import HardwareDetector
-from ..hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 from ..models.config_manager import ConfigManager
 from ..models.game_library import GameLibrary
 from ..services.input_handler import InputHandler

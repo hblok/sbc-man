@@ -17,7 +17,7 @@ import pathlib
 
 #from sbcman.hardware.compat_sdl import setup_sdl_environment
 from sbcman.core.application import Application
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 if __name__ == "__main__":

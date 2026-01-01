@@ -13,7 +13,7 @@ import tempfile
 from pathlib import Path
 
 from sbcman.core.application import Application
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 # TODO: Fix this testcase

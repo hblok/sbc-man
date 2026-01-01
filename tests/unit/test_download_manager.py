@@ -8,7 +8,7 @@ Tests for download management, installation, and observer pattern implementation
 """
 
 from pathlib import Path
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 from unittest.mock import Mock, patch, MagicMock
 import os
 import pathlib
@@ -16,7 +16,7 @@ import tempfile
 import unittest
 import zipfile
 
-from sbcman.models.download_manager import DownloadManager, DownloadObserver
+from services.download_manager import DownloadManager, DownloadObserver
 from sbcman.models.game import Game
 from sbcman.services.network import NetworkService
 
@@ -78,7 +78,7 @@ class TestDownloadManager(unittest.TestCase):
     
     @patch('pathlib.Path.unlink')
     @patch.object(DownloadManager, '_extract_archive')
-    @patch('sbcman.models.download_manager.NetworkService')
+    @patch('services.download_manager.NetworkService')
     def test_download_game_success(self, mock_network_service_class, mock_extract_archive, mock_unlink):
         """Test successful game download."""
         # Create a mock network service

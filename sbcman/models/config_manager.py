@@ -14,7 +14,7 @@ import logging
 from pathlib import Path
 from typing import Any, Optional, Dict
 
-from ..hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 logger = logging.getLogger(__name__)

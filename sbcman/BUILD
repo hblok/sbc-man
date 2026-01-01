@@ -45,6 +45,7 @@ py_library(
         "//sbcman/core",
 	"//sbcman/hardware",
 	"//sbcman/models",
+	"//sbcman/path",
 	"//sbcman/services",
 	"//sbcman/states",
 	"//sbcman/views",

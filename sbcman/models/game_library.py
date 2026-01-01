@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from .game import Game
-from ..hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 logger = logging.getLogger(__name__)

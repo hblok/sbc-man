@@ -16,7 +16,7 @@ import pygame
 from sbcman.core.application import Application
 from sbcman.hardware.detector import HardwareDetector
 from sbcman.models.game_library import GameLibrary
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 class TestStartupFlow(unittest.TestCase):
