@@ -8,7 +8,8 @@ py_test(
     name = "test_config_loader",
     srcs = ["test_config_loader.py"],
     deps = [
-        "//sbcman/hardware:hardware",    
+        "//sbcman/hardware:hardware",
+        "//sbcman/path:path",    
         "//tests:test_utils",
     ],
     size = "small",
@@ -20,6 +21,7 @@ py_test(
     deps = [
         "//sbcman/models:models",
         "//sbcman/services:services",
+        "//services:services",
         "//tests:test_utils",
     ],
     size = "medium",
@@ -75,6 +77,7 @@ py_test(
     srcs = ["test_game_library.py"],
     deps = [
         "//sbcman/hardware:hardware",
+        "//sbcman/path:path",
         "//sbcman/models:models",
         "//tests:test_utils",
     ],
@@ -86,6 +89,7 @@ py_test(
     srcs = ["test_config_manager.py"],
     deps = [
         "//sbcman/hardware:hardware",
+        "//sbcman/path:path",
         "//sbcman/models:models",
         "//tests:test_utils",
     ],
@@ -98,6 +102,7 @@ py_test(
     srcs = ["test_hardware_detector.py"],
     deps = [
         "//sbcman/hardware:hardware",
+        "//sbcman/path:path",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",	
     ],
@@ -109,6 +114,7 @@ py_test(
     srcs = ["test_hardware_prober.py"],
     deps = [
         "//sbcman/hardware:hardware",
+        "//sbcman/path:path",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",	
     ],
@@ -191,6 +197,7 @@ py_test(
     deps = [
         "//sbcman/core:core",
         "//sbcman/hardware:hardware",
+        "//sbcman/path:path",
         "//tests:test_utils",
     ],
     size = "small",
@@ -200,7 +207,7 @@ py_test(
     name = "test_paths",
     srcs = ["test_paths.py"],
     deps = [
-        "//sbcman/hardware:hardware",
+        "//sbcman/path:path",
         "//tests:test_utils",
     ],
     size = "small",
