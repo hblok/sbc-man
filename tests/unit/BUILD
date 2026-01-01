@@ -33,6 +33,7 @@ py_test(
     deps = [
         "//sbcman/models:models",
         "//sbcman/states:states",
+        "//services:services",
         "//tests:test_utils",
     ],
     size = "small",
@@ -138,6 +139,7 @@ py_test(
     deps = [
         "//sbcman/services:services",
         "//sbcman/states:states",
+        "//services:services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
@@ -151,6 +153,7 @@ py_test(
         "//sbcman/models:models",
         "//sbcman/services:services",
         "//sbcman/states:states",
+        "//services:services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
@@ -163,6 +166,7 @@ py_test(
     deps = [
         "//sbcman/services:services",
         "//sbcman/states:states",
+        "//services:services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
@@ -175,6 +179,7 @@ py_test(
     deps = [
         "//sbcman/services:services",
         "//sbcman/states:states",
+        "//services:services",
         "//tests:test_utils",
         "@sbc_man_pip_deps//pygame_ce",
     ],
