@@ -11,7 +11,7 @@ from typing import Optional, List
 import pygame
 
 from .base_state import BaseState
-from ..models.download_manager import DownloadManager, DownloadObserver
+from services.download_manager import DownloadManager, DownloadObserver
 from ..views.widgets import ScrollableList
 
 logger = logging.getLogger(__name__)

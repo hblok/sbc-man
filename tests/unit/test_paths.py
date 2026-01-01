@@ -12,7 +12,7 @@ from pathlib import Path
 import tempfile
 import shutil
 
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 
 class TestAppPaths(unittest.TestCase):

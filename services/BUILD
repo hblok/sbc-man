@@ -4,10 +4,13 @@
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "models",
+    name = "services",
     srcs = glob(["*.py"]),
     deps = [
+    #	"//sbcman/hardware",
+    #	"//sbcman/models",	
         "//sbcman/path:path",
+        "@sbc_man_pip_deps//pygame_ce",
+        "@sbc_man_pip_deps//requests",
     ],
-
 )

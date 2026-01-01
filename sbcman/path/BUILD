@@ -4,10 +4,7 @@
 package(default_visibility = ["//visibility:public"])
 
 py_library(
-    name = "models",
+    name = "path",
     srcs = glob(["*.py"]),
-    deps = [
-        "//sbcman/path:path",
-    ],
-
+    deps = [],
 )

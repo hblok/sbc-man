@@ -12,7 +12,7 @@ import logging
 from typing import Dict, Optional, List
 
 import pygame
-from ..hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 
 logger = logging.getLogger(__name__)
 

@@ -15,7 +15,7 @@ import unittest
 import pygame
 
 from sbcman.core.state_manager import StateManager
-from sbcman.hardware.paths import AppPaths
+from sbcman.path.paths import AppPaths
 from sbcman.states.download_state import DownloadState
 from sbcman.states.game_list_state import GameListState
 from sbcman.states.menu_state import MenuState
