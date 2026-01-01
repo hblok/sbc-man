@@ -7,6 +7,8 @@ py_library(
     name = "services",
     srcs = glob(["*.py"]),
     deps = [
+#    	"//sbcman/hardware",
+    	"//sbcman/models",	
         "@sbc_man_pip_deps//pygame_ce",
         "@sbc_man_pip_deps//requests",
     ],
