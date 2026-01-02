@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package sbcman;
+
+// Input mapping configuration for a device
+message InputMappings {
+  repeated string confirm = 1;
+  repeated string cancel = 2;
+  repeated string menu = 3;
+  repeated string up = 4;
+  repeated string down = 5;
+  repeated string left = 6;
+  repeated string right = 7;
+  repeated string page_up = 8;
+  repeated string page_down = 9;
+  repeated string select = 10;
+}
