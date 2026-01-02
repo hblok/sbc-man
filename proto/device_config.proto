@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package sbcman;
+
+// Display configuration for device
+message DisplayConfig {
+  oneof resolution {
+    ResolutionValue resolution_value = 1;  // Specific resolution values
+    string auto_resolution = 2;            // "auto" keyword for auto-detection
+  }
+  bool fullscreen = 3;
+  int32 fps_target = 4;
+  bool hide_cursor = 5;
+}
+
+// Resolution values as width and height
+message ResolutionValue {
+  int32 width = 1;
+  int32 height = 2;
+}
+
+// Input configuration for device
+message InputConfig {
+  bool joystick_enabled = 1;
+  bool keyboard_enabled = 2;
+}
+
+// Path configuration for device
+message PathConfig {
+  string games = 1;
+  string data = 2;
+  string config = 3;
+}
+
+// Performance configuration for device
+message PerformanceConfig {
+  bool vsync = 1;
+  bool hardware_acceleration = 2;
+}
+
+// Update configuration for device
+message UpdateConfig {
+  string repository_url = 1;
+}
+
+// Complete device configuration
+message DeviceConfig {
+  string device_type = 1;
+  DisplayConfig display = 2;
+  InputConfig input = 3;
+  PathConfig paths = 4;
+  PerformanceConfig performance = 5;
+  UpdateConfig update = 6;
+}

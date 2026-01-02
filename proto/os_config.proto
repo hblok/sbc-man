@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package sbcman;
+
+// System configuration for OS type
+message SystemConfig {
+  string package_manager = 1;
+  string shell = 2;
+}
+
+// OS-specific path configuration
+message OSPathConfig {
+  string temp = 1;
+}
+
+// Complete OS configuration
+message OSConfig {
+  string os_type = 1;
+  SystemConfig system = 2;
+  OSPathConfig paths = 3;
+}
