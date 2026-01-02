@@ -4,7 +4,9 @@
 load("@com_google_protobuf//bazel:proto_library.bzl", "proto_library")
 load("@com_google_protobuf//bazel:py_proto_library.bzl", "py_proto_library")
 
-# Define the proto library for game
+package(default_visibility = ["//visibility:public"])
+
+# Define the proto library
 proto_library(
     name = "game_proto",
     srcs = ["game.proto"],
