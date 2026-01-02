@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from .game import Game
+from .game_utils import game_to_dict, game_from_dict
 from sbcman.path.paths import AppPaths
 
 
@@ -60,7 +61,7 @@ class GameLibrary:
             with open(games_file, "r") as f:
                 data = json.load(f)
 
-            games = [Game.from_dict(game_data) for game_data in data]
+            games = [game_from_dict(game_data) for game_data in data]
             logger.info(f"Loaded {len(games)} games from {games_file}")
             return games
 
@@ -81,7 +82,7 @@ class GameLibrary:
         try:
             games_file.parent.mkdir(parents=True, exist_ok=True)
             
-            data = [game.to_dict() for game in games]
+            data = [game_to_dict() for game in games]
 
             with open(games_file, "w") as f:
                 json.dump(data, f, indent=2)
