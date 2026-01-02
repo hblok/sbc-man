@@ -17,6 +17,7 @@ from sbcman.path.paths import AppPaths
 
 from sbcman.models.game_library import GameLibrary
 from sbcman.models.game import Game
+from sbcman.models.game_utils import create_game, game_to_dict, game_from_dict
 
 
 class TestGameLibrary(unittest.TestCase):
@@ -36,10 +37,11 @@ class TestGameLibrary(unittest.TestCase):
 
     def test_library_initialization(self):
         self.library.games = []  # Ensure clean state
+        self.library.local_games = []  # Also clear local_games
         self.assertEqual(len(self.library.games), 0)
 
     def test_add_game(self):
-        game = Game(game_id="test-game", name="Test Game")
+        game = create_game(game_id="test-game", name="Test Game")
         
         self.library.add_game(game)
         
@@ -47,7 +49,7 @@ class TestGameLibrary(unittest.TestCase):
         self.assertEqual(self.library.games[0].id, "test-game")
 
     def test_get_game(self):
-        game = Game(game_id="test-game", name="Test Game")
+        game = create_game(game_id="test-game", name="Test Game")
         self.library.add_game(game)
         
         retrieved = self.library.get_game("test-game")
@@ -56,7 +58,7 @@ class TestGameLibrary(unittest.TestCase):
         self.assertEqual(retrieved.id, "test-game")
 
     def test_remove_game(self):
-        game = Game(game_id="test-game", name="Test Game")
+        game = create_game(game_id="test-game", name="Test Game")
         self.library.add_game(game)
         
         result = self.library.remove_game("test-game")
@@ -66,8 +68,9 @@ class TestGameLibrary(unittest.TestCase):
 
     def test_get_installed_games(self):
         self.library.games = []  # Ensure clean state
-        game1 = Game(game_id="game1", name="Game 1", installed=True)
-        game2 = Game(game_id="game2", name="Game 2", installed=False)
+        self.library.local_games = []  # Also clear local_games
+        game1 = create_game(game_id="game1", name="Game 1", installed=True)
+        game2 = create_game(game_id="game2", name="Game 2", installed=False)
         self.library.add_game(game1)
         self.library.add_game(game2)
         
@@ -77,7 +80,7 @@ class TestGameLibrary(unittest.TestCase):
         self.assertEqual(installed[0].id, "game1")
 
     def test_save_and_load_games(self):
-        game = Game(game_id="test-game", name="Test Game", installed=True)
+        game = create_game(game_id="test-game", name="Test Game", installed=True)
         self.library.add_game(game)
         self.library.save_games()
         

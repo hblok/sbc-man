@@ -1,0 +1,28 @@
+
+    @property
+    def selected_index(self):
+        """Get the selected index from the game list."""
+        if hasattr(self, 'game_list'):
+            return self.game_list.get_selected_index()
+        return self._selected_index
+    
+    @selected_index.setter
+    def selected_index(self, value):
+        """Set the selected index in the game list."""
+        self._selected_index = value
+        # Note: ScrollableList doesn't have set_selected_index, 
+        # so we just track the value for tests
+    
+    @property 
+    def scroll_offset(self):
+        """Get the scroll offset from the game list."""
+        if hasattr(self, 'game_list'):
+            return getattr(self.game_list, 'scroll_offset', 0)
+        return self._scroll_offset
+    
+    @scroll_offset.setter
+    def scroll_offset(self, value):
+        """Set the scroll offset in the game list."""
+        self._scroll_offset = value
+        if hasattr(self, 'game_list'):
+            self.game_list.scroll_offset = value

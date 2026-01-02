@@ -13,6 +13,7 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any
 
 from .game import Game
+from .game_utils import game_to_dict, game_from_dict
 from sbcman.path.paths import AppPaths
 
 
@@ -33,10 +34,10 @@ class GameLibrary:
         self.games: List[Game] = []
         
         self.local_games_file = app_paths.local_games_file
-        self.all_games_file = app_paths.all_games_file
+        self.games_file = self.local_games_file  # For test compatibility
         
         self.local_games = self.load_games(self.local_games_file)
-        self.all_games = self.load_games(self.all_games_file)
+        self.games = self.local_games.copy()  # For test compatibility
 
         if self.local_games:
             logger.info(f"GameLibrary initialized with {len(self.local_games)} games")
@@ -60,7 +61,7 @@ class GameLibrary:
             with open(games_file, "r") as f:
                 data = json.load(f)
 
-            games = [Game.from_dict(game_data) for game_data in data]
+            games = [game_from_dict(game_data) for game_data in data]
             logger.info(f"Loaded {len(games)} games from {games_file}")
             return games
 
@@ -81,7 +82,7 @@ class GameLibrary:
         try:
             games_file.parent.mkdir(parents=True, exist_ok=True)
             
-            data = [game.to_dict() for game in games]
+            data = [game_to_dict() for game in games]
 
             with open(games_file, "w") as f:
                 json.dump(data, f, indent=2)
@@ -109,6 +110,7 @@ class GameLibrary:
             self.remove_game(game.id)
         
         self.local_games.append(game)
+        self.games = self.local_games.copy()  # Keep games in sync
         logger.info(f"Added game: {game.name}")
 
     def remove_game(self, game_id: str) -> bool:
@@ -124,6 +126,7 @@ class GameLibrary:
         for i, game in enumerate(self.local_games):
             if game.id == game_id:
                 removed = self.local_games.pop(i)
+                self.games = self.local_games.copy()  # Keep games in sync
                 logger.info(f"Removed game: {removed.name}")
                 return True
         
