@@ -36,6 +36,7 @@ class TestGameLibrary(unittest.TestCase):
 
     def test_library_initialization(self):
         self.library.games = []  # Ensure clean state
+        self.library.local_games = []  # Also clear local_games
         self.assertEqual(len(self.library.games), 0)
 
     def test_add_game(self):
@@ -66,6 +67,7 @@ class TestGameLibrary(unittest.TestCase):
 
     def test_get_installed_games(self):
         self.library.games = []  # Ensure clean state
+        self.library.local_games = []  # Also clear local_games
         game1 = Game(game_id="game1", name="Game 1", installed=True)
         game2 = Game(game_id="game2", name="Game 2", installed=False)
         self.library.add_game(game1)

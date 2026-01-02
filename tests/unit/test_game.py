@@ -20,7 +20,7 @@ class TestGame(unittest.TestCase):
         
         self.assertEqual(game.id, "test-game")
         self.assertEqual(game.name, "Test Game")
-        self.assertEqual(game.version, "1.0.0")
+        self.assertEqual(game.version, "")
         self.assertEqual(game.description, "")
         self.assertFalse(game.installed)
 

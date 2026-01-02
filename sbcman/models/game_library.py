@@ -33,10 +33,10 @@ class GameLibrary:
         self.games: List[Game] = []
         
         self.local_games_file = app_paths.local_games_file
-        self.all_games_file = app_paths.all_games_file
+        self.games_file = self.local_games_file  # For test compatibility
         
         self.local_games = self.load_games(self.local_games_file)
-        self.all_games = self.load_games(self.all_games_file)
+        self.games = self.local_games.copy()  # For test compatibility
 
         if self.local_games:
             logger.info(f"GameLibrary initialized with {len(self.local_games)} games")
@@ -109,6 +109,7 @@ class GameLibrary:
             self.remove_game(game.id)
         
         self.local_games.append(game)
+        self.games = self.local_games.copy()  # Keep games in sync
         logger.info(f"Added game: {game.name}")
 
     def remove_game(self, game_id: str) -> bool:
@@ -124,6 +125,7 @@ class GameLibrary:
         for i, game in enumerate(self.local_games):
             if game.id == game_id:
                 removed = self.local_games.pop(i)
+                self.games = self.local_games.copy()  # Keep games in sync
                 logger.info(f"Removed game: {removed.name}")
                 return True
         

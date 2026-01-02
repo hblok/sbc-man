@@ -1,8 +1,8 @@
 [
   {
-    "id": "test-game",
-    "name": "Test Game",
-    "version": "1.0.0",
+    "id": "game1",
+    "name": "Game 1 Updated",
+    "version": "",
     "description": "",
     "author": "",
     "install_path": ".",
@@ -10,7 +10,24 @@
     "installed": true,
     "download_url": "",
     "custom_input_mappings": {},
-    "custom_resolution": null,
+    "custom_resolution": [
+      1024,
+      768
+    ],
     "custom_fps": null
+  },
+  {
+    "id": "game2",
+    "name": "Game 2",
+    "version": "",
+    "description": "",
+    "author": "",
+    "install_path": ".",
+    "entry_point": "main.py",
+    "installed": false,
+    "download_url": "",
+    "custom_input_mappings": {},
+    "custom_resolution": null,
+    "custom_fps": 30
   }
 ]
