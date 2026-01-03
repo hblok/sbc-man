@@ -9,7 +9,8 @@ py_library(
     name = "models",
     srcs = glob(["*.py"]),
     deps = [
-        "//sbcman/path:path",
+        "//sbcman/path",
+	"//sbcman/services",
 	"//sbcman/proto:game_py_pb2"
     ],
 

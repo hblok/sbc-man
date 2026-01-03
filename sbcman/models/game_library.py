@@ -9,12 +9,16 @@ Manages the collection of games with CRUD operations and persistence.
 import json
 import logging
 import pathlib
+import tempfile
 from pathlib import Path
 from typing import List, Optional, Dict, Any
+
+from google.protobuf import json_format
 
 from sbcman.proto import game_pb2
 from .game_utils import game_to_dict, game_from_dict
 from sbcman.path.paths import AppPaths
+from sbcman.services import network
 
 
 logger = logging.getLogger(__name__)
@@ -168,9 +172,22 @@ class GameLibrary:
 
     def get_available_games(self) -> List[game_pb2.Game]:
         """ Get all available (not installed) games. """
-        # TODO: Lazy-download list of games
-        # https://github.com/hblok/max_blocks/blob/main/LICENSE
-        # TODO: Setup access token
+
+        # TODO: Change to Max Games 
+        # https://hblok.github.io/sbc-man/games.json
+
+        net = network.NetworkService()
+        url = "https://hblok.github.io/sbc-man/games.json"
+        tmp_games_json = pathlib.Path(tempfile.mkdtemp()) / "games.json"
+
+        if net.check_url(url):
+            net.download_file(url, tmp_games_json)
+
+            with open(tmp_games_json) as f:
+                list_obj = json.load(f)
+                return [json_format.ParseDict(g, game_pb2.Game()) for g in list_obj]
+
+        # TODO: Keep or remove?
         return [game for game in self.local_games if not game.installed]
 
     def update_game(self, game: game_pb2.Game) -> bool:
