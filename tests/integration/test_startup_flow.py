@@ -15,7 +15,7 @@ import pygame
 
 from sbcman.core.application import Application
 from sbcman.hardware.detector import HardwareDetector
-from sbcman.models.game_library import GameLibrary
+from sbcman.services.game_library import GameLibrary
 from sbcman.path.paths import AppPaths
 
 
@@ -28,8 +28,8 @@ class TestStartupFlow(unittest.TestCase):
         pygame.quit()
 
     @patch('sbcman.hardware.detector.HardwareDetector.get_config')
-    @patch('sbcman.models.game_library.GameLibrary.load_games')
-    @patch('sbcman.models.game_library.GameLibrary.save_games')
+    @patch('sbcman.services.game_library.GameLibrary.load_games')
+    @patch('sbcman.services.game_library.GameLibrary.save_games')
     @patch('sbcman.core.game_loop.GameLoop.run')
     # FIXME : later
     def disabled_test_application_startup_flow(self, mock_game_loop_run, mock_save_games, mock_load_games, mock_get_config):

@@ -9,7 +9,6 @@ py_test(
     srcs = ["test_download_install_flow.py"],
     deps = [
         "//sbcman/core",
-        "//sbcman/models",
         "//sbcman/services",
         "//sbcman/states",	
         "//tests:test_utils",
@@ -22,7 +21,6 @@ py_test(
     srcs = ["test_game_launch_flow.py"],
     deps = [
         "//sbcman/core:core",
-        "//sbcman/models:models",
         "//sbcman/services",
         "//sbcman/states:states",
         "//tests:test_utils",
@@ -37,7 +35,6 @@ py_test(
     deps = [
         "//sbcman/core",
         "//sbcman/hardware",
-        "//sbcman/models",
         "//sbcman/services",
         "//sbcman/states",	
         "//tests:test_utils",
@@ -50,7 +47,6 @@ py_test(
     srcs = ["test_state_transition_flow.py"],
     deps = [
         "//sbcman/core:core",
-        "//sbcman/models:models",
         "//sbcman/services",
         "//sbcman/states:states",
         "//tests:test_utils",

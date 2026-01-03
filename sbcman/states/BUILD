@@ -7,7 +7,6 @@ py_library(
     name = "states",
     srcs = glob(["*.py"]),
     deps = [
-        "//sbcman/models",
         "//sbcman/views",
         "//sbcman/views/widgets",		
         "//sbcman/services",

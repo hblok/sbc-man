@@ -22,7 +22,7 @@ import urllib.request
 import urllib.error
 import traceback
 
-from ..models.config_manager import ConfigManager
+from ..services.config_manager import ConfigManager
 from sbcman.path.paths import AppPaths
 
 logger = logging.getLogger(__name__)

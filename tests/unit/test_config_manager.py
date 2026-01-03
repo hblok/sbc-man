@@ -15,7 +15,7 @@ import tempfile
 import unittest
 from sbcman.path.paths import AppPaths
 
-from sbcman.models.config_manager import ConfigManager
+from sbcman.services.config_manager import ConfigManager
 
 
 class TestConfigManager(unittest.TestCase):

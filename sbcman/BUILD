@@ -45,7 +45,6 @@ py_library(
         ":gen_version",
         "//sbcman/core",
 	"//sbcman/hardware",
-	"//sbcman/models",
 	"//sbcman/path",
 	"//sbcman/services",
 	"//sbcman/states",

@@ -15,7 +15,7 @@ import json
 from pathlib import Path
 
 from sbcman.services.updater import UpdaterService
-from sbcman.models.config_manager import ConfigManager
+from sbcman.services.config_manager import ConfigManager
 from sbcman.path.paths import AppPaths
 
 
