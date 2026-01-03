@@ -174,7 +174,7 @@ py_test(
     name = "test_protobuf_api",
     srcs = ["test_protobuf_api.py"],
     deps = [
-#        "//google",
+        "//google",
 	 "@com_google_protobuf//:protobuf"
     ],
     size = "small",
