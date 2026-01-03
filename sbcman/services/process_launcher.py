@@ -15,7 +15,7 @@ import logging
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
-from ..models.game import Game
+from sbcman.proto import game_pb2
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +38,7 @@ class ProcessLauncher:
         """
         self.hw_config = hw_config
 
-    def launch_game(self, game: Game) -> bool:
+    def launch_game(self, game: game_pb2.Game) -> bool:
         """
         Launch game process.
         
@@ -98,7 +98,7 @@ class ProcessLauncher:
             logger.error(f"Failed to launch game: {e}")
             return False
 
-    def _run_pre_commands(self, game: Game) -> None:
+    def _run_pre_commands(self, game: game_pb2.Game) -> None:
         """
         Execute pre-launch commands.
         
@@ -119,7 +119,7 @@ class ProcessLauncher:
                 logger.warning(f"Pre-launch command failed: {cmd} - {e}")
 
     # TODO: Pasta from the method above. Consider a generic "_run" method
-    def _run_post_commands(self, game: Game) -> None:
+    def _run_post_commands(self, game: game_pb2.Game) -> None:
         """
         Execute post-launch commands.
         
@@ -139,7 +139,7 @@ class ProcessLauncher:
             except subprocess.CalledProcessError as e:
                 logger.warning(f"Post-launch command failed: {cmd} - {e}")
 
-    def _build_environment(self, game: Game) -> Dict[str, str]:
+    def _build_environment(self, game: game_pb2.Game) -> Dict[str, str]:
         """
         Build environment variables for game process.
         

@@ -12,7 +12,7 @@ import pathlib
 from pathlib import Path
 from typing import List, Optional, Dict, Any
 
-from .game import Game
+from sbcman.proto import game_pb2
 from .game_utils import game_to_dict, game_from_dict
 from sbcman.path.paths import AppPaths
 
@@ -31,7 +31,7 @@ class GameLibrary:
     def __init__(self, hw_config: Dict[str, Any], app_paths: AppPaths):
         self.hw_config = hw_config
         self.app_paths = app_paths
-        self.games: List[Game] = []
+        self.games: List[game_pb2.Game] = []
         
         self.local_games_file = app_paths.local_games_file
         self.games_file = self.local_games_file  # For test compatibility
@@ -42,7 +42,7 @@ class GameLibrary:
         if self.local_games:
             logger.info(f"GameLibrary initialized with {len(self.local_games)} games")
 
-    def load_games(self, games_file: pathlib.Path) -> list[Game]:
+    def load_games(self, games_file: pathlib.Path) -> list[game_pb2.Game]:
         """
         Load games from JSON file.
 
@@ -72,7 +72,7 @@ class GameLibrary:
             logger.error(f"Failed to load games: {e}")
             return []
 
-    def _save_games_to_file(self, games: list[Game], games_file: pathlib.Path) -> None:
+    def _save_games_to_file(self, games: list[game_pb2.Game], games_file: pathlib.Path) -> None:
         """ Save games to JSON file.
 
         Args:
@@ -96,7 +96,7 @@ class GameLibrary:
         """Save current games to the default games file."""
         self._save_games_to_file(self.local_games, self.local_games_file)
         
-    def add_game(self, game: Game) -> None:
+    def add_game(self, game: game_pb2.Game) -> None:
         """
         Add a game to the library.
         
@@ -133,7 +133,7 @@ class GameLibrary:
         logger.warning(f"Game {game_id} not found for removal")
         return False
 
-    def get_game(self, game_id: str) -> Optional[Game]:
+    def get_game(self, game_id: str) -> Optional[game_pb2.Game]:
         """
         Get a game by ID.
         
@@ -148,7 +148,7 @@ class GameLibrary:
                 return game
         return None
 
-    def get_all_games(self) -> List[Game]:
+    def get_all_games(self) -> List[game_pb2.Game]:
         """
         Get all games in the library.
         
@@ -157,7 +157,7 @@ class GameLibrary:
         """
         return self.local_games.copy()
 
-    def get_installed_games(self) -> List[Game]:
+    def get_installed_games(self) -> List[game_pb2.Game]:
         """
         Get all installed games.
         
@@ -166,14 +166,14 @@ class GameLibrary:
         """
         return [game for game in self.local_games if game.installed]
 
-    def get_available_games(self) -> List[Game]:
+    def get_available_games(self) -> List[game_pb2.Game]:
         """ Get all available (not installed) games. """
         # TODO: Lazy-download list of games
         # https://github.com/hblok/max_blocks/blob/main/LICENSE
         # TODO: Setup access token
         return [game for game in self.local_games if not game.installed]
 
-    def update_game(self, game: Game) -> bool:
+    def update_game(self, game: game_pb2.Game) -> bool:
         """
         Update an existing game in the library.
         

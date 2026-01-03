@@ -15,7 +15,7 @@ from unittest.mock import Mock, patch, MagicMock
 import pygame
 
 from sbcman.states.download_state import DownloadState
-from sbcman.models.game import Game
+from sbcman.proto import game_pb2
 
 
 class TestDownloadState(unittest.TestCase):
@@ -77,10 +77,15 @@ class TestDownloadState(unittest.TestCase):
     def test_on_enter_with_available_games(self):
         """Test entering download state with available games."""
         # Create test games
-        test_games = [
-            Game(game_id="game1", name="Game 1"),
-            Game(game_id="game2", name="Game 2"),
-        ]
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+
+        test_games = [game1, game2]
         
         # Configure mock game library to return test games
         self.mock_game_library.get_available_games.return_value = test_games
@@ -160,9 +165,19 @@ class TestDownloadState(unittest.TestCase):
     
     def test_handle_events_cancel_action(self):
         """Test handling cancel action events."""
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+
+        test_games = [game1, game2]
+        
         # Enter the state first to initialize it
         self.mock_game_library.get_available_games.return_value = [
-            Game(game_id="game1", name="Game 1"),
+            game1, game2
         ]
         self.download_state.on_enter(None)
         
@@ -183,9 +198,18 @@ class TestDownloadState(unittest.TestCase):
     
     def test_handle_events_back_input(self):
         """Test handling back/exit input events."""
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+
+        
         # Enter the state first to initialize it
         self.mock_game_library.get_available_games.return_value = [
-            Game(game_id="game1", name="Game 1"),
+            game1, game2
         ]
         self.download_state.on_enter(None)
         
@@ -207,12 +231,21 @@ class TestDownloadState(unittest.TestCase):
     
     def test_handle_events_navigation(self):
         """Test handling navigation events."""
+
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+
+        game3 = game_pb2.Game()
+        game3.id = "game3"
+        game3.name = "Game 3"        
+        
         # Create test games
-        test_games = [
-            Game(game_id="game1", name="Game 1"),
-            Game(game_id="game2", name="Game 2"),
-            Game(game_id="game3", name="Game 3"),
-        ]
+        test_games = [game1, game2, game3]
         
         # Enter the state first to initialize it
         self.mock_game_library.get_available_games.return_value = test_games
@@ -255,10 +288,13 @@ class TestDownloadState(unittest.TestCase):
     
     def test_handle_events_confirm_download(self):
         """Test handling confirm action to start download."""
+
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        
         # Create test games
-        test_games = [
-            Game(game_id="game1", name="Game 1", download_url="https://example.com/game1.zip"),
-        ]
+        test_games = [game1]        
         
         # Enter the state first to initialize it
         self.mock_game_library.get_available_games.return_value = test_games
@@ -331,11 +367,17 @@ class TestDownloadState(unittest.TestCase):
         
     def test_render_when_not_downloading_with_games(self):
         """Test rendering download state when not downloading but games are available."""
+
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+        
         # Create test games
-        test_games = [
-            Game(game_id="game1", name="Game 1"),
-            Game(game_id="game2", name="Game 2"),
-        ]
+        test_games = [game1, game2]
         
         # Enter the state first to initialize it
         self.mock_game_library.get_available_games.return_value = test_games

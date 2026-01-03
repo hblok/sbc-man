@@ -61,17 +61,6 @@ py_test(
     size = "small",
 )
 
-# Split test_models.py into separate files
-py_test(
-    name = "test_game",
-    srcs = ["test_game.py"],
-    deps = [
-        "//sbcman/models:models",
-        "//tests:test_utils",
-    ],
-    size = "small",
-)
-
 py_test(
     name = "test_game_library",
     srcs = ["test_game_library.py"],

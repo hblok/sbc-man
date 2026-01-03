@@ -17,7 +17,7 @@ import zipfile
 
 from sbcman.services.network import NetworkService
 from sbcman.path.paths import AppPaths
-from sbcman.models.game import Game
+from sbcman.proto import game_pb2
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ class DownloadManager:
         
         logger.info("DownloadManager initialized")
 
-    def download_game(self, game: Game, observer: Optional[DownloadObserver] = None) -> None:
+    def download_game(self, game: game_pb2.Game, observer: Optional[DownloadObserver] = None) -> None:
         """
         Start downloading a game in a separate thread.
         
@@ -114,7 +114,7 @@ class DownloadManager:
         self.current_download.start()
         logger.info(f"Started download for game: {game.name}")
 
-    def _download_thread(self, game: Game, observer: Optional[DownloadObserver]) -> None:
+    def _download_thread(self, game: game_pb2.Game, observer: Optional[DownloadObserver]) -> None:
         """
         Worker thread for downloading and extracting game.
         
@@ -176,7 +176,7 @@ class DownloadManager:
             self.is_downloading = False
             self.download_progress = 0.0
 
-    def _extract_archive(self, archive_path: Path, game: Game) -> Path:
+    def _extract_archive(self, archive_path: Path, game: game_pb2.Game) -> Path:
         """
         Extract downloaded archive to installation directory.
         

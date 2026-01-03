@@ -7,8 +7,7 @@ Game utilities for protobuf compatibility.
 
 from pathlib import Path
 from typing import Dict, Any, Optional, Tuple
-from ..proto.game_pb2 import Game as ProtoGame
-from . import Game
+from sbcman.proto import game_pb2
 
 
 def create_game(
@@ -23,10 +22,10 @@ def create_game(
     download_url: str = "",
     custom_input_mappings: Optional[Dict[str, Any]] = None,
     custom_resolution: Optional[Tuple[int, int]] = None,
-    custom_fps: Optional[int] = None,
-) -> Game:
+    custom_fps: Optional[int] = None,):
+    
     """Create a protobuf Game with similar interface to the old dataclass."""
-    game = Game()
+    game = game_pb2.Game()
     game.id = game_id
     game.name = name
     game.version = version
@@ -56,7 +55,7 @@ def create_game(
     return game
 
 
-def game_to_dict(game: Game) -> Dict[str, Any]:
+def game_to_dict(game: game_pb2.Game) -> Dict[str, Any]:
     """Convert protobuf Game to dictionary."""
     result = {
         "id": game.id,
@@ -85,7 +84,7 @@ def game_to_dict(game: Game) -> Dict[str, Any]:
     return result
 
 
-def game_from_dict(data: Dict[str, Any]) -> Game:
+def game_from_dict(data: Dict[str, Any]) -> game_pb2.Game:
     """Create protobuf Game from dictionary."""
     custom_resolution = data.get("custom_resolution")
     if isinstance(custom_resolution, list):
@@ -107,13 +106,13 @@ def game_from_dict(data: Dict[str, Any]) -> Game:
     )
 
 
-def get_custom_resolution(game: Game) -> Optional[Tuple[int, int]]:
+def get_custom_resolution(game: game_pb2.Game) -> Optional[Tuple[int, int]]:
     """Get custom resolution as tuple (compatible with old interface)."""
     if game.HasField('custom_resolution'):
         return (game.custom_resolution.width, game.custom_resolution.height)
     return None
 
 
-def get_custom_fps(game: Game) -> Optional[int]:
+def get_custom_fps(game: game_pb2.Game) -> Optional[int]:
     """Get custom FPS (compatible with old interface)."""
     return game.custom_fps if game.custom_fps != 0 else None

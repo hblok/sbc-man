@@ -16,8 +16,8 @@ import unittest
 from sbcman.path.paths import AppPaths
 
 from sbcman.models.game_library import GameLibrary
-from sbcman.models.game import Game
 from sbcman.models.game_utils import create_game, game_to_dict, game_from_dict
+from sbcman.proto import game_pb2
 
 
 class TestGameLibrary(unittest.TestCase):

@@ -15,7 +15,7 @@ from unittest.mock import Mock, patch, MagicMock
 import pygame
 
 from sbcman.states.game_list_state import GameListState
-from sbcman.models.game import Game
+from sbcman.proto import game_pb2
 
 
 class TestGameListState(unittest.TestCase):
@@ -39,10 +39,18 @@ class TestGameListState(unittest.TestCase):
         pygame.quit()
     
     def test_game_list_state_initialization(self):
-        test_games = [
-            Game(game_id="game1", name="Game 1", installed=True),
-            Game(game_id="game2", name="Game 2", installed=True),
-        ]
+        # Create test games
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        game1.installed = True
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+        game2.installed = True
+
+        test_games = [game1, game2]
         
         self.mock_game_library.get_all_games.return_value = test_games
         
@@ -52,10 +60,18 @@ class TestGameListState(unittest.TestCase):
         self.assertEqual(self.game_list_state.scroll_offset, 0)
     
     def test_game_list_state_on_enter(self):
-        test_games = [
-            Game(game_id="game1", name="Game 1", installed=True),
-            Game(game_id="game2", name="Game 2", installed=True),
-        ]
+        # Create test games
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        game1.installed = True
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+        game2.installed = True
+
+        test_games = [game1, game2]        
         
         self.mock_game_library.get_all_games.return_value = test_games
         
@@ -70,11 +86,23 @@ class TestGameListState(unittest.TestCase):
         self.game_list_state.update(0.016)
     
     def test_game_list_state_handle_events_navigate(self):
-        test_games = [
-            Game(game_id="game1", name="Game 1", installed=True),
-            Game(game_id="game2", name="Game 2", installed=True),
-            Game(game_id="game3", name="Game 3", installed=True),
-        ]
+        # Create test games
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        game1.installed = True
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+        game2.installed = True
+
+        game3 = game_pb2.Game()
+        game3.id = "game3"
+        game3.name = "Game 3"
+        game3.installed = True        
+
+        test_games = [game1, game2, game3]
         
         self.game_list_state.games = test_games
         self.game_list_state.selected_index = 0
@@ -96,9 +124,12 @@ class TestGameListState(unittest.TestCase):
             self.assertEqual(self.game_list_state.selected_index, 1)
     
     def test_game_list_state_handle_events_confirm_launch(self):
-        test_games = [
-            Game(game_id="game1", name="Game 1", installed=True),
-        ]
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        game1.installed = True
+
+        test_games = [game1]
         
         self.game_list_state.games = test_games
         self.game_list_state.selected_index = 0
@@ -119,10 +150,18 @@ class TestGameListState(unittest.TestCase):
             self.mock_state_manager.change_state.assert_called_once_with("playing")
     
     def test_game_list_state_render(self):
-        test_games = [
-            Game(game_id="game1", name="Game 1", installed=True),
-            Game(game_id="game2", name="Game 2", installed=False),
-        ]
+        # Create test games
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        game1.installed = True
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+        game2.installed = False
+
+        test_games = [game1, game2]
         
         self.game_list_state.games = test_games
         self.game_list_state.selected_index = 0

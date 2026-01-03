@@ -15,7 +15,7 @@ import pygame
 
 from sbcman.states.game_list_state import GameListState
 from sbcman.states.playing_state import PlayingState
-from sbcman.models.game import Game
+from sbcman.proto import game_pb2
 
 
 class TestGameLaunchFlow(unittest.TestCase):
@@ -63,23 +63,22 @@ class TestGameLaunchFlow(unittest.TestCase):
     def test_game_list_state_initialization(self):
         """Test game list state initialization and game loading."""
         # Create test games
-        test_games = [
-            Game(
-                game_id="test-game-1",
-                name="Test Game 1",
-                installed=True,
-                install_path="/tmp/games/test-game-1",
-                entry_point="main.py"
-            ),
-            Game(
-                game_id="test-game-2",
-                name="Test Game 2",
-                installed=False,
-                install_path="/tmp/games/test-game-2",
-                entry_point="game.py",
-                download_url="https://example.com/test-game-2.zip"
-            ),
-        ]
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        game1.installed = True
+        game1.install_path="/tmp/games/test-game-1"
+        game1.entry_point="main.py"        
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+        game2.installed = False
+        game2.install_path="/tmp/games/test-game-2"
+        game2.entry_point="game.py"
+        game2.download_url="https://example.com/test-game-2.zip"        
+
+        test_games = [game1, game2]
         
         # Configure mock game library to return test games
         self.mock_game_library.get_all_games.return_value = test_games
@@ -100,22 +99,22 @@ class TestGameLaunchFlow(unittest.TestCase):
     def test_game_selection_navigation(self):
         """Test game selection navigation in game list state."""
         # Create test games
-        test_games = [
-            Game(
-                game_id="test-game-1",
-                name="Test Game 1",
-                installed=True,
-                install_path="/tmp/games/test-game-1",
-                entry_point="main.py"
-            ),
-            Game(
-                game_id="test-game-2",
-                name="Test Game 2",
-                installed=True,
-                install_path="/tmp/games/test-game-2",
-                entry_point="game.py"
-            ),
-        ]
+        game1 = game_pb2.Game()
+        game1.id = "game1"
+        game1.name = "Game 1"
+        game1.installed = True
+        game1.install_path="/tmp/games/test-game-1"
+        game1.entry_point="main.py"        
+
+        game2 = game_pb2.Game()
+        game2.id = "game2"
+        game2.name = "Game 2"
+        game2.installed = False
+        game2.install_path="/tmp/games/test-game-2"
+        game2.entry_point="game.py"
+        game2.download_url="https://example.com/test-game-2.zip"        
+
+        test_games = [game1, game2]
         
         # Configure mock game library to return test games
         self.mock_game_library.get_all_games.return_value = test_games
