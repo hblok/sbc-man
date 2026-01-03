@@ -23,7 +23,8 @@ py_binary(
     srcs = ["main.py"],
     main = "main.py",
     deps = [
-        "//sbcman/core:core",
+        "//sbcman/core",
+        "//sbcman/path",	
     ],
 )
 
