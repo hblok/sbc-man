@@ -25,11 +25,12 @@ jobs:
             ~/.cache/bazelisk
           key: bazel
           
-      - name: List
+      - name: Install dependencies
         run: |
-            ls ${{ github.workspace }}
-            cat /etc/issue
-            
+          cd ${{ github.workspace }}
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Run tests
         run: |
           cd ${{ github.workspace }}
