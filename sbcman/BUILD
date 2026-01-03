@@ -51,6 +51,7 @@ py_library(
 	"//sbcman/states",
 	"//sbcman/views",
 	"//sbcman/views/widgets",
+#	"//google",
     ],
     data = [
     	 "//sbcman:config_files"
@@ -62,7 +63,7 @@ py_package(
     packages = ["sbcman", "google"],
     deps = [
       "//sbcman",
-      "//google",
+#      "//google",
     ]
 )
 
