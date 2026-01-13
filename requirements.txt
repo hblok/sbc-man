@@ -6,3 +6,4 @@ protobuf>=6.33.2
 pygame-ce>=2.1.0
 requests>=2.28.0
 urllib3==1.26.12
+coverage>=6.0
