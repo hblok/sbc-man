@@ -6,7 +6,7 @@
   "description": "Eat the smaller fish; watch out for the shark.",
   "author": "H.Blok",
   "entryPoint": "main.py",
-  "downloadUrl": "https://github.com/hblok/sbc-man/releases/download/v0.1.0/fish-0.1.0-py3-none-any.whl"
+  "downloadUrl": "https://hblok.github.io/sbc-man/fish-0.1.0-py3-none-any.whl"
   }
 ]
   
