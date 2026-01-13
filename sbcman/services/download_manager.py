@@ -16,6 +16,7 @@ import os
 import zipfile
 
 from sbcman.services.network import NetworkService
+from sbcman.services.wheel_installer import WheelInstaller
 from sbcman.path.paths import AppPaths
 from sbcman.proto import game_pb2
 
@@ -180,6 +181,11 @@ class DownloadManager:
         """
         Extract downloaded archive to installation directory.
         
+        Supports multiple archive formats:
+        - .whl files: Installed using pip or manual extraction
+        - .zip files: Extracted using zipfile module
+        - .tar files: Extracted using tarfile module (including .tar.gz, .tar.bz2, .tar.xz)
+        
         Args:
             archive_path: Path to downloaded archive
             game: Game being installed
@@ -188,24 +194,50 @@ class DownloadManager:
             Path: Installation directory path
             
         Raises:
-            Exception: If extraction fails
+            Exception: If extraction fails or format is unsupported
         """
+        # Determine file type by extension
+        suffix = archive_path.suffix.lower()
+        
+        # Handle .whl files using WheelInstaller
+        if suffix == '.whl':
+            logger.info(f"Detected wheel file: {archive_path}")
+            installer = WheelInstaller()
+            success, message = installer.install_wheel(archive_path)
+            
+            if not success:
+                raise Exception(f"Wheel installation failed: {message}")
+            
+            logger.info(f"Wheel installed successfully: {message}")
+            
+            # For wheel files, return the site-packages directory as install path
+            # This is a special case since wheels install to Python's site-packages
+            # rather than a game-specific directory
+            install_dir = self.app_paths.games_dir / game.id
+            install_dir.mkdir(parents=True, exist_ok=True)
+            return install_dir
+        
         # Use AppPaths for installation directory
         install_dir = self.app_paths.games_dir / game.id
         install_dir.mkdir(parents=True, exist_ok=True)
         
-        # Extract based on file type
-        # FIXME
-        if archive_path.suffix == ".zip":
+        # Handle .zip files
+        if suffix == ".zip":
+            logger.info(f"Extracting zip file: {archive_path}")
             with zipfile.ZipFile(archive_path, "r") as zip_ref:
                 safe_members = self.get_secure_zip_members(zip_ref)
                 zip_ref.extractall(install_dir, members=safe_members)  # nosec : handled in get_secure_zip_members
-        elif archive_path.suffix in [".tar", ".gz", ".bz2", ".xz"]:
+        
+        # Handle .tar files (including .tar.gz, .tar.bz2, .tar.xz)
+        elif suffix in [".tar", ".gz", ".bz2", ".xz"] or archive_path.name.endswith(('.tar.gz', '.tar.bz2', '.tar.xz')):
+            logger.info(f"Extracting tar file: {archive_path}")
             with tarfile.open(archive_path, "r:*") as tar_ref:
                 safe_members = self.get_secure_tar_members(tar_ref)
                 tar_ref.extractall(install_dir, members=safe_members)  # nosec : handled in get_secure_tar_members
+        
+        # Unsupported format
         else:
-            raise Exception(f"Unsupported archive format: {archive_path.suffix}")
+            raise Exception(f"Unsupported archive format: {suffix}. Supported formats: .whl, .zip, .tar, .tar.gz, .tar.bz2, .tar.xz")
         
         logger.info(f"Extracted to {install_dir}")
         
