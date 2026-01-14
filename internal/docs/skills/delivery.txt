@@ -1,0 +1,14 @@
+**Version Control:**
+- Create a new branch named `refactor/foobar` (or similar descriptive name)
+- Add all modified and new files
+- Commit with a clear, descriptive message
+- Push the branch to GitHub using the provided remote URL command
+
+
+
+**Additional Considerations:**
+- Preserve all existing error handling and logging
+- Maintain consistent code style with the existing codebase
+- Add docstrings to new functions/methods
+- Consider edge cases (e.g., corrupted files, permission issues)
+- Ensure the refactoring doesn't break any existing functionality

@@ -1,0 +1,19 @@
+**Setup:**
+- Clone the repository using the provided command
+- Install Bazel: `wget https://github.com/bazelbuild/bazelisk/releases/latest/download/bazelisk-linux-amd64 -O /usr/local/bin/bazel && chmod +x /usr/local/bin/bazel`
+- Install build-essential: `apt-get update && apt-get install -y build-essential gcc g++`
+- Run `pip install -r requirements.txt`
+
+
+**Baseline Testing:**
+- Run `bazel test ...` to establish baseline test results. Note that this step will take long: See a timeout of at least 8 minutes.
+
+
+**Validation:**
+- Run `bazel test ...` again
+- Confirm all tests pass (same or better results than baseline)
+- If tests fail, debug and fix issues before proceeding
+
+
+
+
