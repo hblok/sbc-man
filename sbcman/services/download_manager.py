@@ -64,14 +64,16 @@ class DownloadManager:
     updates via observer callbacks.
     """
 
-    def __init__(self, hw_config: dict, app_paths: AppPaths):
+    def __init__(self, hw_config: dict, app_paths: AppPaths, game_library=None):
         """
         Args:
             hw_config: Hardware configuration dictionary
             app_paths: Application paths instance
+            game_library: Optional GameLibrary instance for persisting installed games
         """
         self.hw_config = hw_config
         self.app_paths = app_paths
+        self.game_library = game_library
         self.network = NetworkService()
         
         # Download state
@@ -156,7 +158,18 @@ class DownloadManager:
             
             # Update game
             game.installed = True
-            game.install_path = install_path
+            game.install_path = str(install_path)
+            
+            # Persist game to local_games.json if game_library is available
+            if self.game_library:
+                try:
+                    self._persist_installed_game(game)
+                    logger.info(f"Game {game.name} added to local games library")
+                except Exception as e:
+                    logger.error(f"Failed to persist game to library: {e}")
+                    # Don't fail the entire installation if persistence fails
+            else:
+                logger.warning("No game_library provided - installed game will not be persisted")
             
             # Cleanup download file
             dest_file.unlink()
@@ -176,6 +189,44 @@ class DownloadManager:
         finally:
             self.is_downloading = False
             self.download_progress = 0.0
+
+    def _persist_installed_game(self, game: game_pb2.Game) -> None:
+        """
+        Persist the installed game to local_games.json.
+        
+        This method adds the newly installed game to the game library and saves it
+        to the local_games.json file, ensuring it appears in the "Browse games" menu.
+        
+        Args:
+            game: The game that was just installed
+            
+        Raises:
+            Exception: If game persistence fails
+        """
+        if not self.game_library:
+            logger.warning("Cannot persist game - no game_library available")
+            return
+        
+        try:
+            # Check if game already exists in library
+            existing_game = self.game_library.get_game(game.id)
+            
+            if existing_game:
+                # Update existing game
+                logger.info(f"Updating existing game in library: {game.name}")
+                self.game_library.update_game(game)
+            else:
+                # Add new game
+                logger.info(f"Adding new game to library: {game.name}")
+                self.game_library.add_game(game)
+            
+            # Save to file
+            self.game_library.save_games()
+            logger.info(f"Successfully persisted game {game.name} to local_games.json")
+            
+        except Exception as e:
+            logger.error(f"Failed to persist game {game.name}: {e}")
+            raise
 
     def _extract_archive(self, archive_path: Path, game: game_pb2.Game) -> Path:
         """
