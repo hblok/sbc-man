@@ -207,3 +207,93 @@ py_test(
     ],
     size = "small",
 )
+
+    # Tests for missing test coverage
+    py_test(
+        name = "test_game_loop",
+        srcs = ["test_game_loop.py"],
+        deps = [
+            "//sbcman/core:core",
+            "//tests:test_utils",
+            "@sbc_man_pip_deps//pygame_ce",
+        ],
+        size = "small",
+    )
+
+    py_test(
+        name = "test_state_manager",
+        srcs = ["test_state_manager.py"],
+        deps = [
+            "//sbcman/core:core",
+            "//sbcman/states:states",
+            "//tests:test_utils",
+        ],
+        size = "small",
+    )
+
+    py_test(
+        name = "test_compat_sdl",
+        srcs = ["test_compat_sdl.py"],
+        deps = [
+            "//sbcman/hardware:hardware",
+            "//tests:test_utils",
+            "@sbc_man_pip_deps//pygame_ce",
+        ],
+        size = "small",
+    )
+
+    py_test(
+        name = "test_game_utils",
+        srcs = ["test_game_utils.py"],
+        deps = [
+            "//sbcman/services",
+            "//google",
+            "@com_google_protobuf//:protobuf",
+        ],
+        size = "small",
+    )
+
+    py_test(
+        name = "test_process_launcher",
+        srcs = ["test_process_launcher.py"],
+        deps = [
+            "//sbcman/services",
+            "//google",
+            "@com_google_protobuf//:protobuf",
+        ],
+        size = "small",
+    )
+
+    py_test(
+        name = "test_wheel_installer",
+        srcs = ["test_wheel_installer.py"],
+        deps = [
+            "//sbcman/services",
+            "//tests:test_utils",
+        ],
+        size = "small",
+    )
+
+    py_test(
+        name = "test_update_state",
+        srcs = ["test_update_state.py"],
+        deps = [
+            "//sbcman/states:states",
+            "//sbcman/services",
+            "//sbcman/views/widgets:widgets",
+            "//tests:test_utils",
+            "@sbc_man_pip_deps//pygame_ce",
+        ],
+        size = "small",
+    )
+
+    py_test(
+        name = "test_scrollable_list",
+        srcs = ["test_scrollable_list.py"],
+        deps = [
+            "//sbcman/views/widgets:widgets",
+            "//tests:test_utils",
+            "@sbc_man_pip_deps//pygame_ce",
+        ],
+        size = "small",
+    )
