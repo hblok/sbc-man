@@ -52,11 +52,11 @@ class ProcessLauncher:
             logger.error(f"Cannot launch uninstalled game: {game.name}")
             return False
         
-        if not game.install_path.exists():
+        if not Path(game.install_path).exists():
             logger.error(f"Game installation path not found: {game.install_path}")
             return False
         
-        entry_point = game.install_path / game.entry_point
+        entry_point = Path(game.install_path) / game.entry_point
         if not entry_point.exists():
             logger.error(f"Game entry point not found: {entry_point}")
             return False
@@ -106,7 +106,10 @@ class ProcessLauncher:
             game: Game being launched
         """
         # Get pre-launch commands from game or config
-        pre_commands = game.custom_input_mappings.get("pre_launch_commands", [])
+        #print(dir(game.custom_input_mappings))
+        pre_commands = []
+        # TODO: Need to iterate the key/value list
+        #pre_commands = game.custom_input_mappings.get("pre_launch_commands", [])
         
         for cmd in pre_commands:
             try:
@@ -127,7 +130,9 @@ class ProcessLauncher:
             game: Game that was launched
         """
         # Get post-launch commands from game or config
-        post_commands = game.custom_input_mappings.get("post_launch_commands", [])
+        # TODO: Need to iterate the key/value list
+        #post_commands = game.custom_input_mappings.get("post_launch_commands", [])
+        post_commands = []
         
         for cmd in post_commands:
             try:

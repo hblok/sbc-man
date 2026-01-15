@@ -237,6 +237,7 @@ py_test(
     deps = [
 	"//sbcman/hardware:hardware",
 	"//tests:test_utils",
+        "//sbcman/path:path",    	
 	"@sbc_man_pip_deps//pygame_ce",
     ],
     size = "small",
