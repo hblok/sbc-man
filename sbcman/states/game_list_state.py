@@ -157,7 +157,11 @@ class GameListState(BaseState):
             return
 
         # Transition to playing state
-        self.state_manager.change_state("playing")
+        # Set the selected game in state manager for the playing state
+           self.state_manager.selected_game = game
+           logger.info(f"Selected game for launch: {game.name}")
+
+           self.state_manager.change_state("playing")
 
     def _update_game_list(self) -> None:
         """Update the adaptive scrollable list with current games."""
