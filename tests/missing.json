@@ -1,0 +1,13 @@
+{
+  "missing_tests": [
+    "core.game_loop",
+    "core.state_manager",
+    "hardware.compat_sdl",
+    "services.game_utils",
+    "services.network",
+    "services.process_launcher",
+    "services.wheel_installer",
+    "states.update_state",
+    "views.widgets.scrollable_list"
+  ],
+}
