@@ -274,7 +274,7 @@ class DownloadManager:
                 p = Path(s) / game.entry_point
                 if p.exists():
                     logger.info(f"Found {p}")
-                    return p
+                    return Path(s)
 
             # TODO: what do do here??
             install_dir = site.getusersitepackages()
