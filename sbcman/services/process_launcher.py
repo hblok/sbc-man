@@ -56,8 +56,8 @@ class ProcessLauncher:
             logger.error(f"Game installation path not found: {game.install_path}")
             return False
         
-        #entry_point = Path(game.install_path) / game.entry_point
-        entry_point = Path("/home/havardrb/.local/lib/python3.11/site-packages/maxblok/fish/main.py")
+        entry_point = Path(game.install_path) / game.entry_point
+        #entry_point = Path("/home/havardrb/.local/lib/python3.11/site-packages/maxblok/fish/main.py")
         if not entry_point.exists():
             logger.error(f"Game entry point not found: {entry_point}")
             return False

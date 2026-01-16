@@ -79,6 +79,7 @@ class PlayingState(BaseState):
         if not install_path_str:
             raise ValueError(f"Game install path is empty: {game.name}")
 
+        # TODO
         import os
         if not os.path.exists(install_path_str):
             raise ValueError(f"Game installation path not found: {install_path_str}")
@@ -86,7 +87,7 @@ class PlayingState(BaseState):
         # Build entry point path
         entry_point = os.path.join(install_path_str, game.entry_point)
         #entry_point = Path("~/.local/lib/python3.11/site-packages/maxblok/fish/main.py").resolve()
-        entry_point = Path.home() / ".local/lib/python3.11/site-packages/maxblok/fish/main.py"
+        #entry_point = Path.home() / ".local/lib/python3.11/site-packages/maxblok/fish/main.py"
         if not os.path.exists(entry_point):
             raise ValueError(f"Game entry point not found: {entry_point}")
 
