@@ -84,9 +84,11 @@ class GameLibrary:
             games_file: Path to the games JSON file.
         """
         try:
+            logger.info(f"Save list of games to {games_file}")
             games_file.parent.mkdir(parents=True, exist_ok=True)
-            
-            data = [game_to_dict() for game in games]
+
+            # TODO: Use protobuf json serialization here
+            data = [game_to_dict(game) for game in games]
 
             with open(games_file, "w") as f:
                 json.dump(data, f, indent=2)

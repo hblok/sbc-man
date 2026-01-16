@@ -14,9 +14,11 @@ class AppPaths:
         
         if base_dir is None:
             base_dir = pathlib.Path(".")
+            print("Using default based dir '.'")
 
         if home_dir is None:
             home_dir = pathlib.Path.home()
+            print(f"Using default home dir {home_dir}")
         
         self._base_dir = base_dir
         self._home_dir = home_dir

@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "id": "fish",
+    "name": "Eat the Fish",
+    "version": "0.1.1",
+    "description": "Eat the smaller fish; watch out for the shark.",
+    "author": "H.Blok",
+    "install_path": "/home/havardrb/games/fish",
+    "entry_point": "main.py",
+    "installed": true,
+    "download_url": "https://hblok.github.io/sbc-man/fish-0.1.1-py3-none-any.whl",
+    "custom_input_mappings": {},
+    "custom_resolution": null,
+    "custom_fps": null
+  }
+]

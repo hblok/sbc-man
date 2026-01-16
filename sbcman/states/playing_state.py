@@ -9,6 +9,7 @@ State for running a game as a subprocess.
 Based on: docs/code/class_states_playing_state.txt
 """
 
+from pathlib import Path
 import logging
 import subprocess
 from typing import Optional, List
@@ -84,6 +85,8 @@ class PlayingState(BaseState):
 
         # Build entry point path
         entry_point = os.path.join(install_path_str, game.entry_point)
+        #entry_point = Path("~/.local/lib/python3.11/site-packages/maxblok/fish/main.py").resolve()
+        entry_point = Path.home() / ".local/lib/python3.11/site-packages/maxblok/fish/main.py"
         if not os.path.exists(entry_point):
             raise ValueError(f"Game entry point not found: {entry_point}")
 
