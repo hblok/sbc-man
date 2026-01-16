@@ -10,8 +10,10 @@ Based on: docs/code/class_services_process_launcher.txt
 """
 
 import os
+import multiprocessing
 import subprocess
 import logging
+import importlib
 from pathlib import Path
 from typing import Dict, Any, List, Optional
 
@@ -39,6 +41,52 @@ class ProcessLauncher:
         self.hw_config = hw_config
 
     def launch_game(self, game: game_pb2.Game) -> bool:
+        if not game.installed:
+            logger.error(f"Cannot launch uninstalled game: {game.name}")
+            return False
+        
+        if not Path(game.install_path).exists():
+            logger.error(f"Game installation path not found: {game.install_path}")
+            return False
+        
+        entry_point = Path(game.install_path) / game.entry_point
+        #entry_point = Path("/home/havardrb/.local/lib/python3.11/site-packages/maxblok/fish/main.py")
+        if not entry_point.exists():
+            logger.error(f"Game entry point not found: {entry_point}")
+            return False
+
+        module_name = "maxbloks.fish"
+        logger.info(f"Launch module {module_name}")
+
+        try:
+            process = multiprocessing.Process(
+                target=self._run_game,
+                args=(module_name,)
+            )
+        
+            process.start()
+            process.join()  # Wait for game to finish
+        
+            if process.exitcode != 0:
+                logger.error(f"Game exited with code: {process.exitcode}")
+                return False
+
+            return True
+        except Exception as e:
+            logger.error(f"Failed to launch game: {e}")
+            return False            
+
+    @staticmethod
+    def _run_game(module_name):
+        try:
+            game = importlib.import_module(module_name)
+            game.start()
+        except Exception as e:
+            logger.error(f"Failed to launch game: {e}")
+            return False
+        
+        
+    def launch_game_subprocess(self, game: game_pb2.Game) -> bool:
         """
         Launch game process.
         

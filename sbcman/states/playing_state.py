@@ -52,14 +52,14 @@ class PlayingState(BaseState):
 
         # Launch the game in a non-blocking way
         try:
-            self._launch_game_async(game)
+            self.launcher.launch_game(game)
             self.message = f"Playing: {game.name}"
         except Exception as e:
             logger.error(f"Failed to launch game: {e}")
             self.message = f"Error launching game: {e}"
             self.game_running = False
 
-    def _launch_game_async(self, game) -> None:
+    def DELETE_launch_game_async(self, game) -> None:
         """
         Launch game as an asynchronous subprocess.
         
