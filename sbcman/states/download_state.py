@@ -176,7 +176,8 @@ class DownloadState(BaseState, DownloadObserver):
 
     def on_progress(self, downloaded: int, total: int) -> None:
         """Download progress callback."""
-        self.download_progress = downloaded / total if total > 0 else 0
+        self.download_progress = min(downloaded / total if total > 0 else 0, 1.0)
+        #print(self.download_progress)
 
     def on_complete(self, success: bool, message: str) -> None:
         """Download complete callback."""

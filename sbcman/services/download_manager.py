@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Optional, Callable, Any
 import os
 import zipfile
+import site
 
 from sbcman.services.network import NetworkService
 from sbcman.services.wheel_installer import WheelInstaller
@@ -138,7 +139,8 @@ class DownloadManager:
             
             # Progress callback
             def progress_callback(downloaded: int, total: int) -> None:
-                self.download_progress = downloaded / total if total > 0 else 0
+                self.download_progress = min(downloaded / total if total > 0 else 0, 1.0)
+                #print(self.download_progress)
                 if observer:
                     observer.on_progress(downloaded, total)
             
@@ -264,8 +266,18 @@ class DownloadManager:
             # For wheel files, return the site-packages directory as install path
             # This is a special case since wheels install to Python's site-packages
             # rather than a game-specific directory
-            install_dir = self.app_paths.games_dir / game.id
-            install_dir.mkdir(parents=True, exist_ok=True)
+            
+            #install_dir = self.app_paths.games_dir / game.id
+            #install_dir.mkdir(parents=True, exist_ok=True)
+
+            for s in site.getsitepackages():
+                p = Path(s) / game.entry_point
+                if p.exists():
+                    logger.info(f"Found {p}")
+                    return p
+
+            # TODO: what do do here??
+            install_dir = site.getusersitepackages()
             return install_dir
         
         # Use AppPaths for installation directory
