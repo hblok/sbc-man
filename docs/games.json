@@ -5,7 +5,7 @@
   "version": "0.1.2",
   "description": "Eat the smaller fish; watch out for the shark.",
   "author": "H.Blok",
-  "entryPoint": "maxblok/fish/main.py",
+  "entryPoint": "maxbloks/fish/main.py",
   "downloadUrl": "https://hblok.github.io/sbc-man/fish-0.1.2-py3-none-any.whl"
   }
 ]
