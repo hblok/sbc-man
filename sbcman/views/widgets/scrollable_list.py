@@ -126,11 +126,11 @@ class ScrollableList:
             self.show_scroll_indicators = False
             
             # Center the content vertically if it doesn't fill the available space
-            print(self.actual_height, self.height)
+            #print(self.actual_height, self.height)
             if self.actual_height < self.height:
                 vertical_offset = (self.height - self.actual_height) // 2
                 self.y = self.init_y + vertical_offset
-                print(self.y)
+                #print(self.y)
         
         logger.debug(f"Layout: {len(self.items)} items, needs_scrolling={self.needs_scrolling}, "
                     f"actual_height={self.actual_height}, visible_items={self.visible_items_count}")

@@ -8,14 +8,15 @@ State for configuring installation settings with adaptive layout support.
 """
 
 import logging
-import tkinter as tk
-from tkinter import filedialog
+import pathlib
 from pathlib import Path
 from typing import Optional, List
 
 import pygame
 
 from .base_state import BaseState
+from ..path import device
+from ..services import portmaster
 from ..views.widgets import ScrollableList
 
 logger = logging.getLogger(__name__)
@@ -43,8 +44,7 @@ class InstallSettingsState(BaseState):
 
     def on_exit(self) -> None:
         """Cleanup install settings state."""
-        logger.info("Exited install settings state")
-        # Save configuration changes
+        logger.info("Exited install settings state - saving settings")
         self.config.save()
 
     def update(self, dt: float) -> None:
@@ -73,8 +73,20 @@ class InstallSettingsState(BaseState):
         """Load install settings from configuration."""
         self.install_as_pip = self.config.get("install.install_as_pip", False)
         self.add_portmaster_entry = self.config.get("install.add_portmaster_entry", False)
-        self.portmaster_base_dir = self.config.get("install.portmaster_base_dir", str(Path.home() / "portmaster"))
-        self.portmaster_image_dir = self.config.get("install.portmaster_image_dir", str(Path.home() / "portmaster" / "images"))
+        self.portmaster_base_dir = self.config.get("install.portmaster_base_dir",
+                                                   str(self._get_portmaster_base_dir()))
+        self.portmaster_image_dir = self.config.get("install.portmaster_image_dir",
+                                                    str(self._get_portmaster_image_dir()))
+
+    def _get_portmaster_base_dir(self) -> pathlib.Path:
+        dp = device.DevicePaths()
+        pm = portmaster.PortMaster(dp)
+        return pm.find_ports_dir()
+
+    def _get_portmaster_image_dir(self) -> pathlib.Path:
+        dp = device.DevicePaths()
+        pm = portmaster.PortMaster(dp)
+        return pm.find_game_image_dir(self._get_portmaster_base_dir())        
 
     def _save_settings(self) -> None:
         """Save install settings to configuration."""
@@ -170,8 +182,8 @@ class InstallSettingsState(BaseState):
         settings_options = [
             f"Install as pip package: {'ON' if self.install_as_pip else 'OFF'}",
             f"Add Portmaster entry: {'ON' if self.add_portmaster_entry else 'OFF'}",
-            f"Portmaster base dir: {self._truncate_path(self.portmaster_base_dir)}",
-            f"Portmaster image dir: {self._truncate_path(self.portmaster_image_dir)}",
+            f"Portmaster base dir: {self._truncate_path(str(self.portmaster_base_dir))}",
+            f"Portmaster image dir: {self._truncate_path(str(self.portmaster_image_dir))}",
             "Back to Settings"
         ]
         
@@ -202,10 +214,10 @@ class InstallSettingsState(BaseState):
             logger.info(f"Add Portmaster entry: {self.add_portmaster_entry}")
             
         elif selected_index == 2:  # Portmaster base dir
-            self._browse_directory("base")
+            self.portmaster_base_dir = self._browse_directory(self.portmaster_base_dir)
             
         elif selected_index == 3:  # Portmaster image dir
-            self._browse_directory("image")
+            self.portmaster_image_dir = self._browse_directory(self.portmaster_image_dir)
             
         elif selected_index == 4:  # Back to Settings
             self._save_settings()
@@ -215,25 +227,16 @@ class InstallSettingsState(BaseState):
         # Update display after modification
         self._update_settings_options()
 
-    def _browse_directory(self, dir_type: str) -> None:
+    def _browse_directory(self, current_path : pathlib.Path) -> None:
         """
         Open directory browser dialog.
-        
-        Args:
-            dir_type: Either 'base' or 'image'
         """
         try:
             # Hide pygame window temporarily
-            pygame.display.iconify()
+            #pygame.display.iconify()
             
-            # Create tkinter root window (hidden)
-            root = tk.Tk()
-            root.withdraw()
-            
-            # Set initial directory
-            initial_dir = self.portmaster_base_dir if dir_type == "base" else self.portmaster_image_dir
-            if not Path(initial_dir).exists():
-                initial_dir = str(Path.home())
+            if not current_path or not current_path.exists():
+                initial_dir = Path.home()
             
             # Open directory browser
             dir_path = filedialog.askdirectory(
@@ -241,15 +244,12 @@ class InstallSettingsState(BaseState):
                 initialdir=initial_dir
             )
             
-            # Destroy tkinter window
-            root.destroy()
-            
             # Restore pygame window
-            pygame.display.set_mode((self.screen.get_width(), self.screen.get_height()))
+            #pygame.display.set_mode((self.screen.get_width(), self.screen.get_height()))
             
             if dir_path:
                 # Validate directory
-                path = Path(dir_path)
+                path = pathlib.Path(dir_path)
                 if not path.exists():
                     logger.error(f"Selected directory does not exist: {dir_path}")
                     return
@@ -257,22 +257,18 @@ class InstallSettingsState(BaseState):
                 if not path.is_dir():
                     logger.error(f"Selected path is not a directory: {dir_path}")
                     return
-                
-                # Update the appropriate setting
-                if dir_type == "base":
-                    self.portmaster_base_dir = dir_path
-                    logger.info(f"Portmaster base dir set to: {dir_path}")
-                elif dir_type == "image":
-                    self.portmaster_image_dir = dir_path
-                    logger.info(f"Portmaster image dir set to: {dir_path}")
-                
+
+                return dir_path
+            
         except Exception as e:
             logger.error(f"Error browsing directory: {e}")
             # Ensure pygame window is restored
-            try:
-                pygame.display.set_mode((self.screen.get_width(), self.screen.get_height()))
-            except:
-                pass
+            #try:
+            #    #pygame.display.set_mode((self.screen.get_width(), self.screen.get_height()))
+            #except:
+            #    pass
+
+        return pathlib.Path("/")
 
     def render(self, surface: pygame.Surface) -> None:
         """Render install settings with adaptive layout support."""

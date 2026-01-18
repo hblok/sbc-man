@@ -5,8 +5,6 @@
 Configuration Manager Module
 
 Manages runtime configuration with get/set operations and persistence.
-
-Based on: docs/code/class_models_config_manager.txt
 """
 
 import json
