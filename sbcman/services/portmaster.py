@@ -79,6 +79,7 @@ class PortMaster:
 
         for c in candidates:
             if c.exists():
+                c = c.resolve()
                 logger.info(f"Found PortMaster image directory at {c}")
                 return c
 
