@@ -149,12 +149,13 @@ class SettingsState(BaseState):
 
         # Current settings options (can be expanded in the future)
         settings_options = [
-            "Display Settings",
-            "Input Mappings", 
-            "Audio Settings",
-            "Network Settings",
-            "Storage Management",
-            "System Information",
+            "Install Settings",
+#            "Display Settings",
+#            "Input Mappings", 
+#            "Audio Settings",
+#            "Network Settings",
+#            "Storage Management",
+#            "System Information",
             "About SBC-Man",
             "Back to Menu"
         ]
