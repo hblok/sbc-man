@@ -21,6 +21,9 @@ jobs:
   cleanup:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Cleanup releases and tags
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -28,7 +31,6 @@ jobs:
           keep_count=${{ inputs.keep_count }}
           dry_run=${{ inputs.dry_run }}
           
-          # Get releases, sort by date, keep newest ones
           releases=$(gh release list --json tagName --jq '.[].tagName' | tail -n +$((keep_count + 1)))
           
           for tag in $releases; do
