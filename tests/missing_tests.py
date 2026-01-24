@@ -1,4 +1,3 @@
-
 #!/usr/bin/env python3
 """Script to identify source modules without unit tests."""
 
@@ -8,7 +7,8 @@ from pathlib import Path
 
 def get_source_modules():
     """Get all Python source modules from sbcman directory."""
-    source_dir = Path("sbcman")
+    repo_root = Path(__file__).parent.parent
+    source_dir = repo_root / "sbcman"
     modules = []
     
     for py_file in source_dir.rglob("*.py"):
@@ -26,7 +26,8 @@ def get_source_modules():
 
 def get_test_modules():
     """Get all unit test modules from tests/unit directory."""
-    test_dir = Path("tests/unit")
+    repo_root = Path(__file__).parent.parent
+    test_dir = repo_root / "tests/unit"
     modules = []
     
     for py_file in test_dir.rglob("test_*.py"):
@@ -88,20 +89,21 @@ def main():
     os.makedirs("tests", exist_ok=True)
     
     # Save to JSON file
-    output_file = "tests/missing.json"
-    with open(output_file, 'w') as f:
-        json.dump({
-            "missing_tests": missing_modules,
-            "count": len(missing_modules),
-            "total_source_modules": len(get_source_modules()),
-            "tested_modules": len(get_source_modules()) - len(missing_modules)
-        }, f, indent=2)
-    
-    print(f"Found {len(missing_modules)} source modules without tests:")
-    for module in missing_modules:
-        print(f"  - {module}")
-    print(f"\
-Results saved to {output_file}")
+    #output_file = "tests/missing.json"
+    #with open(output_file, 'w') as f:
+    #    json.dump({
+    #        "missing_tests": missing_modules,
+    #        "count": len(missing_modules),
+    #        "total_source_modules": len(get_source_modules()),
+    #        "tested_modules": len(get_source_modules()) - len(missing_modules)
+    #    }, f, indent=2)
+
+    if missing_modules:
+        print(f"Found {len(missing_modules)} source modules without tests:")
+        for module in missing_modules:
+            print(f"  - {module}")
+        
+        #print(f"\nResults saved to {output_file}")
 
 if __name__ == "__main__":
     main()
