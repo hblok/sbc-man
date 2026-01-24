@@ -49,13 +49,19 @@ class GameInstaller:
         """
         logger.info(f"Extracting {archive_path}")
         suffix = archive_path.suffix.lower()
+        script = game.startScript
+        icon = game.icon
 
         # Install as wheel if enabled by config option "install.install_as_pip"
         install_as_pip = self._get_install_as_pip()
         if suffix == ".whl" and install_as_pip:
             return self._install_wheel(archive_path, game)
+            pass
 
         return self._extract_archive(archive_path, game)
+
+        # TODO: copy in .sh {script} and image file {icon} to _get_install_base_dir()
+    
 
     def _install_wheel(self, wheel_path: Path, game: game_pb2.Game) -> Path:
         """Install a wheel file and return the install path.
