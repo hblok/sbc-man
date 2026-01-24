@@ -7,14 +7,12 @@ Uses threading to keep UI responsive during downloads.
 """
 
 import logging
-import site
 import threading
 from pathlib import Path
 from typing import Optional
 
-from sbcman.services import archive_extractor
 from sbcman.services import network
-from sbcman.services import wheel_installer
+from sbcman.services import install_game
 from sbcman.path import paths
 from sbcman.proto import game_pb2
 
@@ -58,7 +56,7 @@ class DownloadManager:
         self.game_library = game_library
         self.config = config
         self.network = network.NetworkService()
-        self.archive_extractor = archive_extractor.ArchiveExtractor()
+        self.game_installer = install_game.GameInstaller(config, app_paths)
 
         # Download state
         self.current_download: Optional[threading.Thread] = None
@@ -147,49 +145,7 @@ class DownloadManager:
 
     def _install_game(self, archive_path: Path, game: game_pb2.Game) -> Path:
         """Install the game from the downloaded archive."""
-        logger.info(f"Extracting {archive_path}")
-        suffix = archive_path.suffix.lower()
-
-        # Install as wheel if enabled by config option "install.install_as_pip"
-        install_as_pip = self._get_install_as_pip()
-        if suffix == ".whl" and install_as_pip:
-            return self._install_wheel(archive_path, game)
-
-        return self._extract_archive(archive_path, game)
-
-    def _install_wheel(self, wheel_path: Path, game: game_pb2.Game) -> Path:
-        """Install a wheel file and return the install path."""
-        logger.info(f"Detected wheel file: {wheel_path}")
-        installer = wheel_installer.WheelInstaller()
-        success, message = installer.install_wheel(wheel_path)
-
-        if not success:
-            raise Exception(f"Wheel installation failed: {message}")
-
-        logger.info(f"Wheel installed successfully: {message}")
-
-        for s in site.getsitepackages():
-            p = Path(s) / game.entry_point
-            if p.exists():
-                logger.info(f"Found {p}")
-                return Path(s)
-
-        # RESOLVE: what do do here??
-        return Path(site.getusersitepackages())
-
-    def _extract_archive(self, archive_path: Path, game: game_pb2.Game) -> Path:
-        """Extract archive and set up the game directory."""
-        
-        # Use portmaster_base_dir if install.add_portmaster_entry is true
-        base_dir = self._get_install_base_dir()
-        install_dir = base_dir / game.id
-        self.archive_extractor.extract(archive_path, install_dir)
-
-        entry_point = install_dir / game.entry_point
-        if entry_point.exists():
-            entry_point.chmod(0o755)
-
-        return install_dir
+        return self.game_installer.install_game(archive_path, game)
 
     def _persist_if_available(self, game: game_pb2.Game) -> None:
         """Persist game to library if available."""
@@ -202,21 +158,7 @@ class DownloadManager:
         else:
             logger.warning("No game_library provided - installed game will not be persisted")
 
-    def _get_install_as_pip(self) -> bool:
-        """Get install_as_pip setting from config."""
-        if self.config:
-            return self.config.get("install.install_as_pip", False)
-        return False
-
-    def _get_install_base_dir(self) -> Path:
-        """Get the base directory for game installation from config."""
-        if self.config:
-            add_portmaster_entry = self.config.get("install.add_portmaster_entry", False)
-            if add_portmaster_entry:
-                portmaster_base_dir = self.config.get("install.portmaster_base_dir")
-                if portmaster_base_dir:
-                    return Path(portmaster_base_dir)
-        return self.app_paths.games_dir
+    
 
     def _persist_installed_game(self, game: game_pb2.Game) -> None:
         """Persist the installed game to local_games.json."""

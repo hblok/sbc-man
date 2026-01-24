@@ -10,7 +10,6 @@ Tests for download management, installation, and observer pattern implementation
 from pathlib import Path
 from sbcman.path.paths import AppPaths
 from unittest.mock import Mock, patch, MagicMock
-import os
 import pathlib
 import tempfile
 import unittest
@@ -187,6 +186,8 @@ class TestDownloadManager(unittest.TestCase):
     
     def test_extract_game_zip(self):
         """Test extracting a ZIP game archive."""
+        from sbcman.services.install_game import GameInstaller
+        
         # Create a test game
         game = game_pb2.Game()
         game.id = "test-game"
@@ -202,8 +203,10 @@ class TestDownloadManager(unittest.TestCase):
             with zipfile.ZipFile(zip_path, 'w') as zip_file:
                 zip_file.writestr("main.py", "print('Hello, World!')")
             
-            # Extract the game
-            install_dir = self.download_manager._extract_archive(zip_path, game)
+            # Extract the game using GameInstaller
+            app_paths = AppPaths(self.temp_dir, self.temp_dir)
+            installer = GameInstaller(None, app_paths)
+            install_dir = installer._extract_archive(zip_path, game)
             
             # Verify the installation directory was created
             self.assertTrue(install_dir.exists())
@@ -219,6 +222,7 @@ class TestDownloadManager(unittest.TestCase):
         """Test extracting a TAR game archive."""
         try:
             import tarfile
+            from sbcman.services.install_game import GameInstaller
             
             # Create a test game
             game = game_pb2.Game()
@@ -238,8 +242,10 @@ class TestDownloadManager(unittest.TestCase):
                     temp_file.write_text("print('Hello, World!')")
                     tar_file.add(temp_file, "main.py")
                 
-                # Extract the game
-                install_dir = self.download_manager._extract_archive(tar_path, game)
+                # Extract the game using GameInstaller
+                app_paths = AppPaths(self.temp_dir, self.temp_dir)
+                installer = GameInstaller(None, app_paths)
+                install_dir = installer._extract_archive(tar_path, game)
                 
                 # Verify the installation directory was created
                 self.assertTrue(install_dir.exists())
@@ -253,6 +259,8 @@ class TestDownloadManager(unittest.TestCase):
     
     def test_extract_game_unsupported_format(self):
         """Test extracting a game with unsupported archive format."""
+        from sbcman.services.install_game import GameInstaller
+        
         # Create a test game
         game = game_pb2.Game()
         game.id = "test-game"
@@ -263,9 +271,11 @@ class TestDownloadManager(unittest.TestCase):
             file_path = Path(temp_dir) / "test-game.unsupported"
             file_path.write_text("test content")
             
-            # Try to extract the game - should raise an exception
+            # Try to extract the game using GameInstaller - should raise an exception
+            app_paths = AppPaths(self.temp_dir, self.temp_dir)
+            installer = GameInstaller(None, app_paths)
             with self.assertRaises(Exception) as context:
-                self.download_manager._extract_archive(file_path, game)
+                installer._extract_archive(file_path, game)
             
             self.assertIn("Unsupported archive format", str(context.exception))
     
