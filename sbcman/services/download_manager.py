@@ -171,7 +171,7 @@ class DownloadManager:
                 logger.info(f"Found {p}")
                 return Path(s)
 
-        # TODO: what do do here??
+        # RESOLVE: what do do here??
         return Path(site.getusersitepackages())
 
     def _extract_archive(self, archive_path: Path, game: game_pb2.Game) -> Path:
