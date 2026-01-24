@@ -2,13 +2,13 @@
   {
     "id": "fish",
     "name": "Eat the Fish",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "Eat the smaller fish; watch out for the shark.",
     "author": "H.Blok",
     "install_path": "/home/havardrb/.local/lib/python3.11/site-packages",
     "entry_point": "maxbloks/fish/main.py",
     "installed": true,
-    "download_url": "https://hblok.github.io/sbc-man/fish-0.1.2-py3-none-any.whl",
+    "download_url": "https://hblok.github.io/sbc-man/fish-0.1.3-py3-none-any.whl",
     "custom_input_mappings": {},
     "custom_resolution": null,
     "custom_fps": null

@@ -48,14 +48,14 @@ class ArchiveExtractor:
         dest_dir.mkdir(parents=True, exist_ok=True)
         suffix = archive_path.suffix.lower()
 
-        if suffix == ".zip":
+        if suffix == ".zip" or suffix == ".whl":
             self._extract_zip(archive_path, dest_dir)
         elif self._is_tar_archive(archive_path):
             self._extract_tar(archive_path, dest_dir)
         else:
             raise ValueError(
                 f"Unsupported archive format: {suffix}. "
-                "Supported formats: .zip, .tar, .tar.gz, .tar.bz2, .tar.xz"
+                "Supported formats: .zip, .whl, .tar, .tar.gz, .tar.bz2, .tar.xz"
             )
 
         logger.info(f"Extracted to {dest_dir}")

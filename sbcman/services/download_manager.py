@@ -123,8 +123,6 @@ class DownloadManager:
     def _download_file(self, game: game_pb2.Game, observer: Optional[DownloadObserver]) -> Path:
         """Download the game file and return the destination path."""
         filename = Path(game.download_url).name
-        if not filename:
-            filename = f"{game.id}.zip"
 
         dest_file = self.downloads_dir / filename
         logger.info(f"Downloading {game.download_url} to {dest_file}")
@@ -150,6 +148,7 @@ class DownloadManager:
         logger.info(f"Extracting {archive_path}")
         suffix = archive_path.suffix.lower()
 
+        # TODO: Install as wheel if enabled by config option "install.install_as_pip"
         if suffix == ".whl":
             return self._install_wheel(archive_path, game)
 
@@ -177,6 +176,8 @@ class DownloadManager:
 
     def _extract_archive(self, archive_path: Path, game: game_pb2.Game) -> Path:
         """Extract archive and set up the game directory."""
+
+        # TODO: if install.add_portmaster_entry is true and install.portmaster_base_dir use that as the base dir. Otherwise, use self.app_paths.games_dir
         install_dir = self.app_paths.games_dir / game.id
         self.archive_extractor.extract(archive_path, install_dir)
 
