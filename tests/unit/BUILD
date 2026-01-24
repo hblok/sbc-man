@@ -298,3 +298,36 @@ py_test(
     ],
     size = "small",
 )
+
+py_test(
+    name = "test_install_game",
+    srcs = ["test_install_game.py"],
+    deps = [
+	"//sbcman/services",
+	"//tests:test_utils",
+	"@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_updater",
+    srcs = ["test_updater.py"],
+    deps = [
+	"//sbcman/services",
+	"//tests:test_utils",
+	"@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_install_settings_state",
+    srcs = ["test_install_settings_state.py"],
+    deps = [
+	"//sbcman/states",
+	"//tests:test_utils",
+	"@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
