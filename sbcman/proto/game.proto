@@ -31,5 +31,8 @@ message Game {
   repeated InputMapping custom_input_mappings = 10;  // Per-game input overrides
   Resolution custom_resolution = 11;       // Per-game resolution override
   int32 custom_fps = 12;                   // Per-game FPS target override
+
+  string startScript = 13;
+  string icon = 14;
 }
 
