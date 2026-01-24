@@ -1,8 +1,7 @@
 # Copyright (C) 2025 H. Blok
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-"""
-Unit Tests for Updater Service
+"""Unit Tests for Updater Service
 
 Tests the self-update functionality including version checking,
 downloading, and installation methods.
@@ -14,9 +13,9 @@ import tempfile
 import json
 from pathlib import Path
 
-from sbcman.services.updater import UpdaterService
-from sbcman.services.config_manager import ConfigManager
-from sbcman.path.paths import AppPaths
+import sbcman.services.updater
+import sbcman.services.config_manager
+import sbcman.path.paths
 
 
 class TestUpdaterService(unittest.TestCase):
@@ -24,48 +23,50 @@ class TestUpdaterService(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        # Create mock dependencies
-        self.mock_config = Mock(spec=ConfigManager)
-        self.mock_paths = Mock(spec=AppPaths)
+        self.mock_config = Mock(spec=sbcman.services.config_manager.ConfigManager)
+        self.mock_paths = Mock(spec=sbcman.path.paths.AppPaths)
         self.mock_paths.temp_dir = Path(tempfile.mkdtemp())
         
-        # Configure mock config
         self.mock_config.get.return_value = "https://github.com/hblok/sbc-man"
         
-        # Create updater service
-        self.updater = UpdaterService(self.mock_config, self.mock_paths)
-
-    def disabled_test_init(self):
-        """Test updater service initialization."""
-        self.assertEqual(self.updater.current_version, "1.0.0")
-        self.assertEqual(self.updater.update_repo_url, "https://github.com/hblok/sbc-man")
-        self.mock_config.get.assert_called_with(
-            "update.repository_url", 
-            "https://github.com/hblok/sbc-man"
+        self.updater = sbcman.services.updater.UpdaterService(
+            self.mock_config,
+            self.mock_paths
         )
 
-    def test_compare_versions(self):
-        """Test version comparison logic."""
-        # Test newer version
+    def test_init(self):
+        """Test updater service initialization."""
+        self.assertEqual(self.updater.current_version, "")
+        self.assertEqual(self.updater.update_repo_url, "https://github.com/hblok/sbc-man")
+        self.mock_config.get.assert_called_with("update.repository_url")
+
+    def test_compare_versions_newer(self):
+        """Test version comparison with newer version."""
         self.assertTrue(self.updater._compare_versions("1.0.0", "1.0.1"))
         self.assertTrue(self.updater._compare_versions("1.0.0", "1.1.0"))
         self.assertTrue(self.updater._compare_versions("1.0.0", "2.0.0"))
-        
-        # Test same version
+
+    def test_compare_versions_same(self):
+        """Test version comparison with same version."""
         self.assertFalse(self.updater._compare_versions("1.0.0", "1.0.0"))
-        
-        # Test older version
+
+    def test_compare_versions_older(self):
+        """Test version comparison with older version."""
         self.assertFalse(self.updater._compare_versions("1.0.1", "1.0.0"))
         self.assertFalse(self.updater._compare_versions("1.1.0", "1.0.0"))
-        
-        # Test different length versions
+
+    def test_compare_versions_different_length(self):
+        """Test version comparison with different length versions."""
         self.assertTrue(self.updater._compare_versions("1.0", "1.0.1"))
         self.assertFalse(self.updater._compare_versions("1.0.1", "1.0"))
+
+    def test_compare_versions_invalid_format(self):
+        """Test version comparison with invalid format."""
+        self.assertTrue(self.updater._compare_versions("invalid", "1.0.1"))
 
     @patch('sbcman.services.updater.urllib.request.urlopen')
     def test_check_for_updates_success(self, mock_urlopen):
         """Test successful update checking."""
-        # Mock GitHub API response
         mock_response = Mock()
         mock_response.read.return_value = json.dumps({
             "tag_name": "v1.0.1",
@@ -78,7 +79,6 @@ class TestUpdaterService(unittest.TestCase):
         }).encode('utf-8')
         mock_urlopen.return_value.__enter__.return_value = mock_response
         
-        # Test update checking
         update_available, latest_version, download_url = self.updater.check_for_updates()
         
         self.assertTrue(update_available)
@@ -87,35 +87,84 @@ class TestUpdaterService(unittest.TestCase):
         self.assertTrue(download_url.endswith(".whl"))
 
     @patch('sbcman.services.updater.urllib.request.urlopen')
-    def disabled_test_check_for_updates_no_new_version(self, mock_urlopen):
+    def test_check_for_updates_no_update_available(self, mock_urlopen):
         """Test update checking when no new version is available."""
-        # Mock GitHub API response with same version
+        self.updater.current_version = "1.0.1"
+        
         mock_response = Mock()
         mock_response.read.return_value = json.dumps({
-            "tag_name": "v1.0.0",
+            "tag_name": "v1.0.1",
             "assets": [
                 {
-                    "name": "sbc_man-1.0.0-py3-none-any.whl",
-                    "browser_download_url": "https://github.com/hblok/sbc-man/releases/download/v1.0.0/sbc_man-1.0.0-py3-none-any.whl"
+                    "name": "sbc_man-1.0.1-py3-none-any.whl",
+                    "browser_download_url": "https://github.com/hblok/sbc-man/releases/download/v1.0.1/sbc_man-1.0.1-py3-none-any.whl"
                 }
             ]
         }).encode('utf-8')
         mock_urlopen.return_value.__enter__.return_value = mock_response
         
-        # Test update checking
         update_available, latest_version, download_url = self.updater.check_for_updates()
         
         self.assertFalse(update_available)
-        self.assertEqual(latest_version, "1.0.0")
+        self.assertEqual(latest_version, "1.0.1")
+        self.assertIsNotNone(download_url)
+
+    @patch('sbcman.services.updater.urllib.request.urlopen')
+    def test_check_for_updates_no_version_tag(self, mock_urlopen):
+        """Test update checking when no version tag is found."""
+        mock_response = Mock()
+        mock_response.read.return_value = json.dumps({
+            "tag_name": "",
+            "assets": []
+        }).encode('utf-8')
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+        
+        update_available, latest_version, download_url = self.updater.check_for_updates()
+        
+        self.assertFalse(update_available)
+        self.assertIsNone(latest_version)
+        self.assertIsNone(download_url)
+
+    @patch('sbcman.services.updater.urllib.request.urlopen')
+    def test_check_for_updates_no_wheel_file(self, mock_urlopen):
+        """Test update checking when no wheel file is found."""
+        mock_response = Mock()
+        mock_response.read.return_value = json.dumps({
+            "tag_name": "v1.0.1",
+            "assets": [
+                {
+                    "name": "source.tar.gz",
+                    "browser_download_url": "https://github.com/hblok/sbc-man/releases/download/v1.0.1/source.tar.gz"
+                }
+            ]
+        }).encode('utf-8')
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+        
+        update_available, latest_version, download_url = self.updater.check_for_updates()
+        
+        self.assertFalse(update_available)
+        self.assertIsNone(latest_version)
+        self.assertIsNone(download_url)
 
     @patch('sbcman.services.updater.urllib.request.urlopen')
     def test_check_for_updates_network_error(self, mock_urlopen):
         """Test update checking with network error."""
-        # Mock network error
         import urllib.error
         mock_urlopen.side_effect = urllib.error.URLError("Network error")
         
-        # Test update checking
+        update_available, latest_version, download_url = self.updater.check_for_updates()
+        
+        self.assertFalse(update_available)
+        self.assertIsNone(latest_version)
+        self.assertIsNone(download_url)
+
+    @patch('sbcman.services.updater.urllib.request.urlopen')
+    def test_check_for_updates_json_decode_error(self, mock_urlopen):
+        """Test update checking with invalid JSON response."""
+        mock_response = Mock()
+        mock_response.read.return_value = b"invalid json"
+        mock_urlopen.return_value.__enter__.return_value = mock_response
+        
         update_available, latest_version, download_url = self.updater.check_for_updates()
         
         self.assertFalse(update_available)
@@ -125,21 +174,9 @@ class TestUpdaterService(unittest.TestCase):
     @patch('sbcman.services.updater.urllib.request.urlretrieve')
     def test_download_update_success(self, mock_urlretrieve):
         """Test successful update download."""
-        # Create temp directory
-        temp_dir = self.mock_paths.temp_dir / "updates"
-        temp_dir.mkdir(parents=True, exist_ok=True)
-        
-        # Mock successful download
         download_url = "https://example.com/test.whl"
-        expected_path = temp_dir / "test.whl"
         
-        # Create the file for the mock to find
-        expected_path.touch()
-        expected_path.write_text("dummy content")  # Add content so file is not empty
-        
-        # Mock urlretrieve to create the file
         def mock_urlretrieve_side_effect(url, filename):
-            # Create the file at the expected location
             file_path = Path(filename)
             file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.write_text("dummy content")
@@ -154,7 +191,6 @@ class TestUpdaterService(unittest.TestCase):
     @patch('sbcman.services.updater.urllib.request.urlretrieve')
     def test_download_update_failure(self, mock_urlretrieve):
         """Test failed update download."""
-        # Mock download failure
         import urllib.error
         mock_urlretrieve.side_effect = urllib.error.URLError("Download failed")
         
@@ -162,104 +198,59 @@ class TestUpdaterService(unittest.TestCase):
         
         self.assertIsNone(result)
 
-    @patch('sbcman.services.updater.subprocess.run')
-    def test_find_pip_command_success(self, mock_run):
-        """Test successful pip command detection."""
-        # Mock successful pip command
-        mock_run.return_value.returncode = 0
-        
-        result = self.updater._find_pip_command()
-        
-        self.assertEqual(result, "pip")
-
-    @patch('sbcman.services.updater.subprocess.run')
-    def test_find_pip_command_failure(self, mock_run):
-        """Test pip command detection failure."""
-        # Mock failed pip command
-        mock_run.side_effect = FileNotFoundError()
-        
-        result = self.updater._find_pip_command()
+    def test_download_update_invalid_url(self):
+        """Test download update with invalid URL."""
+        result = self.updater.download_update("ftp://example.com/test.whl")
         
         self.assertIsNone(result)
 
-    @patch('sbcman.services.updater.subprocess.run')
-    def test_install_with_pip_success(self, mock_run):
-        """Test successful pip installation."""
-        # Mock successful pip installation
-        mock_run.return_value.returncode = 0
-        mock_run.return_value.stderr = ""
+    @patch('sbcman.services.updater.WheelInstaller')
+    def test_install_update_success(self, mock_wheel_installer_class):
+        """Test successful update installation."""
+        mock_installer = Mock()
+        mock_installer.install_wheel.return_value = (True, "Installation successful")
+        mock_wheel_installer_class.return_value = mock_installer
         
-        with patch.object(self.updater, '_find_pip_command', return_value='pip'):
-            success, message = self.updater._install_with_pip(Path("test.whl"))
+        wheel_path = Path("test.whl")
+        success, message = self.updater.install_update(wheel_path)
         
         self.assertTrue(success)
         self.assertIn("successful", message.lower())
+        mock_installer.install_wheel.assert_called_once_with(wheel_path)
 
-    @patch('sbcman.services.updater.subprocess.run')
-    def test_install_with_pip_failure(self, mock_run):
-        """Test failed pip installation."""
-        # Mock failed pip installation
-        mock_run.return_value.returncode = 1
-        mock_run.return_value.stderr = "Installation failed"
+    @patch('sbcman.services.updater.WheelInstaller')
+    def test_install_update_failure(self, mock_wheel_installer_class):
+        """Test failed update installation."""
+        mock_installer = Mock()
+        mock_installer.install_wheel.return_value = (False, "Installation failed")
+        mock_wheel_installer_class.return_value = mock_installer
         
-        with patch.object(self.updater, '_find_pip_command', return_value='pip'):
-            success, message = self.updater._install_with_pip(Path("test.whl"))
+        wheel_path = Path("test.whl")
+        success, message = self.updater.install_update(wheel_path)
         
         self.assertFalse(success)
         self.assertIn("failed", message.lower())
+        mock_installer.install_wheel.assert_called_once_with(wheel_path)
 
-    @patch('sbcman.services.updater.zipfile.ZipFile')
-    def test_install_with_extraction_success(self, mock_zipfile):
-        """Test successful manual extraction installation."""
-        # Mock successful extraction
-        mock_zip = MagicMock()
-        mock_zipfile.return_value.__enter__.return_value = mock_zip
-        
-        # Create mock wheel path
-        wheel_path = Path("test.whl")
-        
-        success, message = self.updater._install_with_extraction(wheel_path)
-        
-        self.assertTrue(success)
-        self.assertIn("successful", message.lower())
-
-    @patch('sbcman.services.updater.zipfile.ZipFile')
-    def test_install_with_extraction_failure(self, mock_zipfile):
-        """Test failed manual extraction installation."""
-        # Mock extraction failure
-        import zipfile
-        mock_zipfile.side_effect = zipfile.BadZipFile("Invalid zip")
-        
-        wheel_path = Path("test.whl")
-        
-        success, message = self.updater._install_with_extraction(wheel_path)
-        
-        self.assertFalse(success)
-        self.assertIn("not a valid zip", message.lower())
-
-    def test_cleanup_temp_files(self):
-        """Test cleanup of temporary files."""
-        # Create some temp files
+    def test_cleanup_temp_files_success(self):
+        """Test successful cleanup of temporary files."""
         temp_dir = self.mock_paths.temp_dir / "updates"
         temp_dir.mkdir(parents=True, exist_ok=True)
         test_file = temp_dir / "test.txt"
         test_file.touch()
         
-        # Verify file exists
         self.assertTrue(test_file.exists())
         
-        # Cleanup
         self.updater.cleanup_temp_files()
         
-        # Verify cleanup (should not raise exception even if cleanup fails)
+        self.assertFalse(temp_dir.exists())
+
+    def test_cleanup_temp_files_no_directory(self):
+        """Test cleanup when temp directory doesn't exist."""
+        self.updater.cleanup_temp_files()
 
     def tearDown(self):
         """Clean up test fixtures."""
-        # Clean up temp directory
         import shutil
         if self.mock_paths.temp_dir.exists():
             shutil.rmtree(self.mock_paths.temp_dir)
-
-
-if __name__ == '__main__':
-    unittest.main()
