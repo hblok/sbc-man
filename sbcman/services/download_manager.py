@@ -45,16 +45,18 @@ class DownloadManager:
     updates via observer callbacks.
     """
 
-    def __init__(self, hw_config: dict, app_paths: paths.AppPaths, game_library=None):
+    def __init__(self, hw_config: dict, app_paths: paths.AppPaths, game_library=None, config=None):
         """
         Args:
             hw_config: Hardware configuration dictionary
             app_paths: Application paths instance
             game_library: Optional GameLibrary instance for persisting installed games
+            config: Optional ConfigManager instance for accessing install settings
         """
         self.hw_config = hw_config
         self.app_paths = app_paths
         self.game_library = game_library
+        self.config = config
         self.network = network.NetworkService()
         self.archive_extractor = archive_extractor.ArchiveExtractor()
 
@@ -148,8 +150,9 @@ class DownloadManager:
         logger.info(f"Extracting {archive_path}")
         suffix = archive_path.suffix.lower()
 
-        # TODO: Install as wheel if enabled by config option "install.install_as_pip"
-        if suffix == ".whl":
+        # Install as wheel if enabled by config option "install.install_as_pip"
+        install_as_pip = self._get_install_as_pip()
+        if suffix == ".whl" and install_as_pip:
             return self._install_wheel(archive_path, game)
 
         return self._extract_archive(archive_path, game)
@@ -176,9 +179,10 @@ class DownloadManager:
 
     def _extract_archive(self, archive_path: Path, game: game_pb2.Game) -> Path:
         """Extract archive and set up the game directory."""
-
-        # TODO: if install.add_portmaster_entry is true and install.portmaster_base_dir use that as the base dir. Otherwise, use self.app_paths.games_dir
-        install_dir = self.app_paths.games_dir / game.id
+        
+        # Use portmaster_base_dir if install.add_portmaster_entry is true
+        base_dir = self._get_install_base_dir()
+        install_dir = base_dir / game.id
         self.archive_extractor.extract(archive_path, install_dir)
 
         entry_point = install_dir / game.entry_point
@@ -197,6 +201,22 @@ class DownloadManager:
                 logger.error(f"Failed to persist game to library: {e}")
         else:
             logger.warning("No game_library provided - installed game will not be persisted")
+
+    def _get_install_as_pip(self) -> bool:
+        """Get install_as_pip setting from config."""
+        if self.config:
+            return self.config.get("install.install_as_pip", False)
+        return False
+
+    def _get_install_base_dir(self) -> Path:
+        """Get the base directory for game installation from config."""
+        if self.config:
+            add_portmaster_entry = self.config.get("install.add_portmaster_entry", False)
+            if add_portmaster_entry:
+                portmaster_base_dir = self.config.get("install.portmaster_base_dir")
+                if portmaster_base_dir:
+                    return Path(portmaster_base_dir)
+        return self.app_paths.games_dir
 
     def _persist_installed_game(self, game: game_pb2.Game) -> None:
         """Persist the installed game to local_games.json."""
