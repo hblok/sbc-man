@@ -172,3 +172,146 @@ class TestGameInstaller(unittest.TestCase):
         installer = GameInstaller(None, None)
         base_dir = installer._get_install_base_dir()
         self.assertEqual(base_dir, Path.cwd())
+
+    def test_get_portmaster_image_dir_with_config(self):
+        """Test getting portmaster image directory with config."""
+        config = Mock()
+        config.get.return_value = "/custom/images"
+        installer = GameInstaller(config, self.app_paths)
+        image_dir = installer._get_portmaster_image_dir()
+        self.assertEqual(image_dir, Path("/custom/images"))
+
+    def test_get_portmaster_image_dir_without_config(self):
+        """Test getting portmaster image directory without config."""
+        installer = GameInstaller(None, self.app_paths)
+        image_dir = installer._get_portmaster_image_dir()
+        self.assertIsNone(image_dir)
+
+    def test_copy_post_install_files_script_only(self):
+        """Test copying only script file."""
+        game = game_pb2.Game()
+        game.id = "test-game"
+        game.startScript = "run.sh"
+        
+        # Create a temporary install directory with script file
+        install_dir = self.temp_dir / "install"
+        install_dir.mkdir()
+        script_file = install_dir / "run.sh"
+        script_file.write_text("#!/bin/bash\necho test")
+        
+        # Copy the file
+        self.game_installer._copy_post_install_files(install_dir, game)
+        
+        # Verify script was copied to games_dir
+        dest_script = self.games_dir / "run.sh"
+        self.assertTrue(dest_script.exists())
+        self.assertEqual(dest_script.read_text(), "#!/bin/bash\necho test")
+
+    def test_copy_post_install_files_icon_only(self):
+        """Test copying only icon file."""
+        game = game_pb2.Game()
+        game.id = "test-game"
+        game.icon = "icon.png"
+        
+        # Create a temporary install directory with icon file
+        install_dir = self.temp_dir / "install"
+        install_dir.mkdir()
+        icon_file = install_dir / "icon.png"
+        icon_file.write_text("fake png content")
+        
+        # Create image directory in config
+        image_dir = self.temp_dir / "images"
+        image_dir.mkdir()
+        config = Mock()
+        config.get.side_effect = lambda key, default=None: {
+            "install.portmaster_image_dir": str(image_dir)
+        }.get(key, default)
+        
+        installer = GameInstaller(config, self.app_paths)
+        installer._copy_post_install_files(install_dir, game)
+        
+        # Verify icon was copied to image directory
+        dest_icon = image_dir / "icon.png"
+        self.assertTrue(dest_icon.exists())
+        self.assertEqual(dest_icon.read_text(), "fake png content")
+
+    def test_copy_post_install_files_both(self):
+        """Test copying both script and icon files."""
+        game = game_pb2.Game()
+        game.id = "test-game"
+        game.startScript = "run.sh"
+        game.icon = "icon.png"
+        
+        # Create a temporary install directory with both files
+        install_dir = self.temp_dir / "install"
+        install_dir.mkdir()
+        (install_dir / "run.sh").write_text("#!/bin/bash\necho test")
+        (install_dir / "icon.png").write_text("fake png content")
+        
+        # Create image directory in config
+        image_dir = self.temp_dir / "images"
+        image_dir.mkdir()
+        config = Mock()
+        config.get.side_effect = lambda key, default=None: {
+            "install.portmaster_image_dir": str(image_dir)
+        }.get(key, default)
+        
+        installer = GameInstaller(config, self.app_paths)
+        installer._copy_post_install_files(install_dir, game)
+        
+        # Verify both files were copied
+        dest_script = self.games_dir / "run.sh"
+        dest_icon = image_dir / "icon.png"
+        self.assertTrue(dest_script.exists())
+        self.assertTrue(dest_icon.exists())
+
+    def test_copy_post_install_files_missing_files(self):
+        """Test copying post-install files when source files don't exist."""
+        game = game_pb2.Game()
+        game.id = "test-game"
+        game.startScript = "run.sh"
+        game.icon = "icon.png"
+        
+        # Create empty install directory
+        install_dir = self.temp_dir / "install"
+        install_dir.mkdir()
+        
+        # Create image directory in config
+        image_dir = self.temp_dir / "images"
+        image_dir.mkdir()
+        config = Mock()
+        config.get.side_effect = lambda key, default=None: {
+            "install.portmaster_image_dir": str(image_dir)
+        }.get(key, default)
+        
+        installer = GameInstaller(config, self.app_paths)
+        # Should not raise exception, just log warnings
+        installer._copy_post_install_files(install_dir, game)
+
+    def test_copy_post_install_files_no_config(self):
+        """Test copying icon when portmaster image dir is not configured."""
+        game = game_pb2.Game()
+        game.id = "test-game"
+        game.icon = "icon.png"
+        
+        # Create a temporary install directory with icon file
+        install_dir = self.temp_dir / "install"
+        install_dir.mkdir()
+        (install_dir / "icon.png").write_text("fake png content")
+        
+        # No config for image directory
+        installer = GameInstaller(None, self.app_paths)
+        # Should not raise exception, just log warning
+        installer._copy_post_install_files(install_dir, game)
+
+    def test_copy_post_install_files_none_values(self):
+        """Test copying when script and icon are None."""
+        game = game_pb2.Game()
+        game.id = "test-game"
+        
+        # Create a temporary install directory
+        install_dir = self.temp_dir / "install"
+        install_dir.mkdir()
+        
+        # Should not raise exception, should return early
+        self.game_installer._copy_post_install_files(install_dir, game)
