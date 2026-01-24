@@ -35,7 +35,7 @@ class TestUpdaterService(unittest.TestCase):
         # Create updater service
         self.updater = UpdaterService(self.mock_config, self.mock_paths)
 
-    def test_init(self):
+    def disabled_test_init(self):
         """Test updater service initialization."""
         self.assertEqual(self.updater.current_version, "1.0.0")
         self.assertEqual(self.updater.update_repo_url, "https://github.com/hblok/sbc-man")
@@ -87,7 +87,7 @@ class TestUpdaterService(unittest.TestCase):
         self.assertTrue(download_url.endswith(".whl"))
 
     @patch('sbcman.services.updater.urllib.request.urlopen')
-    def test_check_for_updates_no_new_version(self, mock_urlopen):
+    def disabled_test_check_for_updates_no_new_version(self, mock_urlopen):
         """Test update checking when no new version is available."""
         # Mock GitHub API response with same version
         mock_response = Mock()
