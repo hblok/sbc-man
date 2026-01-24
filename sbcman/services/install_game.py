@@ -9,6 +9,7 @@ including wheel files and compressed archives.
 """
 
 import logging
+import shutil
 import site
 from pathlib import Path
 from typing import Optional
@@ -49,19 +50,18 @@ class GameInstaller:
         """
         logger.info(f"Extracting {archive_path}")
         suffix = archive_path.suffix.lower()
-        script = game.startScript
-        icon = game.icon
 
         # Install as wheel if enabled by config option "install.install_as_pip"
         install_as_pip = self._get_install_as_pip()
         if suffix == ".whl" and install_as_pip:
-            return self._install_wheel(archive_path, game)
-            pass
+            install_dir = self._install_wheel(archive_path, game)
+        else:
+            install_dir = self._extract_archive(archive_path, game)
 
-        return self._extract_archive(archive_path, game)
+        # Copy post-install files (script and icon)
+        self._copy_post_install_files(install_dir, game)
 
-        # TODO: copy in .sh {script} and image file {icon} to _get_install_base_dir()
-    
+        return install_dir
 
     def _install_wheel(self, wheel_path: Path, game: game_pb2.Game) -> Path:
         """Install a wheel file and return the install path.
@@ -141,3 +141,62 @@ class GameInstaller:
         
         # Fallback to current directory if no paths are available
         return Path.cwd()
+
+    def _get_portmaster_image_dir(self) -> Optional[Path]:
+        """Get the portmaster image directory from config.
+
+        Returns:
+            Optional[Path]: The portmaster image directory, or None if not configured
+        """
+        if self.config:
+            portmaster_image_dir = self.config.get("install.portmaster_image_dir")
+            if portmaster_image_dir:
+                return Path(portmaster_image_dir)
+        return None
+
+    def _copy_post_install_files(self, install_dir: Path, game: game_pb2.Game) -> None:
+        """Copy script and icon files to their respective destinations after installation.
+
+        Args:
+            install_dir: The installation directory where files are located
+            game: Game protobuf object containing metadata about script and icon files
+        """
+        script = game.startScript
+        icon = game.icon
+
+        if not script and not icon:
+            return
+
+        # Copy script file to install base directory
+        if script:
+            base_dir = self._get_install_base_dir()
+            script_source = install_dir / script
+            script_dest = base_dir / script
+
+            if script_source.exists():
+                try:
+                    shutil.copy2(script_source, script_dest)
+                    logger.info(f"Copied script {script} to {script_dest}")
+                except Exception as e:
+                    logger.error(f"Failed to copy script {script}: {e}")
+            else:
+                logger.warning(f"Script file not found: {script_source}")
+
+        # Copy icon file to portmaster image directory
+        if icon:
+            image_dir = self._get_portmaster_image_dir()
+            icon_source = install_dir / icon
+
+            if image_dir:
+                icon_dest = image_dir / icon
+
+                if icon_source.exists():
+                    try:
+                        shutil.copy2(icon_source, icon_dest)
+                        logger.info(f"Copied icon {icon} to {icon_dest}")
+                    except Exception as e:
+                        logger.error(f"Failed to copy icon {icon}: {e}")
+                else:
+                    logger.warning(f"Icon file not found: {icon_source}")
+            else:
+                logger.warning("Portmaster image directory not configured, skipping icon copy")
