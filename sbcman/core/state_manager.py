@@ -12,7 +12,9 @@ import logging
 from typing import Dict, Optional, List
 
 import pygame
-from sbcman.path.paths import AppPaths
+
+from sbcman.path import paths
+from sbcman.views import widgets
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class StateManager:
         config: "ConfigManager",
         game_library: "GameLibrary",
         input_handler: "InputHandler",
-        app_paths: AppPaths,
+        app_paths: paths.AppPaths,
     ):
         """
         Initialize state manager with dependencies.
@@ -58,6 +60,9 @@ class StateManager:
         
         # Store the selected game for the playing state
         self.selected_game = None
+        
+        # Version overlay for all states
+        self._version_overlay = widgets.VersionOverlay()
 
         # Initialize all states
         self._initialize_states()
@@ -208,3 +213,6 @@ class StateManager:
         # Render current state
         if self.current_state:
             self.current_state.render(surface)
+
+        # Render version overlay on top of all states
+        self._version_overlay.render(surface)
