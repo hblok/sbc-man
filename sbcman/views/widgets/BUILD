@@ -6,5 +6,5 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "widgets",
     srcs = glob(["*.py"]),
-    deps = [],
+    deps = ["//sbcman:version"],
 )

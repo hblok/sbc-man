@@ -39,6 +39,11 @@ filegroup(
 )
 
 py_library(
+   name = "version",
+   srcs = ["version.py"]
+)
+
+py_library(
     name = "sbcman",
     srcs = ["main.py"],
     deps = [
