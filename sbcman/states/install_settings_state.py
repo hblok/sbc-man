@@ -94,7 +94,7 @@ class InstallSettingsState(BaseState):
         self.config.set("install.add_portmaster_entry", self.add_portmaster_entry)
         self.config.set("install.portmaster_base_dir", self.portmaster_base_dir)
         self.config.set("install.portmaster_image_dir", self.portmaster_image_dir)
-        logger.info("Install settings saved")
+        self.config.save()
 
     def _setup_adaptive_scrollable_list(self) -> None:
         """

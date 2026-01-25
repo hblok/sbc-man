@@ -43,7 +43,7 @@ class DownloadManager:
     updates via observer callbacks.
     """
 
-    def __init__(self, hw_config: dict, app_paths: paths.AppPaths, game_library=None, config=None):
+    def __init__(self, hw_config: dict, app_paths: paths.AppPaths, game_library, config):
         """
         Args:
             hw_config: Hardware configuration dictionary

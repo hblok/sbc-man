@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 class GameInstaller:
     """Handles game installation from downloaded archives."""
 
-    def __init__(self, config=None, app_paths=None):
+    def __init__(self, config, app_paths):
         """
         Args:
             config: Optional ConfigManager instance for accessing install settings
@@ -32,7 +32,7 @@ class GameInstaller:
         """
         self.config = config
         self.app_paths = app_paths
-        self.archive_extractor = archive_extractor.ArchiveExtractor()
+        self.archive_extractor : archive_extractor.ArchiveExtractor = archive_extractor.ArchiveExtractor()
         logger.info("GameInstaller initialized")
 
     def install_game(self, archive_path: Path, game: game_pb2.Game) -> Path:
@@ -51,15 +51,24 @@ class GameInstaller:
         logger.info(f"Extracting {archive_path}")
         suffix = archive_path.suffix.lower()
 
-        # Install as wheel if enabled by config option "install.install_as_pip"
-        install_as_pip = self._get_install_as_pip()
+        install_as_pip = self.config.get("install.install_as_pip", False)
+        extract_to_portmaster = self.config.get("install.add_portmaster_entry", False)
+        logging.info(f"install_as_pip={install_as_pip}, extract_to_portmaster={extract_to_portmaster}")
+        install_dir = None
+        
         if suffix == ".whl" and install_as_pip:
-            install_dir = self._install_wheel(archive_path, game)
-        else:
+            logger.info("Install as pip wheel")
+            install_base_dir = self._install_wheel(archive_path, game)
+            install_dir = install_base_dir / "maxbloks" / game.id
+        elif extract_to_portmaster:
+            logger.info("Extract as zip")
             install_dir = self._extract_archive(archive_path, game)
 
         # Copy post-install files (script and icon)
-        self._copy_post_install_files(install_dir, game)
+        if install_dir:
+            self._copy_post_install_files(install_dir, game)
+        else:
+            logging.warning("Game not installed")
 
         return install_dir
 
@@ -113,16 +122,6 @@ class GameInstaller:
 
         return install_dir
 
-    def _get_install_as_pip(self) -> bool:
-        """Get install_as_pip setting from config.
-
-        Returns:
-            bool: True if wheels should be installed as pip packages
-        """
-        if self.config:
-            return self.config.get("install.install_as_pip", False)
-        return False
-
     def _get_portmaster_base_dir(self) -> Path:
         """Get the base directory for game installation from config.
 
@@ -130,17 +129,18 @@ class GameInstaller:
             Path: The base directory for game installation
         """
         if self.config:
-            add_portmaster_entry = self.config.get("install.add_portmaster_entry", False)
-            if add_portmaster_entry:
-                portmaster_base_dir = self.config.get("install.portmaster_base_dir")
-                if portmaster_base_dir:
-                    return Path(portmaster_base_dir)
-        
+            portmaster_base_dir = self.config.get("install.portmaster_base_dir")
+            if portmaster_base_dir:
+                return Path(portmaster_base_dir)
+
+        logger.warning("portmaster directory not found")
         if self.app_paths:
             return self.app_paths.games_dir
         
         # Fallback to current directory if no paths are available
-        return Path.cwd()
+        cur = Path.cwd()
+        logger.warning(f"No destination directory found, using {cur}")
+        return cur
 
     def _get_portmaster_image_dir(self) -> Optional[Path]:
         """Get the portmaster image directory from config.

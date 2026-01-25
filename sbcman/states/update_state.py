@@ -365,7 +365,6 @@ class UpdateState(BaseState):
 
     def render(self, surface: pygame.Surface) -> None:
         """Render the update screen with adaptive layout."""
-        print("render")
         surface.fill((20, 20, 30))
         
         # Get actual surface dimensions

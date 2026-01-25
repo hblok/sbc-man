@@ -45,6 +45,8 @@ class ArchiveExtractor:
             ValueError: If archive format is unsupported
             Exception: If extraction fails
         """
+        logging.info(f"Extract {archive_path} to {dest_dir}")
+        
         dest_dir.mkdir(parents=True, exist_ok=True)
         suffix = archive_path.suffix.lower()
 

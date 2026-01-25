@@ -57,7 +57,7 @@ class TestDownloadManager(unittest.TestCase):
         }
 
         app_paths = AppPaths(self.temp_dir, self.temp_dir)
-        self.download_manager = DownloadManager(self.hw_config, app_paths)
+        self.download_manager = DownloadManager(self.hw_config, app_paths, None, None)
         
     def tearDown(self):
         """Clean up test fixtures."""
@@ -94,7 +94,7 @@ class TestDownloadManager(unittest.TestCase):
         
         # Reinitialize the download manager with the mocked network service
         app_paths = AppPaths(self.temp_dir, self.temp_dir)
-        self.download_manager = DownloadManager(self.hw_config, app_paths)
+        self.download_manager = DownloadManager(self.hw_config, app_paths, None, None)
         
         # Create a test game
         game = game_pb2.Game()

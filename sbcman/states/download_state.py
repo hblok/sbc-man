@@ -29,7 +29,8 @@ class DownloadState(BaseState, DownloadObserver):
     def on_enter(self, previous_state: Optional[BaseState]) -> None:
         """Initialize download state."""
         logger.info("Entered download state")
-        self.download_manager = DownloadManager(self.hw_config, self.app_paths, self.game_library)
+        self.download_manager = DownloadManager(
+            self.hw_config, self.app_paths, self.game_library, self.config)
         self.available_games = self.game_library.get_available_games()
         self.selected_index = 0
         self.downloading = False
