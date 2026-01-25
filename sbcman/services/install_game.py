@@ -103,7 +103,7 @@ class GameInstaller:
         Returns:
             Path: The installation directory path
         """
-        base_dir = self._get_install_base_dir()
+        base_dir = self._get_portmaster_base_dir()
         install_dir = base_dir / game.id
         self.archive_extractor.extract(archive_path, install_dir)
 
@@ -123,7 +123,7 @@ class GameInstaller:
             return self.config.get("install.install_as_pip", False)
         return False
 
-    def _get_install_base_dir(self) -> Path:
+    def _get_portmaster_base_dir(self) -> Path:
         """Get the base directory for game installation from config.
 
         Returns:
@@ -169,7 +169,7 @@ class GameInstaller:
 
         # Copy script file to install base directory
         if script:
-            base_dir = self._get_install_base_dir()
+            base_dir = self._get_portmaster_base_dir()
             script_source = install_dir / script
             script_dest = base_dir / script
 
@@ -183,6 +183,8 @@ class GameInstaller:
                 logger.warning(f"Script file not found: {script_source}")
 
         # Copy icon file to portmaster image directory
+
+        # TODO: Restructure the if-else to pre-checks instead
         if icon:
             image_dir = self._get_portmaster_image_dir()
             icon_source = install_dir / icon
