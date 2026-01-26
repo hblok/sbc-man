@@ -115,6 +115,8 @@ class Application:
         resolution = display_config.get("resolution", [1280, 720])
         fullscreen = display_config.get("fullscreen", False)
         fps_target = display_config.get("fps_target", 60)
+
+        logger.info(f"resolution: {resolution}")
         
         # Create display
         flags = pygame.FULLSCREEN if fullscreen else 0
@@ -129,6 +131,9 @@ class Application:
         self.clock = pygame.time.Clock()
         
         logger.info(f"Display initialized: {resolution} @ {fps_target} FPS")
+        logger.info(str(pygame.display.get_surface().get_flags()))
+        logger.info(str(pygame.display.Info()))
+        
 
     def _initialize_components(self):
         logger.info("Initializing application components")
