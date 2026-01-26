@@ -21,6 +21,7 @@ import traceback
 from ..services.config_manager import ConfigManager
 from ..services.wheel_installer import WheelInstaller
 from sbcman.path.paths import AppPaths
+from sbcman import version
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +44,7 @@ class UpdaterService:
         """
         self.config_manager = config_manager
         self.app_paths = app_paths
-        self.current_version = ""
+        self.current_version = version.VERSION
         
         # Get update repository URL from config (default to sbc-man GitHub)
         self.update_repo_url = config_manager.get("update.repository_url")
