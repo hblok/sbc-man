@@ -9,6 +9,7 @@ py_library(
     name = "services",
     srcs = glob(["*.py"]),
     deps = [
+    	"//sbcman:version",    
     	"//sbcman/path",
 	"//sbcman/proto:game_py_pb2",
         "@sbc_man_pip_deps//pygame_ce",
