@@ -30,7 +30,7 @@ class TestUpdateState(unittest.TestCase):
         self.state_manager.app_paths = Mock()
 
         # Patch ScrollableList to avoid pygame dependencies
-        with patch('sbcman.states.update_state.ScrollableList') as mock_scrollable:
+        with patch('sbcman.views.widgets.ScrollableList') as mock_scrollable:
             mock_list_instance = Mock()
             mock_scrollable.return_value = mock_list_instance
             self.state = UpdateState(self.state_manager)
@@ -44,11 +44,11 @@ class TestUpdateState(unittest.TestCase):
         self.assertIsNone(self.state.download_url)
         self.assertEqual(self.state.message, "Checking for updates...")
 
-    @patch('sbcman.states.update_state.UpdaterService')
+    @patch('sbcman.services.updater.UpdaterService')
     def test_on_enter_initializes_scrollable_list(self, mock_updater_service):
         """Test on_enter sets up adaptive scrollable list."""
         # Create new state to test on_enter
-        with patch('sbcman.states.update_state.ScrollableList') as mock_scrollable:
+        with patch('sbcman.views.widgets.ScrollableList') as mock_scrollable:
             mock_list_instance = Mock()
             mock_scrollable.return_value = mock_list_instance
             state = UpdateState(self.state_manager)
@@ -59,11 +59,11 @@ class TestUpdateState(unittest.TestCase):
             # Verify scrollable list was set up
             self.assertTrue(hasattr(state, 'options_list'))
 
-    @patch('sbcman.states.update_state.UpdaterService')
+    @patch('sbcman.services.updater.UpdaterService')
     def test_on_enter_starts_update_check(self, mock_updater_service):
         """Test on_enter starts update check."""
         # Create new state to test on_enter
-        with patch('sbcman.states.update_state.ScrollableList') as mock_scrollable:
+        with patch('sbcman.views.widgets.ScrollableList') as mock_scrollable:
             mock_list_instance = Mock()
             mock_scrollable.return_value = mock_list_instance
             state = UpdateState(self.state_manager)
@@ -279,7 +279,7 @@ class TestUpdateState(unittest.TestCase):
         # Should not raise error
         self.state._update_options_list()
 
-    @patch('sbcman.states.update_state.ScrollableList')
+    @patch('sbcman.views.widgets.ScrollableList')
     def test_setup_adaptive_scrollable_list(self, mock_scrollable):
         """Test setting up adaptive scrollable list."""
         mock_list_instance = Mock()
