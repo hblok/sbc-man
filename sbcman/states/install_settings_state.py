@@ -10,7 +10,7 @@ from typing import Optional, List
 
 import pygame
 
-from .base_state import BaseState
+from . import base_state
 from ..path import device
 from ..services import portmaster
 from ..views import widgets
@@ -18,10 +18,10 @@ from ..views import widgets
 logger = logging.getLogger(__name__)
 
 
-class InstallSettingsState(BaseState):
+class InstallSettingsState(base_state.BaseState):
     """Install settings configuration state with adaptive layout."""
 
-    def on_enter(self, previous_state: Optional[BaseState]) -> None:
+    def on_enter(self, previous_state: Optional[base_state.BaseState]) -> None:
         logger.info("Entered install settings state")
         self._load_settings()
         self._setup_adaptive_scrollable_list()
@@ -76,17 +76,15 @@ class InstallSettingsState(BaseState):
         self.config.save()
 
     def _setup_adaptive_scrollable_list(self) -> None:
-        screen_width = 640
-        screen_height = 480
+        screen_width = base_state.DEFAULT_SCREEN_WIDTH
+        screen_height = base_state.DEFAULT_SCREEN_HEIGHT
 
-        title_height = 90
-        bottom_padding = 70
-        available_height = screen_height - title_height - bottom_padding
+        title_height = base_state.TITLE_HEIGHT_MEDIUM
+        bottom_padding = base_state.BOTTOM_PADDING_MEDIUM
+        available_height = self._calc_available_height(screen_height, title_height, bottom_padding)
 
-        max_width = min(560, screen_width - 40)
-        list_width = max(400, max_width)
-
-        list_x = (screen_width - list_width) // 2
+        list_width = self._calc_list_width(screen_width)
+        list_x = self._calc_list_x(screen_width, list_width)
         list_y = title_height
 
         self.settings_list = widgets.ScrollableList(
@@ -107,13 +105,12 @@ class InstallSettingsState(BaseState):
                 surface_height == self._last_screen_height):
             return
 
-        title_height = 90
-        bottom_padding = 70
-        available_height = surface_height - title_height - bottom_padding
+        title_height = base_state.TITLE_HEIGHT_MEDIUM
+        bottom_padding = base_state.BOTTOM_PADDING_MEDIUM
+        available_height = self._calc_available_height(surface_height, title_height, bottom_padding)
 
-        max_width = min(560, surface_width - 40)
-        list_width = max(400, max_width)
-        list_x = (surface_width - list_width) // 2
+        list_width = self._calc_list_width(surface_width)
+        list_x = self._calc_list_x(surface_width, list_width)
         list_y = title_height
 
         self.settings_list.x = list_x

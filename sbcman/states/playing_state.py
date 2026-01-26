@@ -9,16 +9,16 @@ from typing import Optional, List
 
 import pygame
 
-from .base_state import BaseState, INSTRUCTION_COLOR
+from . import base_state
 from ..services import process_launcher
 
 logger = logging.getLogger(__name__)
 
 
-class PlayingState(BaseState):
+class PlayingState(base_state.BaseState):
     """Game playing state - launches and monitors a game process."""
 
-    def on_enter(self, previous_state: Optional[BaseState]) -> None:
+    def on_enter(self, previous_state: Optional[base_state.BaseState]) -> None:
         logger.info("Entered playing state")
 
         game = self.state_manager.selected_game
@@ -91,5 +91,5 @@ class PlayingState(BaseState):
 
         self._render_centered_text(surface, "Press ESC or Cancel to return",
                                    y_position=surface_height // 2 + 50,
-                                   color=INSTRUCTION_COLOR,
+                                   color=base_state.INSTRUCTION_COLOR,
                                    font_size=32)

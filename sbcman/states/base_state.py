@@ -18,6 +18,31 @@ TEXT_COLOR = (255, 255, 255)
 SUBTITLE_COLOR = (180, 180, 180)
 INSTRUCTION_COLOR = (150, 150, 150)
 
+# Default screen dimensions
+DEFAULT_SCREEN_WIDTH = 640
+DEFAULT_SCREEN_HEIGHT = 480
+
+# Layout constants for title area
+TITLE_HEIGHT_SMALL = 80      # game_list, download
+TITLE_HEIGHT_MEDIUM = 90     # settings, install_settings
+TITLE_HEIGHT_LARGE = 120     # menu
+
+# Layout constants for bottom padding
+BOTTOM_PADDING_SMALL = 60    # game_list, download
+BOTTOM_PADDING_MEDIUM = 70   # settings, install_settings
+BOTTOM_PADDING_LARGE = 80    # menu, update
+
+# Layout constants for list widths
+LIST_MIN_WIDTH = 400
+LIST_MIN_WIDTH_SMALL = 300   # update options
+LIST_MAX_WIDTH_STANDARD = 560
+LIST_MAX_WIDTH_LARGE = 600
+LIST_MARGIN_STANDARD = 40
+LIST_MARGIN_LARGE = 80
+
+# Progress area
+PROGRESS_AREA_HEIGHT = 120
+
 
 class BaseState(ABC):
     """Abstract base class for application states."""
@@ -33,22 +58,59 @@ class BaseState(ABC):
 
     @abstractmethod
     def on_enter(self, previous_state: Optional["BaseState"]) -> None:
+        """
+        Called when entering this state.
+
+        Use this to initialize state-specific resources and setup.
+
+        Args:
+            previous_state: The state we're transitioning from, or None
+        """
         pass
 
     @abstractmethod
     def on_exit(self) -> None:
+        """
+        Called when exiting this state.
+
+        Use this to cleanup state-specific resources.
+        """
         pass
 
     @abstractmethod
     def update(self, dt: float) -> None:
+        """
+        Update state logic.
+
+        Called every frame to update state-specific logic.
+
+        Args:
+            dt: Delta time in seconds since last update
+        """
         pass
 
     @abstractmethod
     def handle_events(self, events: List[pygame.event.Event]) -> None:
+        """
+        Handle pygame events.
+
+        Process input events and update state accordingly.
+
+        Args:
+            events: List of pygame events to process
+        """
         pass
 
     @abstractmethod
     def render(self, surface: pygame.Surface) -> None:
+        """
+        Render state to surface.
+
+        Draw all state-specific UI elements.
+
+        Args:
+            surface: Surface to render to
+        """
         pass
 
     def _handle_exit_input(self, events: List[pygame.event.Event]) -> bool:
@@ -128,3 +190,23 @@ class BaseState(ABC):
         text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect(center=(surface.get_width() // 2, y_position))
         surface.blit(text_surface, text_rect)
+
+    # -------------------------------------------------------------------------
+    # Common Layout Calculation Helper Methods
+    # -------------------------------------------------------------------------
+
+    def _calc_list_width(self, surface_width: int,
+                         max_width: int = LIST_MAX_WIDTH_STANDARD,
+                         margin: int = LIST_MARGIN_STANDARD,
+                         min_width: int = LIST_MIN_WIDTH) -> int:
+        """Calculate adaptive list width based on surface width."""
+        return max(min_width, min(max_width, surface_width - margin))
+
+    def _calc_list_x(self, surface_width: int, list_width: int) -> int:
+        """Calculate centered x position for a list."""
+        return (surface_width - list_width) // 2
+
+    def _calc_available_height(self, surface_height: int, title_height: int,
+                               bottom_padding: int, extra_height: int = 0) -> int:
+        """Calculate available height for content area."""
+        return surface_height - title_height - bottom_padding - extra_height

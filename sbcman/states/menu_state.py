@@ -8,16 +8,16 @@ from typing import Optional, List
 
 import pygame
 
-from .base_state import BaseState
+from . import base_state
 from ..views import widgets
 
 logger = logging.getLogger(__name__)
 
 
-class MenuState(BaseState):
+class MenuState(base_state.BaseState):
     """Main menu state with adaptive layout."""
 
-    def on_enter(self, previous_state: Optional[BaseState]) -> None:
+    def on_enter(self, previous_state: Optional[base_state.BaseState]) -> None:
         logger.info("Entered menu state")
         self.selected_option = 0
         self._setup_adaptive_scrollable_list()
@@ -44,17 +44,17 @@ class MenuState(BaseState):
                 self._select_option()
 
     def _setup_adaptive_scrollable_list(self) -> None:
-        screen_width = 640
-        screen_height = 480
+        screen_width = base_state.DEFAULT_SCREEN_WIDTH
+        screen_height = base_state.DEFAULT_SCREEN_HEIGHT
 
-        title_height = 120
-        bottom_padding = 80
-        available_height = screen_height - title_height - bottom_padding
+        title_height = base_state.TITLE_HEIGHT_LARGE
+        bottom_padding = base_state.BOTTOM_PADDING_LARGE
+        available_height = self._calc_available_height(screen_height, title_height, bottom_padding)
 
-        max_width = min(600, screen_width - 80)
-        list_width = max(400, max_width)
-
-        list_x = (screen_width - list_width) // 2
+        list_width = self._calc_list_width(screen_width,
+                                           max_width=base_state.LIST_MAX_WIDTH_LARGE,
+                                           margin=base_state.LIST_MARGIN_LARGE)
+        list_x = self._calc_list_x(screen_width, list_width)
         list_y = title_height
 
         self.menu_list = widgets.ScrollableList(
@@ -75,13 +75,14 @@ class MenuState(BaseState):
                 surface_height == self._last_screen_height):
             return
 
-        title_height = 120
-        bottom_padding = 80
-        available_height = surface_height - title_height - bottom_padding
+        title_height = base_state.TITLE_HEIGHT_LARGE
+        bottom_padding = base_state.BOTTOM_PADDING_LARGE
+        available_height = self._calc_available_height(surface_height, title_height, bottom_padding)
 
-        max_width = min(600, surface_width - 80)
-        list_width = max(400, max_width)
-        list_x = (surface_width - list_width) // 2
+        list_width = self._calc_list_width(surface_width,
+                                           max_width=base_state.LIST_MAX_WIDTH_LARGE,
+                                           margin=base_state.LIST_MARGIN_LARGE)
+        list_x = self._calc_list_x(surface_width, list_width)
         list_y = title_height
 
         self.menu_list.x = list_x

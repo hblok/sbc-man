@@ -9,14 +9,14 @@ from typing import Optional, List
 
 import pygame
 
-from .base_state import BaseState
+from . import base_state
 from ..services import updater
 from ..views import widgets
 
 logger = logging.getLogger(__name__)
 
 
-class UpdateState(BaseState):
+class UpdateState(base_state.BaseState):
     """Update state for handling self-updating functionality with adaptive layout."""
 
     def __init__(self, state_manager: "StateManager"):
@@ -35,10 +35,10 @@ class UpdateState(BaseState):
         self.message_lines = []
         self.message_scroll_offset = 0
 
-        self._last_surface_width = 640
-        self._last_surface_height = 480
+        self._last_surface_width = base_state.DEFAULT_SCREEN_WIDTH
+        self._last_surface_height = base_state.DEFAULT_SCREEN_HEIGHT
 
-    def on_enter(self, previous_state: Optional[BaseState]) -> None:
+    def on_enter(self, previous_state: Optional[base_state.BaseState]) -> None:
         logger.info("Entered update state")
         self._setup_adaptive_scrollable_list()
         self._start_update_check()
@@ -61,17 +61,17 @@ class UpdateState(BaseState):
             self._handle_completion_stage_events(events)
 
     def _setup_adaptive_scrollable_list(self) -> None:
-        surface_width = 640
-        surface_height = 480
+        surface_width = base_state.DEFAULT_SCREEN_WIDTH
+        surface_height = base_state.DEFAULT_SCREEN_HEIGHT
 
-        bottom_padding = 80
+        bottom_padding = base_state.BOTTOM_PADDING_LARGE
         available_height = surface_height - bottom_padding
 
         options_height = min(120, available_height // 3)
 
-        max_width = min(500, surface_width - 80)
-        options_width = max(300, max_width)
-        options_x = (surface_width - options_width) // 2
+        max_width = min(500, surface_width - base_state.LIST_MARGIN_LARGE)
+        options_width = max(base_state.LIST_MIN_WIDTH_SMALL, max_width)
+        options_x = self._calc_list_x(surface_width, options_width)
         options_y = available_height - options_height
 
         self.options_list = widgets.ScrollableList(
@@ -92,13 +92,13 @@ class UpdateState(BaseState):
                 surface_height == self._last_surface_height):
             return
 
-        bottom_padding = 80
+        bottom_padding = base_state.BOTTOM_PADDING_LARGE
         available_height = surface_height - bottom_padding
         options_height = min(120, available_height // 3)
 
-        max_width = min(500, surface_width - 80)
-        options_width = max(300, max_width)
-        options_x = (surface_width - options_width) // 2
+        max_width = min(500, surface_width - base_state.LIST_MARGIN_LARGE)
+        options_width = max(base_state.LIST_MIN_WIDTH_SMALL, max_width)
+        options_x = self._calc_list_x(surface_width, options_width)
         options_y = available_height - options_height
 
         self.options_list.x = options_x
