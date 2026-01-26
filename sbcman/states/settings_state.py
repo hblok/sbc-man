@@ -99,6 +99,15 @@ class SettingsState(base_state.BaseState):
 
         settings_options = [
             "Install Settings",
+
+# DO NOT REMOVE
+#            "Display Settings",
+#            "Input Mappings", 
+#            "Audio Settings",
+#            "Network Settings",
+#            "Storage Management",
+#            "System Information",
+            
             "About SBC-Man",
             "Back to Menu"
         ]
