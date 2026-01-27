@@ -285,7 +285,15 @@ class ScrollableList:
                 text_x += self.icon_size + self.padding
             
             # Render text (truncate if too long)
-            max_text_width = self.width - text_x - self.x - 2 * self.padding
+            # Calculate remaining space for text (account for status indicator if present)
+            remaining_width = self.width - text_x - 2 * self.padding
+            if self.status_indicators and i < len(self.status_indicators):
+                status_text = self.status_indicators[i]
+                if status_text:
+                    status_surface = self.status_font.render(status_text, True, text_color)
+                    remaining_width -= status_surface.get_width() + self.padding
+            
+            max_text_width = max(remaining_width, 10)  # Ensure at least 10 pixels
             rendered_text = self._truncate_text(item_text, max_text_width)
             text_surface = self.font.render(rendered_text, True, text_color)
             surface.blit(text_surface, (text_x, current_y + 5))
