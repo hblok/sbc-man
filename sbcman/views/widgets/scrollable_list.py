@@ -21,6 +21,7 @@ class ScrollableList:
     
     Automatically detects if content fits within available space and hides
     scroll indicators when not needed. Adapts to different screen sizes.
+    Supports optional icons and status indicators for each item.
     """
     
     def __init__(self, 
@@ -30,7 +31,9 @@ class ScrollableList:
                  height: int,
                  item_height: int = 40,
                  font_size: int = 32,
-                 padding: int = 10):
+                 padding: int = 10,
+                 show_icons: bool = False,
+                 icon_size: int = 32):
         """
         Initialize the adaptive scrollable list.
         
@@ -42,6 +45,8 @@ class ScrollableList:
             item_height: Height of each list item
             font_size: Font size for text rendering
             padding: Internal padding
+            show_icons: Whether to display icons for items
+            icon_size: Size of icons in pixels
         """
         self.x = x
         self.y = y
@@ -52,6 +57,8 @@ class ScrollableList:
         self.item_height = item_height
         self.font_size = font_size
         self.padding = padding
+        self.show_icons = show_icons
+        self.icon_size = icon_size
         
         # Scrolling state
         self.items: List[str] = []
@@ -73,23 +80,45 @@ class ScrollableList:
         
         # Fonts
         self.font = pygame.font.Font(None, font_size)
+        self.status_font = pygame.font.Font(None, font_size - 4)
         
         # Scroll indicators (only shown when needed)
         self.show_scroll_indicators = False
         self.scroll_indicator_color = (100, 100, 100)
         
-    def set_items(self, items: List[str], item_states: Optional[List[bool]] = None) -> None:
+        # Icon and status support
+        self.icons: Optional[List[pygame.Surface]] = None
+        self.status_indicators: Optional[List[str]] = None
+        
+    def set_items(self, 
+                 items: List[str], 
+                 item_states: Optional[List[bool]] = None,
+                 icons: Optional[List[pygame.Surface]] = None,
+                 status_indicators: Optional[List[str]] = None) -> None:
         """
         Set the list items and determine if scrolling is needed.
         
         Args:
             items: List of item strings to display
             item_states: Optional list of booleans indicating if items are enabled/disabled
+            icons: Optional list of icon surfaces for each item
+            status_indicators: Optional list of status indicator strings (e.g., "[Installed]", "[Update]")
         """
         self.items = items
         self.selected_index = min(self.selected_index, len(items) - 1) if items else 0
         self.scroll_offset = 0
         self.item_states = item_states or [True] * len(items)
+        self.icons = icons if self.show_icons else None
+        self.status_indicators = status_indicators
+        
+        # Validate input lists have same length
+        if icons and len(icons) != len(items):
+            logger.warning(f"Icons list length ({len(icons)}) doesn't match items length ({len(items)})")
+            self.icons = None
+        
+        if status_indicators and len(status_indicators) != len(items):
+            logger.warning(f"Status indicators list length ({len(status_indicators)}) doesn't match items length ({len(items)})")
+            self.status_indicators = None
         
         # Determine if scrolling is needed
         self._calculate_layout_requirements()
@@ -245,15 +274,39 @@ class ScrollableList:
             text_color = self.selected_text_color if is_selected else \
                         (self.text_color if is_enabled else self.disabled_text_color)
             
+            # Calculate text position (account for icons)
+            text_x = self.x + 2 * self.padding
+            if self.show_icons and self.icons and i < len(self.icons):
+                icon = self.icons[i]
+                if icon:
+                    # Draw icon
+                    icon_y = current_y + (self.item_height - self.icon_size) // 2
+                    surface.blit(icon, (text_x, icon_y))
+                text_x += self.icon_size + self.padding
+            
             # Render text (truncate if too long)
-            max_text_width = self.width - 4 * self.padding
+            # Calculate remaining space for text (account for status indicator if present)
+            remaining_width = self.width - text_x - 2 * self.padding
+            if self.status_indicators and i < len(self.status_indicators):
+                status_text = self.status_indicators[i]
+                if status_text:
+                    status_surface = self.status_font.render(status_text, True, text_color)
+                    remaining_width -= status_surface.get_width() + self.padding
+            
+            max_text_width = max(remaining_width, 10)  # Ensure at least 10 pixels
             rendered_text = self._truncate_text(item_text, max_text_width)
             text_surface = self.font.render(rendered_text, True, text_color)
-            surface.blit(text_surface, (self.x + 2 * self.padding, current_y + 5))
+            surface.blit(text_surface, (text_x, current_y + 5))
+            
+            # Render status indicator if present
+            if self.status_indicators and i < len(self.status_indicators):
+                status_text = self.status_indicators[i]
+                if status_text:
+                    status_surface = self.status_font.render(status_text, True, text_color)
+                    status_x = self.width - 2 * self.padding - status_surface.get_width()
+                    surface.blit(status_surface, (status_x, current_y + 8))
             
             current_y += self.item_height
-            
-        # Draw scroll indicators only if needed
         if self.show_scroll_indicators and self.needs_scrolling:
             self._render_scroll_indicators(surface)
             
