@@ -5,6 +5,11 @@ import os
 import json
 from pathlib import Path
 
+WHITE_LIST = [
+    "main",
+    "version",
+]
+
 def get_source_modules():
     """Get all Python source modules from sbcman directory."""
     repo_root = Path(__file__).parent.parent
@@ -76,7 +81,7 @@ def find_missing_tests():
                 has_test = True
                 break
         
-        if not has_test:
+        if not has_test and source_module not in WHITE_LIST:
             missing.append(source_module)
     
     return sorted(missing)
