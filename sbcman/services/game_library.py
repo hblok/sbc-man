@@ -17,6 +17,7 @@ from google.protobuf import json_format
 
 from sbcman.proto import game_pb2
 from .game_utils import game_to_dict, game_from_dict
+from .game_list_entry import GameListEntry, GameStatus
 from sbcman.path.paths import AppPaths
 from sbcman.services import network
 
@@ -210,3 +211,119 @@ class GameLibrary:
         
         logger.warning(f"Game {game.id} not found for update")
         return False
+
+    def get_game_status(self, game: game_pb2.Game) -> GameStatus:
+        """Check installation status of a game.
+        
+        Args:
+            game: Game object to check
+            
+        Returns:
+            GameStatus: Installation status of the game
+        """
+        installed_game = self.get_game(game.id)
+        
+        if not installed_game or not installed_game.installed:
+            return GameStatus.NOT_INSTALLED
+        
+        # Check if remote version is newer than local version
+        if self._is_newer_version(installed_game.version, game.version):
+            return GameStatus.UPDATE_AVAILABLE
+        
+        return GameStatus.INSTALLED
+    
+    def _is_newer_version(self, local_version: str, remote_version: str) -> bool:
+        """Compare two version strings to determine if remote is newer.
+        
+        Args:
+            local_version: Local installed version string
+            remote_version: Remote available version string
+            
+        Returns:
+            bool: True if remote version is newer
+        """
+        try:
+            local_parts = [int(x) for x in local_version.split('.')]
+            remote_parts = [int(x) for x in remote_version.split('.')]
+            
+            for i in range(max(len(local_parts), len(remote_parts))):
+                local_val = local_parts[i] if i < len(local_parts) else 0
+                remote_val = remote_parts[i] if i < len(remote_parts) else 0
+                
+                if remote_val > local_val:
+                    return True
+                elif remote_val < local_val:
+                    return False
+            
+            return False
+        except (ValueError, AttributeError):
+            logger.warning(f"Failed to compare versions: {local_version} vs {remote_version}")
+            return False
+    
+    def get_game_icon_path(self, game: game_pb2.Game) -> Optional[pathlib.Path]:
+        """Get local path to game icon.
+        
+        Args:
+            game: Game object
+            
+        Returns:
+            Path: Local path to icon file, or None if not found
+        """
+        if not game.icon:
+            return None
+        
+        icon_path = self.app_paths.games_dir / game.id / game.icon
+        
+        if icon_path.exists():
+            return icon_path
+        
+        return None
+    
+    def get_game_icon_url(self, game: game_pb2.Game) -> str:
+        """Get URL to download game icon.
+        
+        Args:
+            game: Game object
+            
+        Returns:
+            str: URL to icon file or None
+        """
+        if not game.icon:
+            return None
+        
+        # Construct icon URL based on download_url base
+        if game.download_url:
+            base_url = game.download_url.rsplit('/', 1)[0]
+            return f"{base_url}/{game.icon}"
+        
+        return None
+    
+    def get_enhanced_game_list(self) -> list[GameListEntry]:
+        """Get list of games with enhanced information.
+        
+        Returns:
+            List of GameListEntry objects with status and icon information
+        """
+        available_games = self.get_available_games()
+        enhanced_list = []
+        
+        for game in available_games:
+            status = self.get_game_status(game)
+            icon_path = self.get_game_icon_path(game)
+            icon_url = self.get_game_icon_url(game)
+            
+            local_version = None
+            installed_game = self.get_game(game.id)
+            if installed_game:
+                local_version = installed_game.version
+            
+            entry = GameListEntry(
+                game=game,
+                status=status,
+                icon_path=icon_path,
+                icon_url=icon_url,
+                local_version=local_version
+            )
+            enhanced_list.append(entry)
+        
+        return enhanced_list
