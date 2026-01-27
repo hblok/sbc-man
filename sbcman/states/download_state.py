@@ -12,7 +12,6 @@ import pygame
 from . import base_state
 from ..services import download_manager
 from ..services.game_list_entry import GameListEntry, GameStatus
-from ..views.widgets import ScrollableIconList
 from ..views import widgets
 
 logger = logging.getLogger(__name__)
@@ -75,7 +74,7 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
         list_y = title_height + progress_height
 
         # Increase item height to accommodate icons and status
-        self.game_list = widgets.ScrollableList(
+        self.game_list = widgets.ScrollableIconList(
             x=list_x,
             y=list_y,
             width=list_width,
