@@ -5,12 +5,14 @@
 
 import logging
 from typing import Optional, List
+import pathlib
 
 import pygame
 
 from . import base_state
 from ..services import download_manager
-from ..views import widgets
+from ..services.game_list_entry import GameListEntry, GameStatus
+from ..views.widgets import ScrollableIconList
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +25,7 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
         self.download_manager = download_manager.DownloadManager(
             self.hw_config, self.app_paths, self.game_library, self.config)
         self.available_games = self.game_library.get_available_games()
+        self.game_entries = self.game_library.get_enhanced_game_list()
         self.selected_index = 0
         self.downloading = False
         self.download_progress = 0.0
@@ -70,14 +73,16 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
         list_x = self._calc_list_x(screen_width, list_width)
         list_y = title_height + progress_height
 
-        self.game_list = widgets.ScrollableList(
+        # Increase item height to accommodate icons and status
+        self.game_list = ScrollableIconList(
             x=list_x,
             y=list_y,
             width=list_width,
             height=available_height,
-            item_height=45,
-            font_size=28,
-            padding=10
+            item_height=60,
+            font_size=24,
+            padding=10,
+            icon_size=40
         )
 
         self._last_screen_width = screen_width
@@ -114,20 +119,72 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
         if not hasattr(self, 'game_list'):
             return
 
-        game_names = [game.name for game in self.available_games]
-        game_states = [True] * len(self.available_games)
+        game_names = [entry.display_name for entry in self.game_entries]
+        game_states = [True] * len(self.game_entries)
+        
+        # Prepare icons for games
+        icons = self._prepare_game_icons()
+        
+        # Prepare status indicators
+        status_indicators = self._prepare_status_indicators()
 
-        self.game_list.set_items(game_names, game_states)
+        self.game_list.set_items(game_names, game_states, icons=icons, 
+                                status_indicators=status_indicators)
+    
+    def _prepare_game_icons(self) -> List[Optional[pygame.Surface]]:
+        """Prepare icon surfaces for games.
+        
+        Returns:
+            List of pygame.Surface objects for icons, or None for unavailable icons
+        """
+        icons = []
+        
+        for entry in self.game_entries:
+            icon_surface = None
+            
+            # Try to load local icon first
+            if entry.icon_path and entry.icon_path.exists():
+                try:
+                    icon_surface = pygame.image.load(str(entry.icon_path))
+                    icon_surface = pygame.transform.scale(
+                        icon_surface, 
+                        (self.game_list.icon_size, self.game_list.icon_size)
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to load icon for {entry.name}: {e}")
+            
+            icons.append(icon_surface)
+        
+        return icons
+    
+    def _prepare_status_indicators(self) -> List[str]:
+        """Prepare status indicator text for games.
+        
+        Returns:
+            List of status indicator strings
+        """
+        indicators = []
+        
+        for entry in self.game_entries:
+            if entry.status == GameStatus.INSTALLED:
+                indicators.append("[Installed]")
+            elif entry.status == GameStatus.UPDATE_AVAILABLE:
+                indicators.append("[Update]")
+            else:
+                indicators.append("")
+        
+        return indicators
 
     def _start_download(self) -> None:
-        if not self.available_games or not hasattr(self, 'game_list'):
+        if not self.game_entries or not hasattr(self, 'game_list'):
             return
 
         selected_index = self.game_list.get_selected_index()
-        if selected_index >= len(self.available_games):
+        if selected_index >= len(self.game_entries):
             return
 
-        game = self.available_games[selected_index]
+        entry = self.game_entries[selected_index]
+        game = entry.game
         self.downloading = True
         self.download_message = f"Downloading {game.name}..."
         self.download_manager.download_game(game, self)
@@ -142,6 +199,7 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
         if success:
             self.game_library.save_games()
             self.available_games = self.game_library.get_available_games()
+            self.game_entries = self.game_library.get_enhanced_game_list()
             self._update_game_list()
 
     def on_error(self, error_message: str) -> None:

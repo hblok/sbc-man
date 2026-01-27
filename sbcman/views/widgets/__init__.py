@@ -8,6 +8,7 @@ Reusable UI widgets for views.
 """
 
 from .scrollable_list import ScrollableList
+from .scrollable_icon_list import ScrollableIconList
 from .version_overlay import VersionOverlay
 
-__all__ = ['ScrollableList', 'VersionOverlay']
+__all__ = ['ScrollableList', 'ScrollableIconList', 'VersionOverlay']
