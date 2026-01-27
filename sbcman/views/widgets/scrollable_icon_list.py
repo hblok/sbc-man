@@ -128,7 +128,10 @@ class ScrollableIconList(ScrollableList):
             
             # Render text (truncate if too long)
             # Calculate remaining space for text (account for status indicator if present)
-            remaining_width = self.width - text_x - 2 * self.padding
+            text_size = self.font.render(item_text, True, self.text_color)
+            text_width = text_size.get_width()            
+            remaining_width = self.width - text_width - 2 * self.padding
+            
             if self.status_indicators and i < len(self.status_indicators):
                 status_text = self.status_indicators[i]
                 if status_text:
