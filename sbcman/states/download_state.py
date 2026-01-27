@@ -74,7 +74,7 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
         list_y = title_height + progress_height
 
         # Increase item height to accommodate icons and status
-        self.game_list = widgets.ScrollableList(
+        self.game_list = widgets.ScrollableIconList(
             x=list_x,
             y=list_y,
             width=list_width,
@@ -82,7 +82,6 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
             item_height=60,
             font_size=24,
             padding=10,
-            show_icons=True,
             icon_size=40
         )
 
