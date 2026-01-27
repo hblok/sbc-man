@@ -43,6 +43,8 @@ class TestDownloadState(unittest.TestCase):
         
         # Create a mock game library
         self.mock_game_library = Mock()
+        # Mock get_enhanced_game_list to return empty list
+        self.mock_game_library.get_enhanced_game_list.return_value = []
         
         # Create a mock input handler
         self.mock_input_handler = Mock()
@@ -437,9 +439,8 @@ class TestDownloadState(unittest.TestCase):
         # Set up downloading state
         self.download_state.downloading = True
         
-        # Create a mock game library with save_games method
-        self.download_state.game_library = Mock()
-        self.download_state.game_library.get_available_games.return_value = []
+        # Reconfigure the mock game library to return empty list for get_enhanced_game_list
+        self.mock_game_library.get_enhanced_game_list.return_value = []
         
         # Call on_complete with success
         self.download_state.on_complete(True, "Download completed successfully")
@@ -449,7 +450,7 @@ class TestDownloadState(unittest.TestCase):
         self.assertEqual(self.download_state.download_message, "Download completed successfully")
         
         # Verify game library save was called
-        self.download_state.game_library.save_games.assert_called_once()
+        self.mock_game_library.save_games.assert_called_once()
     
     def test_on_complete_failure(self):
         """Test download complete callback with failure."""

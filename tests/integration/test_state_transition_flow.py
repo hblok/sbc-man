@@ -88,6 +88,7 @@ class TestStateTransitionFlow(unittest.TestCase):
     def test_menu_to_download_transition(self):
         # Configure mock game library to return an empty list
         self.mock_game_library.get_available_games.return_value = []
+        self.mock_game_library.get_enhanced_game_list.return_value = []
         
         # Test changing state to download
         self.state_manager.change_state('download')
