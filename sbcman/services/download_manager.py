@@ -9,7 +9,7 @@ Uses threading to keep UI responsive during downloads.
 import logging
 import threading
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Callable
 
 from sbcman.services import network
 from sbcman.services import install_game
@@ -17,6 +17,8 @@ from sbcman.path import paths
 from sbcman.proto import game_pb2
 
 logger = logging.getLogger(__name__)
+
+ProgressCallback = Callable[[float], None]
 
 
 class DownloadObserver:
@@ -97,7 +99,7 @@ class DownloadManager:
         """Worker thread for downloading and extracting game."""
         try:
             dest_file = self._download_file(game, observer)
-            install_path = self._install_game(dest_file, game)
+            install_path = self._install_game(dest_file, game, observer)
 
             game.installed = True
             game.install_path = str(install_path)
@@ -128,7 +130,9 @@ class DownloadManager:
         logger.info(f"Downloading {game.download_url} to {dest_file}")
 
         def progress_callback(downloaded: int, total: int) -> None:
-            self.download_progress = min(downloaded / total if total > 0 else 0, 1.0)
+            # Scale download progress to 0-60% range
+            download_fraction = min(downloaded / total if total > 0 else 0, 1.0)
+            self.download_progress = download_fraction * 0.6
             if observer:
                 observer.on_progress(downloaded, total)
 
@@ -143,9 +147,20 @@ class DownloadManager:
 
         return dest_file
 
-    def _install_game(self, archive_path: Path, game: game_pb2.Game) -> Path:
+    def _install_game(self, archive_path: Path, game: game_pb2.Game, 
+                     observer: Optional[DownloadObserver]) -> Path:
         """Install the game from the downloaded archive."""
-        return self.game_installer.install_game(archive_path, game)
+        # Create progress callback for installer (60-100% range)
+        def install_progress_callback(progress: float) -> None:
+            # progress is 0.0-1.0, scale to 60-100%
+            self.download_progress = 0.6 + (progress * 0.4)
+            if observer:
+                # Convert to downloaded/total format for backward compatibility
+                total = 100
+                downloaded = int(self.download_progress * total)
+                observer.on_progress(downloaded, total)
+        
+        return self.game_installer.install_game(archive_path, game, install_progress_callback)
 
     def _persist_if_available(self, game: game_pb2.Game) -> None:
         """Persist game to library if available."""
@@ -159,7 +174,6 @@ class DownloadManager:
             logger.warning("No game_library provided - installed game will not be persisted")
 
     
-
     def _persist_installed_game(self, game: game_pb2.Game) -> None:
         """Persist the installed game to local_games.json."""
         if not self.game_library:

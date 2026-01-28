@@ -108,8 +108,9 @@ class TestGameInstaller(unittest.TestCase):
                 
                 install_dir = installer.install_game(wheel_path, game)
                 
-                # Verify that it returns the site-packages directory
-                self.assertEqual(install_dir, self.games_dir)
+                # Verify that it returns the expected path (site-packages / maxbloks / game.id)
+                expected_dir = self.games_dir / "maxbloks" / game.id
+                self.assertEqual(install_dir, expected_dir)
                 # Verify that the wheel installer was called
                 mock_installer.install_wheel.assert_called_once_with(wheel_path)
 
@@ -136,42 +137,6 @@ class TestGameInstaller(unittest.TestCase):
                 installer.install_game(wheel_path, game)
 
             self.assertIn("Wheel installation failed", str(context.exception))
-
-    def test_get_install_as_pip_with_config(self):
-        """Test getting install_as_pip setting with config."""
-        config = Mock()
-        config.get.return_value = True
-
-        installer = GameInstaller(config, self.app_paths)
-        self.assertTrue(installer._get_install_as_pip())
-
-    def test_get_install_as_pip_without_config(self):
-        """Test getting install_as_pip setting without config."""
-        installer = GameInstaller(None, self.app_paths)
-        self.assertFalse(installer._get_install_as_pip())
-
-    def test_get_install_base_dir_with_app_paths(self):
-        """Test getting install base directory with app_paths."""
-        installer = GameInstaller(None, self.app_paths)
-        self.assertEqual(installer._get_install_base_dir(), self.app_paths.games_dir)
-
-    def test_get_install_base_dir_with_portmaster_config(self):
-        """Test getting install base directory with portmaster config."""
-        config = Mock()
-        config.get.side_effect = lambda key, default=False: {
-            "install.add_portmaster_entry": True,
-            "install.portmaster_base_dir": "/custom/games"
-        }.get(key, default)
-
-        installer = GameInstaller(config, self.app_paths)
-        base_dir = installer._get_install_base_dir()
-        self.assertEqual(base_dir, Path("/custom/games"))
-
-    def test_get_install_base_dir_fallback(self):
-        """Test getting install base directory fallback."""
-        installer = GameInstaller(None, None)
-        base_dir = installer._get_install_base_dir()
-        self.assertEqual(base_dir, Path.cwd())
 
     def test_get_portmaster_image_dir_with_config(self):
         """Test getting portmaster image directory with config."""

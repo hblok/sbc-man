@@ -12,13 +12,15 @@ import logging
 import shutil
 import site
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Callable
 
 from sbcman.services import archive_extractor
 from sbcman.services import wheel_installer
 from sbcman.proto import game_pb2
 
 logger = logging.getLogger(__name__)
+
+ProgressCallback = Callable[[float], None]
 
 
 class GameInstaller:
@@ -35,12 +37,14 @@ class GameInstaller:
         self.archive_extractor : archive_extractor.ArchiveExtractor = archive_extractor.ArchiveExtractor()
         logger.info("GameInstaller initialized")
 
-    def install_game(self, archive_path: Path, game: game_pb2.Game) -> Path:
+    def install_game(self, archive_path: Path, game: game_pb2.Game, 
+                    progress_callback: Optional[ProgressCallback] = None) -> Path:
         """Install the game from the downloaded archive.
 
         Args:
             archive_path: Path to the downloaded game archive
             game: Game protobuf object containing game metadata
+            progress_callback: Optional callback for progress updates (0.0-1.0)
 
         Returns:
             Path: The installation directory path
@@ -51,18 +55,18 @@ class GameInstaller:
         logger.info(f"Extracting {archive_path}")
         suffix = archive_path.suffix.lower()
 
-        install_as_pip = self.config.get("install.install_as_pip", False)
-        extract_to_portmaster = self.config.get("install.add_portmaster_entry", False)
+        install_as_pip = self.config.get("install.install_as_pip", False) if self.config else False
+        extract_to_portmaster = self.config.get("install.add_portmaster_entry", False) if self.config else False
         logging.info(f"install_as_pip={install_as_pip}, extract_to_portmaster={extract_to_portmaster}")
         install_dir = None
         
         if suffix == ".whl" and install_as_pip:
             logger.info("Install as pip wheel")
-            install_base_dir = self._install_wheel(archive_path, game)
+            install_base_dir = self._install_wheel(archive_path, game, progress_callback)
             install_dir = install_base_dir / "maxbloks" / game.id
-        elif extract_to_portmaster:
+        elif extract_to_portmaster or self.app_paths:
             logger.info("Extract as zip")
-            install_dir = self._extract_archive(archive_path, game)
+            install_dir = self._extract_archive(archive_path, game, progress_callback)
 
         # Copy post-install files (script and icon)
         if install_dir:
@@ -72,12 +76,14 @@ class GameInstaller:
 
         return install_dir
 
-    def _install_wheel(self, wheel_path: Path, game: game_pb2.Game) -> Path:
+    def _install_wheel(self, wheel_path: Path, game: game_pb2.Game,
+                      progress_callback: Optional[ProgressCallback] = None) -> Path:
         """Install a wheel file and return the install path.
-
+        
         Args:
             wheel_path: Path to the wheel file
             game: Game protobuf object
+            progress_callback: Optional callback for progress updates (0.0-1.0)
 
         Returns:
             Path: The site-packages directory where the wheel was installed
@@ -86,35 +92,65 @@ class GameInstaller:
             Exception: If wheel installation fails
         """
         logger.info(f"Detected wheel file: {wheel_path}")
+        
+        # First stage: Finding pip (0-50% of installation progress)
+        if progress_callback:
+            progress_callback(0.0)
+        
         installer = wheel_installer.WheelInstaller()
+        
+        # Find pip - this can take time
+        if progress_callback:
+            progress_callback(0.25)
+        
         success, message = installer.install_wheel(wheel_path)
-
+        
+        # Second stage: Installing with pip (50-100% of installation progress)
+        if progress_callback:
+            progress_callback(0.75)
+        
         if not success:
             raise Exception(f"Wheel installation failed: {message}")
 
         logger.info(f"Wheel installed successfully: {message}")
 
+        # Final stage: Finding installation location
         for s in site.getsitepackages():
             p = Path(s) / game.entry_point
             if p.exists():
                 logger.info(f"Found {p}")
+                if progress_callback:
+                    progress_callback(1.0)
                 return Path(s)
 
+        if progress_callback:
+            progress_callback(1.0)
         return Path(site.getusersitepackages())
 
-    def _extract_archive(self, archive_path: Path, game: game_pb2.Game) -> Path:
+    def _extract_archive(self, archive_path: Path, game: game_pb2.Game,
+                        progress_callback: Optional[ProgressCallback] = None) -> Path:
         """Extract archive and set up the game directory.
-
+        
         Args:
             archive_path: Path to the archive file
             game: Game protobuf object
+            progress_callback: Optional callback for progress updates (0.0-1.0)
 
         Returns:
             Path: The installation directory path
         """
         base_dir = self._get_portmaster_base_dir()
         install_dir = base_dir / game.id
+        
+        # Start extraction
+        if progress_callback:
+            progress_callback(0.0)
+        
         self.archive_extractor.extract(archive_path, install_dir)
+        
+        # Complete extraction
+        if progress_callback:
+            progress_callback(1.0)
 
         entry_point = install_dir / game.entry_point
         if entry_point.exists():
@@ -124,7 +160,7 @@ class GameInstaller:
 
     def _get_portmaster_base_dir(self) -> Path:
         """Get the base directory for game installation from config.
-
+        
         Returns:
             Path: The base directory for game installation
         """
@@ -132,7 +168,6 @@ class GameInstaller:
             portmaster_base_dir = self.config.get("install.portmaster_base_dir")
             if portmaster_base_dir:
                 return Path(portmaster_base_dir)
-
         logger.warning("portmaster directory not found")
         if self.app_paths:
             return self.app_paths.games_dir
@@ -144,7 +179,7 @@ class GameInstaller:
 
     def _get_portmaster_image_dir(self) -> Optional[Path]:
         """Get the portmaster image directory from config.
-
+        
         Returns:
             Optional[Path]: The portmaster image directory, or None if not configured
         """
@@ -156,7 +191,7 @@ class GameInstaller:
 
     def _copy_post_install_files(self, install_dir: Path, game: game_pb2.Game) -> None:
         """Copy script and icon files to their respective destinations after installation.
-
+        
         Args:
             install_dir: The installation directory where files are located
             game: Game protobuf object containing metadata about script and icon files
