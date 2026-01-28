@@ -6,49 +6,28 @@ Wheel Installation Module
 
 Provides reusable functionality for installing Python wheel (.whl) files
 using pip or manual extraction as fallback.
-
-This module was extracted from updater.py to provide a clean, reusable
-interface for wheel installation that can be used by multiple services.
 """
 
 import logging
 import subprocess
 import zipfile
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Callable
 
 logger = logging.getLogger(__name__)
 
+ProgressCallback = Callable[[float], None]
+
 
 class WheelInstaller:
-    """
-    Handles installation of Python wheel (.whl) files.
-    
-    Provides two installation methods:
-    1. Pip installation (preferred)
-    2. Manual extraction to site-packages (fallback)
-    """
+    """Handles installation of Python wheel (.whl) files."""
 
     def __init__(self):
-        """Initialize the wheel installer."""
         logger.info("WheelInstaller initialized")
 
-    def install_wheel(self, wheel_path: Path) -> Tuple[bool, str]:
-        """
-        Install a wheel file using pip or manual extraction.
-        
-        This is the main entry point for wheel installation. It first
-        attempts to use pip, and falls back to manual extraction if
-        pip installation fails.
-        
-        Args:
-            wheel_path: Path to the wheel file to install
-            
-        Returns:
-            Tuple of (success, message)
-            - success: True if installation succeeded
-            - message: Success or error message
-        """
+    def install_wheel(self, wheel_path: Path, 
+                      progress_callback: Optional[ProgressCallback] = None) -> Tuple[bool, str]:
+        """Install a wheel file using pip or manual extraction."""
         if not wheel_path.exists():
             return False, f"Wheel file not found: {wheel_path}"
         
@@ -57,39 +36,40 @@ class WheelInstaller:
         
         logger.info(f"Installing wheel: {wheel_path}")
         
-        # Try Method A: pip installation
-        success, message = self._install_with_pip(wheel_path)
+        if progress_callback:
+            progress_callback(0.1)
+        
+        success, message = self._install_with_pip(wheel_path, progress_callback)
         if success:
+            if progress_callback:
+                progress_callback(1.0)
             return True, "Update installed successfully using pip"
         
-        # Try Method B: manual extraction (fallback)
         logger.info("Pip installation failed, trying manual extraction")
-        success, message = self._install_with_extraction(wheel_path)
+        if progress_callback:
+            progress_callback(0.5)
+        
+        success, message = self._install_with_extraction(wheel_path, progress_callback)
         if success:
+            if progress_callback:
+                progress_callback(1.0)
             return True, "Update installed successfully using manual extraction"
         
         return False, f"Installation failed: {message}"
 
-    def _install_with_pip(self, wheel_path: Path) -> Tuple[bool, str]:
-        """
-        Install wheel using pip.
-        
-        Args:
-            wheel_path: Path to wheel file
-            
-        Returns:
-            Tuple of (success, message)
-        """
+    def _install_with_pip(self, wheel_path: Path,
+                          progress_callback: Optional[ProgressCallback] = None) -> Tuple[bool, str]:
+        """Install wheel using pip."""
         try:
-            # Check if pip is available
             pip_command = self._find_pip_command()
             if not pip_command:
                 return False, "pip not found"
             
-            # Check if pip supports --break-system-packages (introduced in pip 23.0)
+            if progress_callback:
+                progress_callback(0.2)
+            
             supports_break_system_packages = self._check_pip_break_system_packages_support(pip_command)
             
-            # Build pip install command with conditional --break-system-packages option
             cmd = [
                 pip_command, 
                 "install",
@@ -97,7 +77,6 @@ class WheelInstaller:
                 "--force-reinstall"
             ]
             
-            # Add --break-system-packages only if supported
             if supports_break_system_packages:
                 cmd.append("--break-system-packages")
             
@@ -105,12 +84,18 @@ class WheelInstaller:
             
             logger.info(f"Installing with pip: {' '.join(cmd)}")
             
+            if progress_callback:
+                progress_callback(0.3)
+            
             result = subprocess.run(
                 cmd,
                 capture_output=True,
                 text=True,
-                timeout=300  # 5 minute timeout
+                timeout=300
             )
+            
+            if progress_callback:
+                progress_callback(0.9)
             
             if result.returncode == 0:
                 logger.info("Pip installation successful")
@@ -131,20 +116,8 @@ class WheelInstaller:
             return False, f"Pip error: {e}"
 
     def _check_pip_break_system_packages_support(self, pip_command: str) -> bool:
-        """
-        Check if pip supports the --break-system-packages option.
-        
-        The --break-system-packages option was introduced in pip 23.0.
-        This method checks the pip version to determine support.
-        
-        Args:
-            pip_command: The pip command to check (e.g., 'pip', 'pip3')
-            
-        Returns:
-            True if --break-system-packages is supported, False otherwise
-        """
+        """Check if pip supports the --break-system-packages option."""
         try:
-            # Get pip version
             result = subprocess.run(
                 [pip_command, "--version"],
                 capture_output=True,
@@ -156,16 +129,12 @@ class WheelInstaller:
                 logger.warning(f"Could not determine pip version for {pip_command}")
                 return False
             
-            # Parse version from output like "pip X.Y.Z from ..."
             version_output = result.stdout.strip()
             if "pip " not in version_output:
                 logger.warning(f"Unexpected pip version output: {version_output}")
                 return False
             
-            # Extract version number
             version_str = version_output.split("pip ")[1].split(" ")[0]
-            
-            # Parse version components
             version_parts = version_str.split(".")
             if len(version_parts) < 2:
                 logger.warning(f"Could not parse pip version: {version_str}")
@@ -175,7 +144,6 @@ class WheelInstaller:
                 major = int(version_parts[0])
                 minor = int(version_parts[1])
                 
-                # --break-system-packages was introduced in pip 23.0
                 if major > 23 or (major == 23 and minor >= 0):
                     logger.info(f"pip {version_str} supports --break-system-packages")
                     return True
@@ -194,26 +162,13 @@ class WheelInstaller:
             logger.error(f"Error checking pip version support: {e}")
             return False
 
-    def _install_with_extraction(self, wheel_path: Path) -> Tuple[bool, str]:
-        """
-        Install wheel using manual extraction (fallback method).
-        
-        This method extracts the wheel file (which is a zip archive)
-        directly to the Python site-packages directory.
-        
-        Args:
-            wheel_path: Path to wheel file
-            
-        Returns:
-            Tuple of (success, message)
-        """
+    def _install_with_extraction(self, wheel_path: Path,
+                                  progress_callback: Optional[ProgressCallback] = None) -> Tuple[bool, str]:
+        """Install wheel using manual extraction (fallback method)."""
         try:
-            # Default extraction path for Python packages
             extract_path = Path("/mnt/SDCARD/System/lib/python3.11/site-packages")
             
-            # If path doesn't exist, try alternative paths
             if not extract_path.exists():
-                # Try getting Python site-packages path dynamically
                 python_site_packages = self._get_site_packages_path()
                 if python_site_packages:
                     extract_path = python_site_packages
@@ -222,9 +177,14 @@ class WheelInstaller:
             
             logger.info(f"Extracting wheel to: {extract_path}")
             
-            # Treat wheel as zip file and extract
+            if progress_callback:
+                progress_callback(0.6)
+            
             with zipfile.ZipFile(wheel_path, 'r') as zip_file:
                 zip_file.extractall(extract_path)
+            
+            if progress_callback:
+                progress_callback(0.9)
             
             logger.info("Manual extraction successful")
             return True, "Manual extraction successful"
@@ -238,15 +198,7 @@ class WheelInstaller:
             return False, f"Extraction error: {e}"
 
     def _find_pip_command(self) -> Optional[str]:
-        """
-        Find available pip command.
-        
-        Checks for both 'pip' and 'pip3' commands and returns
-        the first one that is available.
-        
-        Returns:
-            pip command string or None if not found
-        """
+        """Find available pip command."""
         pip_commands = ["pip", "pip3"]
         
         for cmd in pip_commands:
@@ -266,15 +218,7 @@ class WheelInstaller:
         return None
 
     def _get_site_packages_path(self) -> Optional[Path]:
-        """
-        Get the Python site-packages directory.
-        
-        Uses the site module to determine the correct site-packages
-        directory for the current Python installation.
-        
-        Returns:
-            Path to site-packages or None if not found
-        """
+        """Get the Python site-packages directory."""
         try:
             import site
             site_packages = site.getsitepackages()[0]

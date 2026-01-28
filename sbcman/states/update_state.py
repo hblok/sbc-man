@@ -4,7 +4,6 @@
 """Update State Module - Handles the self-update process."""
 
 import logging
-import time
 from typing import Optional, List
 
 import pygame
@@ -16,7 +15,7 @@ from ..views import widgets
 logger = logging.getLogger(__name__)
 
 
-class UpdateState(base_state.BaseState):
+class UpdateState(base_state.BaseState, updater.UpdateObserver):
     """Update state for handling self-updating functionality with adaptive layout."""
 
     def __init__(self, state_manager: "StateManager"):
@@ -38,7 +37,6 @@ class UpdateState(base_state.BaseState):
         self._last_surface_width = base_state.DEFAULT_SCREEN_WIDTH
         self._last_surface_height = base_state.DEFAULT_SCREEN_HEIGHT
 
-        # Progress tracking
         self.progress = 0.0
         self.progress_message = ""
 
@@ -52,19 +50,41 @@ class UpdateState(base_state.BaseState):
         self.updater.cleanup_temp_files()
 
     def update(self, dt: float) -> None:
-        """Update method to poll for async update progress."""
+        """Poll for async update progress."""
         if self.stage == "updating" and self.updater.is_updating:
-            # Poll for progress
             self.progress = self.updater.get_progress()
             self.progress_message = self.updater.get_message()
-            
-            # Check if update completed
-            if self.progress >= 1.0:
-                self._check_update_completion()
+
+    def on_progress(self, progress: float, message: str) -> None:
+        """Called when update progress changes."""
+        self.progress = progress
+        self.progress_message = message
+
+    def on_complete(self, success: bool, message: str) -> None:
+        """Called when update completes."""
+        if success:
+            self.stage = "complete"
+            self.message = (f"Update installed successfully!\n{message}\n\n"
+                          "Restart the application to apply changes.")
+            logger.info("Update installation completed successfully")
+        else:
+            self.stage = "error"
+            self.message = f"Update failed: {message}"
+            logger.error(f"Update failed: {message}")
+        
+        self.options = ["OK"]
+        self.selected_option = 0
+        self._update_message_display()
+        self._update_options_list()
+
+    def on_error(self, error_message: str) -> None:
+        """Called when an error occurs."""
+        logger.error(f"Update error: {error_message}")
 
     def handle_events(self, events: List[pygame.event.Event]) -> None:
         if self._handle_exit_input(events):
-            self.state_manager.change_state("menu")
+            if self.stage != "updating":
+                self.state_manager.change_state("menu")
             return
 
         if self.stage == "available":
@@ -224,82 +244,21 @@ class UpdateState(base_state.BaseState):
             self._update_options_list()
 
     def _start_download(self) -> None:
-        self.stage = "downloading"
-        self.message = "Downloading update..."
+        """Start the async update process (download and install)."""
+        self.stage = "updating"
+        self.message = "Downloading and installing update..."
         self.progress = 0.0
-        self.progress_message = "Downloading update..."
+        self.progress_message = "Preparing update..."
         self.options = []
         self._update_message_display()
         self._update_options_list()
 
         try:
-            wheel_path = self.updater.start_update(
-                self.download_url,
-#                progress_callback=self._update_progress
-            )
-
-            # if wheel_path:
-            #     self._start_installation(wheel_path)
-            # else:
-            #     self.stage = "error"
-            #     self.message = "Failed to download update"
-            #     self.options = ["OK"]
-            #     self.selected_option = 0
-            #     self._update_message_display()
-            #     self._update_options_list()
-
+            self.updater.start_update(self.download_url, observer=self)
         except Exception as e:
-            logger.error(f"Error downloading update: {e}")
+            logger.error(f"Error starting update: {e}")
             self.stage = "error"
-            self.message = f"Error downloading update: {str(e)}"
-            self.options = ["OK"]
-            self.selected_option = 0
-            self._update_message_display()
-            self._update_options_list()
-
-    def _start_installation(self, wheel_path) -> None:
-        self.stage = "installing"
-        self.message = "Installing update..."
-        self.progress = 0.6  # Start at 60% (download complete)
-        self.progress_message = "Installing update..."
-        self.options = []
-        self._update_message_display()
-        self._update_options_list()
-
-        try:
-            success, message = self.updater.install_update(
-                wheel_path,
-#                progress_callback=self._update_progress
-            )
-
-            if success is True and message:
-                self.stage = "complete"
-                self.message = (f"Update installed successfully!\n{message}\n\n"
-                              "Restart the application to apply changes.")
-                self.options = ["OK"]
-                self.selected_option = 0
-                logger.info("Update installation completed successfully")
-            else:
-                self.stage = "error"
-                error_message = message if message else "Unknown installation error"
-                self.message = f"Installation failed: {error_message}"
-                self.options = ["OK"]
-                self.selected_option = 0
-                logger.error(f"Update installation failed: {error_message}")
-
-            self._update_message_display()
-            self._update_options_list()
-
-        except Exception as e:
-            import traceback
-            error_details = str(e)
-            error_traceback = traceback.format_exc()
-
-            logger.error(f"Unexpected error installing update: {error_details}")
-            logger.error(f"Full traceback: {error_traceback}")
-
-            self.stage = "error"
-            self.message = f"Unexpected error during installation: {error_details}"
+            self.message = f"Error starting update: {str(e)}"
             self.options = ["OK"]
             self.selected_option = 0
             self._update_message_display()
@@ -312,8 +271,6 @@ class UpdateState(base_state.BaseState):
     def render(self, surface: pygame.Surface) -> None:
         self._render_background(surface)
         surface_width, surface_height = self._get_surface_dimensions(surface)
-
-        logger.info(f"render, stage={self.stage}")
 
         if hasattr(self, 'options_list'):
             self._update_adaptive_layout(surface_width, surface_height)
@@ -328,21 +285,13 @@ class UpdateState(base_state.BaseState):
 
         self._render_message_area(surface, surface_width, surface_height)
 
-        if self.stage in ["checking", "downloading", "installing"]:
+        if self.stage in ["checking", "updating"]:
             self._render_progress_indicator(surface, surface_width, surface_height)
 
         self._update_options_list()
         self.options_list.render(surface)
 
         self._render_update_instructions(surface, surface_width, surface_height)
-
-    def _update_progress(self, progress: float) -> None:
-        """Update progress tracking.
-        
-        Args:
-            progress: Progress value from 0.0 to 1.0
-        """
-        self.progress = progress
 
     def _render_message_area(self, surface: pygame.Surface,
                              surface_width: int, surface_height: int) -> None:
@@ -416,6 +365,8 @@ class UpdateState(base_state.BaseState):
         if (self.stage in ["complete", "error"] and
                 len(self.message_lines) > max_visible_lines):
             instructions = "↑↓ Scroll Message  |  A/Confirm Continue"
+        elif self.stage == "updating":
+            instructions = "Update in progress..."
         elif self.options_list.needs_scrolling and self.options_list.show_scroll_indicators:
             instructions = "↑↓ Navigate  |  A/Confirm Select  |  PageUp/Down Fast Scroll"
         else:
