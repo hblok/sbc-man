@@ -21,6 +21,12 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 os.environ["SDL_AUDIODRIVER"] = "dummy"
 
+# Mock protobuf modules that may not be compiled
+sys.modules['sbcman.proto.game_pb2'] = MagicMock()
+sys.modules['sbcman.proto.device_config_pb2'] = MagicMock()
+sys.modules['sbcman.proto.os_config_pb2'] = MagicMock()
+sys.modules['sbcman.proto.input_mappings_pb2'] = MagicMock()
+
 
 def mock_hw_config():
     """Create a minimal hardware configuration for testing."""

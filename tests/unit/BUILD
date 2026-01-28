@@ -353,3 +353,77 @@ py_test(
     ],
     size = "small",
 )
+
+# New unit tests for missing modules
+py_test(
+    name = "test_device",
+    srcs = ["test_device.py"],
+    deps = [
+        "//sbcman/path:path",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_archive_extractor",
+    srcs = ["test_archive_extractor.py"],
+    deps = [
+        "//sbcman/services",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_game_launcher",
+    srcs = ["test_game_launcher.py"],
+    deps = [
+        "//sbcman/services",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_network",
+    srcs = ["test_network.py"],
+    deps = [
+        "//sbcman/services",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_portmaster",
+    srcs = ["test_portmaster.py"],
+    deps = [
+        "//sbcman/path:path",
+        "//sbcman/services",
+        "//tests:test_utils",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_scrollable_icon_list",
+    srcs = ["test_scrollable_icon_list.py"],
+    deps = [
+        "//sbcman/views/widgets:widgets",
+        "//tests:test_utils",
+        "@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_version_overlay",
+    srcs = ["test_version_overlay.py"],
+    deps = [
+        "//sbcman/views/widgets:widgets",
+        "//tests:test_utils",
+        "@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
