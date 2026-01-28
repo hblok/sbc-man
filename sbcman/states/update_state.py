@@ -38,6 +38,9 @@ class UpdateState(base_state.BaseState):
         self._last_surface_width = base_state.DEFAULT_SCREEN_WIDTH
         self._last_surface_height = base_state.DEFAULT_SCREEN_HEIGHT
 
+        # Progress tracking
+        self.progress = 0.0
+
     def on_enter(self, previous_state: Optional[base_state.BaseState]) -> None:
         logger.info("Entered update state")
         self._setup_adaptive_scrollable_list()
@@ -214,12 +217,16 @@ class UpdateState(base_state.BaseState):
     def _start_download(self) -> None:
         self.stage = "downloading"
         self.message = "Downloading update..."
+        self.progress = 0.0
         self.options = []
         self._update_message_display()
         self._update_options_list()
 
         try:
-            wheel_path = self.updater.download_update(self.download_url)
+            wheel_path = self.updater.download_update(
+                self.download_url,
+                progress_callback=self._update_progress
+            )
 
             if wheel_path:
                 self._start_installation(wheel_path)
@@ -243,12 +250,16 @@ class UpdateState(base_state.BaseState):
     def _start_installation(self, wheel_path) -> None:
         self.stage = "installing"
         self.message = "Installing update..."
+        self.progress = 0.6  # Start at 60% (download complete)
         self.options = []
         self._update_message_display()
         self._update_options_list()
 
         try:
-            success, message = self.updater.install_update(wheel_path)
+            success, message = self.updater.install_update(
+                wheel_path,
+                progress_callback=self._update_progress
+            )
 
             if success is True and message:
                 self.stage = "complete"
@@ -312,6 +323,14 @@ class UpdateState(base_state.BaseState):
 
         self._render_update_instructions(surface, surface_width, surface_height)
 
+    def _update_progress(self, progress: float) -> None:
+        """Update progress tracking.
+        
+        Args:
+            progress: Progress value from 0.0 to 1.0
+        """
+        self.progress = progress
+
     def _render_message_area(self, surface: pygame.Surface,
                              surface_width: int, surface_height: int) -> None:
         message_area_start = 120
@@ -360,15 +379,30 @@ class UpdateState(base_state.BaseState):
             return (255, 255, 255)
 
     def _render_progress_indicator(self, surface: pygame.Surface) -> None:
-        dot_count = int(time.time() * 2) % 4
-        dots = "." * dot_count
+        """Render a progress bar showing download/installation progress."""
+        # Calculate progress bar dimensions
+        bar_width = min(400, surface.get_width() - 40)
+        bar_height = 20
+        bar_x = (surface.get_width() - bar_width) // 2
+        bar_y = self.options_list.y - 40
 
-        font_size = self._calc_font_size(surface.get_width(), 18, 28, 36)
+        # Draw background bar (dark gray)
+        pygame.draw.rect(surface, (60, 60, 60), 
+                        (bar_x, bar_y, bar_width, bar_height))
+
+        # Draw progress bar (green)
+        progress_width = int(bar_width * self.progress)
+        if progress_width > 0:
+            pygame.draw.rect(surface, (50, 200, 50), 
+                            (bar_x, bar_y, progress_width, bar_height))
+
+        # Draw progress percentage text
+        font_size = self._calc_font_size(surface.get_width(), 16, 20, 24)
         font = pygame.font.Font(None, font_size)
-        progress_text = font.render(dots, True, (255, 255, 0))
-        progress_rect = progress_text.get_rect(
-            center=(surface.get_width() // 2, self.options_list.y - 30))
-        surface.blit(progress_text, progress_rect)
+        percentage_text = f"{int(self.progress * 100)}%"
+        text_surface = font.render(percentage_text, True, (255, 255, 255))
+        text_rect = text_surface.get_rect(center=(bar_x + bar_width // 2, bar_y + bar_height + 15))
+        surface.blit(text_surface, text_rect)
 
     def _render_update_instructions(self, surface: pygame.Surface,
                                     surface_width: int, surface_height: int) -> None:
