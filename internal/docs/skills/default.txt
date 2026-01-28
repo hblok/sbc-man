@@ -13,12 +13,14 @@
 - Keep classes small, preferably less than 400 lines
 
 **Testing**
+- Use the unittest library.
 - Only one TestCase class per module
 - Never document test methods
 - Do not add main() or call unittest.main() in test modules
 - Run tests after each significant change
 - Maintain > 80% code coverage for math and core modules
 - Use setUp() and tearDown() for test fixtures
+- To execute, run "python -m unittest" or similar.
 
 **Documentation**
 - Avoid verbose docstrings for simple methods

@@ -1,0 +1,14 @@
+**Testing**
+- Use the unittest library.
+- Only one TestCase class per module
+- Never document test methods
+- Do not add main() or call unittest.main() in test modules
+- Run tests after each significant change
+- Maintain > 80% code coverage for math and core modules
+- Use setUp() and tearDown() for test fixtures
+
+**Executing tests**
+- To execute, run "python -m unittest" or similar.
+- If need be, but ONLY if actually needed, install bazel and protoc.
+- If need be, generate temporary protobuf pb2.py files.
+- If protobuf pb2.py files were generated, DO NOT include them in the commit.
