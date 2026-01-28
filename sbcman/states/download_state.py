@@ -230,20 +230,16 @@ class DownloadState(base_state.BaseState, download_manager.DownloadObserver):
     def _render_download_progress(self, surface: pygame.Surface,
                                    surface_width: int, surface_height: int) -> None:
         font_size = self._calc_font_size(surface_width, 18, 28, 36)
-        font = pygame.font.Font(None, font_size)
-        text = font.render(self.download_message, True, (255, 255, 255))
-        text_rect = text.get_rect(center=(surface_width // 2, 90))
-        surface.blit(text, text_rect)
-
         bar_width = min(surface_width - 100, 600)
         bar_height = min(30, surface_height // 16)
         bar_x = (surface_width - bar_width) // 2
         bar_y = 120
 
-        pygame.draw.rect(surface, (100, 100, 100), (bar_x, bar_y, bar_width, bar_height))
-        pygame.draw.rect(surface, (0, 200, 0),
-                        (bar_x, bar_y, int(bar_width * self.download_progress), bar_height))
-
-        percent_text = font.render(f"{int(self.download_progress * 100)}%", True, (255, 255, 255))
-        percent_rect = percent_text.get_rect(center=(surface_width // 2, bar_y + bar_height + 25))
-        surface.blit(percent_text, percent_rect)
+        progress_bar = widgets.ProgressBar(
+            x=bar_x,
+            y=bar_y,
+            width=bar_width,
+            height=bar_height,
+            font_size=font_size
+        )
+        progress_bar.render(surface, self.download_progress, self.download_message)
