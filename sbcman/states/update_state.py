@@ -38,6 +38,10 @@ class UpdateState(base_state.BaseState):
         self._last_surface_width = base_state.DEFAULT_SCREEN_WIDTH
         self._last_surface_height = base_state.DEFAULT_SCREEN_HEIGHT
 
+        # Progress tracking
+        self.progress = 0.0
+        self.progress_message = ""
+
     def on_enter(self, previous_state: Optional[base_state.BaseState]) -> None:
         logger.info("Entered update state")
         self._setup_adaptive_scrollable_list()
@@ -222,12 +226,17 @@ class UpdateState(base_state.BaseState):
     def _start_download(self) -> None:
         self.stage = "downloading"
         self.message = "Downloading update..."
+        self.progress = 0.0
+        self.progress_message = "Downloading update..."
         self.options = []
         self._update_message_display()
         self._update_options_list()
 
         try:
-            wheel_path = self.updater.download_update(self.download_url)
+            wheel_path = self.updater.download_update(
+                self.download_url,
+                progress_callback=self._update_progress
+            )
 
             if wheel_path:
                 self._start_installation(wheel_path)
@@ -251,12 +260,17 @@ class UpdateState(base_state.BaseState):
     def _start_installation(self, wheel_path) -> None:
         self.stage = "installing"
         self.message = "Installing update..."
+        self.progress = 0.6  # Start at 60% (download complete)
+        self.progress_message = "Installing update..."
         self.options = []
         self._update_message_display()
         self._update_options_list()
 
         try:
-            success, message = self.updater.install_update(wheel_path)
+            success, message = self.updater.install_update(
+                wheel_path,
+                progress_callback=self._update_progress
+            )
 
             if success is True and message:
                 self.stage = "complete"
@@ -312,13 +326,21 @@ class UpdateState(base_state.BaseState):
 
         self._render_message_area(surface, surface_width, surface_height)
 
-        if self.stage in ["checking", "updating"]:
-            self._render_progress_indicator(surface)
+        if self.stage in ["checking", "downloading", "installing"]:
+            self._render_progress_indicator(surface, surface_width, surface_height)
 
         self._update_options_list()
         self.options_list.render(surface)
 
         self._render_update_instructions(surface, surface_width, surface_height)
+
+    def _update_progress(self, progress: float) -> None:
+        """Update progress tracking.
+        
+        Args:
+            progress: Progress value from 0.0 to 1.0
+        """
+        self.progress = progress
 
     def _render_message_area(self, surface: pygame.Surface,
                              surface_width: int, surface_height: int) -> None:
@@ -367,16 +389,23 @@ class UpdateState(base_state.BaseState):
         else:
             return (255, 255, 255)
 
-    def _render_progress_indicator(self, surface: pygame.Surface) -> None:
-        dot_count = int(time.time() * 2) % 4
-        dots = "." * dot_count
+    def _render_progress_indicator(self, surface: pygame.Surface,
+                                     surface_width: int, surface_height: int) -> None:
+        """Render a progress bar showing download/installation progress."""
+        font_size = self._calc_font_size(surface_width, 18, 28, 36)
+        bar_width = min(surface_width - 100, 600)
+        bar_height = min(30, surface_height // 16)
+        bar_x = (surface_width - bar_width) // 2
+        bar_y = 120
 
-        font_size = self._calc_font_size(surface.get_width(), 18, 28, 36)
-        font = pygame.font.Font(None, font_size)
-        progress_text = font.render(dots, True, (255, 255, 0))
-        progress_rect = progress_text.get_rect(
-            center=(surface.get_width() // 2, self.options_list.y - 30))
-        surface.blit(progress_text, progress_rect)
+        progress_bar = widgets.ProgressBar(
+            x=bar_x,
+            y=bar_y,
+            width=bar_width,
+            height=bar_height,
+            font_size=font_size
+        )
+        progress_bar.render(surface, self.progress, self.progress_message)
 
     def _render_update_instructions(self, surface: pygame.Surface,
                                     surface_width: int, surface_height: int) -> None:
