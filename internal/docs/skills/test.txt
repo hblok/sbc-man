@@ -10,5 +10,5 @@
 **Executing tests**
 - To execute, run "python -m unittest" or similar.
 - If need be, but ONLY if actually needed, install bazel and protoc.
-- If need be, generate temporary protobuf pb2.py files.
-- If protobuf pb2.py files or sbcman/proto/__init__.py were generated, DO NOT include them in the commit.
+- If need be, copy the temporary protobuf pb2.py files from internal/proto/compiled/* to sbcman/proto
+- If protobuf pb2.py files or sbcman/proto/__init__.py were copied, DO NOT include them in the commit.
