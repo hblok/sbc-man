@@ -52,7 +52,15 @@ class UpdateState(base_state.BaseState):
         self.updater.cleanup_temp_files()
 
     def update(self, dt: float) -> None:
-        pass
+        """Update method to poll for async update progress."""
+        if self.stage == "updating" and self.updater.is_updating:
+            # Poll for progress
+            self.progress = self.updater.get_progress()
+            self.progress_message = self.updater.get_message()
+            
+            # Check if update completed
+            if self.progress >= 1.0:
+                self._check_update_completion()
 
     def handle_events(self, events: List[pygame.event.Event]) -> None:
         if self._handle_exit_input(events):
