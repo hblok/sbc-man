@@ -2,12 +2,12 @@
   {
   "id": "fish",
   "name": "Eat the Fish",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Eat the smaller fish; watch out for the shark.",
   "author": "H.Blok",
   "entryPoint": "maxbloks/fish/main.py",
   "startScript": "Fish.sh",
   "icon": "Fish.png",
-  "downloadUrl": "https://hblok.github.io/sbc-man/fish-0.1.3-py3-none-any.whl"
+  "downloadUrl": "https://hblok.github.io/sbc-man/fish-0.1.4-py3-none-any.whl"
   }
 ]
