@@ -12,6 +12,7 @@ Based on requirements for adding self-update feature to the game manager.
 
 import json
 import logging
+import threading
 from pathlib import Path
 from typing import Optional, Tuple, Dict, Any, Callable
 import urllib.request
@@ -50,6 +51,13 @@ class UpdaterService:
         
         # Get update repository URL from config (default to sbc-man GitHub)
         self.update_repo_url = config_manager.get("update.repository_url")
+
+        # Threading support
+        self.is_updating = False
+        self.update_progress = 0.0
+        self.update_message = ""
+        self.current_update_thread: Optional[threading.Thread] = None
+        self._update_lock = threading.Lock()
         
         logger.info(f"UpdaterService initialized with repo: {self.update_repo_url}")
 
@@ -113,14 +121,89 @@ class UpdaterService:
             logger.error(f"Unexpected error checking for updates: {e}")
             return False, None, None
 
-    def download_update(self, download_url: str, 
-                       progress_callback: Optional[ProgressCallback] = None) -> Optional[Path]:
+    def start_update(self, download_url: str) -> None:
+        """Start the update process in a background thread.
+        
+        Args:
+            download_url: URL to download the update from
         """
-        Download the update wheel file.
+        if self.is_updating:
+            logger.warning("Update already in progress")
+            return
+        
+        self.is_updating = True
+        self.update_progress = 0.0
+        self.update_message = "Preparing update..."
+        
+        self.current_update_thread = threading.Thread(
+            target=self._update_thread,
+            args=(download_url,),
+            daemon=True,
+        )
+        self.current_update_thread.start()
+        logger.info("Started update thread")
+
+    def _update_thread(self, download_url: str) -> None:
+        """Worker thread for downloading and installing updates."""
+        try:
+            # Download phase
+            with self._update_lock:
+                self.update_message = "Downloading update..."
+            
+            wheel_path = self._download_file(download_url)
+            
+            if not wheel_path:
+                with self._update_lock:
+                    self.update_message = "Failed to download update"
+                return
+            
+            # Install phase
+            with self._update_lock:
+                self.update_message = "Installing update..."
+                self.update_progress = 0.6
+            
+            success, message = self._install_wheel(wheel_path)
+            
+            # Update final status
+            with self._update_lock:
+                self.update_progress = 1.0
+                if success:
+                    self.update_message = f"Update complete: {message}"
+                else:
+                    self.update_message = f"Installation failed: {message}"
+            
+            logger.info("Update completed successfully" if success else "Update failed")
+            
+        except Exception as e:
+            logger.error(f"Error during update: {e}")
+            with self._update_lock:
+                self.update_message = f"Update error: {str(e)}"
+                self.update_progress = 1.0
+        finally:
+            self.is_updating = False
+
+    def get_progress(self) -> float:
+        """Return the current update progress as a value between 0.0 and 1.0."""
+        with self._update_lock:
+            return self.update_progress
+
+    def get_message(self) -> str:
+        """Return the current update message."""
+        with self._update_lock:
+            return self.update_message
+
+    def cancel_update(self) -> None:
+        """Cancel the current update operation."""
+        if self.is_updating:
+            self.is_updating = False
+            logger.info("Update cancelled")
+
+    def _download_file(self, download_url: str) -> Optional[Path]:
+        """
+        Download the update wheel file (internal method).
         
         Args:
             download_url: URL to download the wheel file from
-            progress_callback: Optional callback for progress updates (0.0-1.0)
         
         Returns:
             Path to downloaded file or None if failed
@@ -142,24 +225,25 @@ class UpdaterService:
                 raise ValueError(f"Must be http/s, was: {download_url}")
             
             # Track download progress
-            if progress_callback:
-                progress_callback(0.0)
+            with self._update_lock:
+                self.update_progress = 0.0
             
             # Use urlretrieve with custom reporthook for progress tracking
             def reporthook(block_num, block_size, total_size):
-                if total_size > 0 and progress_callback:
+                if total_size > 0:
                     downloaded = block_num * block_size
                     # Scale to 0-60% range
                     download_fraction = min(downloaded / total_size, 1.0)
-                    progress_callback(download_fraction * 0.6)
+                    with self._update_lock:
+                        self.update_progress = download_fraction * 0.6
             
             urllib.request.urlretrieve(download_url, wheel_path, reporthook)  # nosec : handled above
             
             # Verify file exists and has content
             if wheel_path.exists() and wheel_path.stat().st_size > 0:
                 logger.info(f"Successfully downloaded update: {wheel_path}")
-                if progress_callback:
-                    progress_callback(0.6)  # Download complete at 60%
+                with self._update_lock:
+                    self.update_progress = 0.6  # Download complete at 60%
                 return wheel_path
             else:
                 logger.error("Downloaded file is empty or missing")
@@ -172,39 +256,49 @@ class UpdaterService:
             logger.error(f"Unexpected error downloading update: {e}")
             return None
 
-    def install_update(self, wheel_path: Path, 
-                      progress_callback: Optional[ProgressCallback] = None) -> Tuple[bool, str]:
+    def _install_wheel(self, wheel_path: Path) -> Tuple[bool, str]:
         """
-        Install the update using pip or manual extraction.
+        Install the update using pip or manual extraction (internal method).
         
         Args:
             wheel_path: Path to the wheel file to install
-            progress_callback: Optional callback for progress updates (0.0-1.0)
         
         Returns:
             Tuple of (success, message)
         """
         try:
-            # Start installation phase (60-100%)
-            if progress_callback:
-                progress_callback(0.6)
-            
             # Use the WheelInstaller module for installation
             installer = WheelInstaller()
             success, message = installer.install_wheel(wheel_path)
             
-            # Installation complete
-            if progress_callback:
-                progress_callback(1.0)
-            
             return success, message
         except Exception as e:
             logger.error(f"Error during installation: {e}")
-            if progress_callback:
-                progress_callback(1.0)
             return False, str(e)
 
     
+    def download_update(self, download_url: str) -> Optional[Path]:
+        """Download the update wheel file (synchronous wrapper).
+        
+        Args:
+            download_url: URL to download the wheel file from
+        
+        Returns:
+            Path to downloaded file or None if failed
+        """
+        return self._download_file(download_url)
+
+    def install_update(self, wheel_path: Path) -> Tuple[bool, str]:
+        """Install the update (synchronous wrapper).
+        
+        Args:
+            wheel_path: Path to the wheel file to install
+        
+        Returns:
+            Tuple of (success, message)
+        """
+        return self._install_wheel(wheel_path)
+
     def _compare_versions(self, current: str, latest: str) -> bool:
         """
         Compare two version strings.
