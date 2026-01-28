@@ -13,7 +13,7 @@ Based on requirements for adding self-update feature to the game manager.
 import json
 import logging
 from pathlib import Path
-from typing import Optional, Tuple, Dict, Any
+from typing import Optional, Tuple, Dict, Any, Callable
 import urllib.request
 import urllib.error
 import traceback
@@ -24,6 +24,8 @@ from sbcman.path.paths import AppPaths
 from sbcman import version
 
 logger = logging.getLogger(__name__)
+
+ProgressCallback = Callable[[float], None]
 
 
 class UpdaterService:
@@ -111,13 +113,15 @@ class UpdaterService:
             logger.error(f"Unexpected error checking for updates: {e}")
             return False, None, None
 
-    def download_update(self, download_url: str) -> Optional[Path]:
+    def download_update(self, download_url: str, 
+                       progress_callback: Optional[ProgressCallback] = None) -> Optional[Path]:
         """
         Download the update wheel file.
         
         Args:
             download_url: URL to download the wheel file from
-            
+            progress_callback: Optional callback for progress updates (0.0-1.0)
+        
         Returns:
             Path to downloaded file or None if failed
         """
@@ -137,11 +141,25 @@ class UpdaterService:
             if "http" not in download_url:
                 raise ValueError(f"Must be http/s, was: {download_url}")
             
-            urllib.request.urlretrieve(download_url, wheel_path)  # nosec : handled above
+            # Track download progress
+            if progress_callback:
+                progress_callback(0.0)
+            
+            # Use urlretrieve with custom reporthook for progress tracking
+            def reporthook(block_num, block_size, total_size):
+                if total_size > 0 and progress_callback:
+                    downloaded = block_num * block_size
+                    # Scale to 0-60% range
+                    download_fraction = min(downloaded / total_size, 1.0)
+                    progress_callback(download_fraction * 0.6)
+            
+            urllib.request.urlretrieve(download_url, wheel_path, reporthook)  # nosec : handled above
             
             # Verify file exists and has content
             if wheel_path.exists() and wheel_path.stat().st_size > 0:
                 logger.info(f"Successfully downloaded update: {wheel_path}")
+                if progress_callback:
+                    progress_callback(0.6)  # Download complete at 60%
                 return wheel_path
             else:
                 logger.error("Downloaded file is empty or missing")
@@ -154,22 +172,39 @@ class UpdaterService:
             logger.error(f"Unexpected error downloading update: {e}")
             return None
 
-    def install_update(self, wheel_path: Path) -> Tuple[bool, str]:
+    def install_update(self, wheel_path: Path, 
+                      progress_callback: Optional[ProgressCallback] = None) -> Tuple[bool, str]:
         """
         Install the update using pip or manual extraction.
         
         Args:
             wheel_path: Path to the wheel file to install
-            
+            progress_callback: Optional callback for progress updates (0.0-1.0)
+        
         Returns:
             Tuple of (success, message)
         """
-        # Use the WheelInstaller module for installation
-        installer = WheelInstaller()
-        return installer.install_wheel(wheel_path)
+        try:
+            # Start installation phase (60-100%)
+            if progress_callback:
+                progress_callback(0.6)
+            
+            # Use the WheelInstaller module for installation
+            installer = WheelInstaller()
+            success, message = installer.install_wheel(wheel_path)
+            
+            # Installation complete
+            if progress_callback:
+                progress_callback(1.0)
+            
+            return success, message
+        except Exception as e:
+            logger.error(f"Error during installation: {e}")
+            if progress_callback:
+                progress_callback(1.0)
+            return False, str(e)
 
     
-
     def _compare_versions(self, current: str, latest: str) -> bool:
         """
         Compare two version strings.
@@ -177,7 +212,7 @@ class UpdaterService:
         Args:
             current: Current version string
             latest: Latest version string
-            
+        
         Returns:
             True if latest version is newer
         """
