@@ -5,7 +5,7 @@
     "version": "0.1.3",
     "description": "Eat the smaller fish; watch out for the shark.",
     "author": "H.Blok",
-    "install_path": "None",
+    "install_path": "/home/havardrb/portmaster/fish",
     "entry_point": "maxbloks/fish/main.py",
     "installed": true,
     "download_url": "https://hblok.github.io/sbc-man/fish-0.1.3-py3-none-any.whl",

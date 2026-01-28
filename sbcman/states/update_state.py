@@ -280,16 +280,18 @@ class UpdateState(base_state.BaseState, updater.UpdateObserver):
         self._render_title(surface, "Self-Update", y_position=50,
                           divisor=10, min_size=48, max_size=64)
 
-        self._render_subtitle(surface, f"Current version: {self.updater.current_version}",
-                             y_position=85)
+        if self.stage not in ["checking", "updating"]:
+            self._render_subtitle(surface, f"Current version: {self.updater.current_version}",
+                                  y_position=85)
 
         self._render_message_area(surface, surface_width, surface_height)
 
         if self.stage in ["checking", "updating"]:
             self._render_progress_indicator(surface, surface_width, surface_height)
 
-        self._update_options_list()
-        self.options_list.render(surface)
+        if self.stage not in ["checking", "updating"]:            
+            self._update_options_list()
+            self.options_list.render(surface)
 
         self._render_update_instructions(surface, surface_width, surface_height)
 
@@ -347,7 +349,7 @@ class UpdateState(base_state.BaseState, updater.UpdateObserver):
         bar_width = min(surface_width - 100, 600)
         bar_height = min(30, surface_height // 16)
         bar_x = (surface_width - bar_width) // 2
-        bar_y = 120
+        bar_y = 180
 
         progress_bar = widgets.ProgressBar(
             x=bar_x,
