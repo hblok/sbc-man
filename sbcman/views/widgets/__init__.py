@@ -10,5 +10,6 @@ Reusable UI widgets for views.
 from .scrollable_list import ScrollableList
 from .scrollable_icon_list import ScrollableIconList
 from .version_overlay import VersionOverlay
+from .progress_bar import ProgressBar
 
-__all__ = ['ScrollableList', 'ScrollableIconList', 'VersionOverlay']
+__all__ = ['ScrollableList', 'ScrollableIconList', 'VersionOverlay', 'ProgressBar']
