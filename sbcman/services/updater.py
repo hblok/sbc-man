@@ -13,12 +13,11 @@ import logging
 import threading
 from pathlib import Path
 from typing import Optional, Tuple
-import urllib.request
-import urllib.error
 import traceback
 
 from sbcman.services import config_manager
 from sbcman.services import wheel_installer
+from sbcman.services import network
 from sbcman.path import paths
 from sbcman import version
 
@@ -55,6 +54,7 @@ class UpdaterService:
         self.current_version = version.VERSION
         
         self.update_repo_url = config.get("update.repository_url")
+        self.network = network.NetworkService()
 
         self.is_updating = False
         self.update_progress = 0.0
@@ -70,8 +70,12 @@ class UpdaterService:
             api_url = self._build_api_url()
             logger.info(f"Checking for updates at: {api_url}")
             
-            with urllib.request.urlopen(api_url) as response:  # nosec
-                release_data = json.loads(response.read().decode('utf-8'))
+            response = self.network.get(api_url)
+            if response is None:
+                logger.error("Failed to get release data from API")
+                return False, None, None
+            
+            release_data = response.json()
             
             latest_version = release_data.get("tag_name", "").lstrip("v")
             if not latest_version:
@@ -89,10 +93,6 @@ class UpdaterService:
             
             return update_available, latest_version, download_url
             
-        except urllib.error.URLError as e:
-            print(traceback.format_exc())
-            logger.error(f"Network error checking for updates: {e}")
-            return False, None, None
         except json.JSONDecodeError as e:
             logger.error(f"Invalid JSON response checking updates: {e}")
             return False, None, None
@@ -222,17 +222,20 @@ class UpdaterService:
             if "http" not in download_url:
                 raise ValueError(f"Must be http/s, was: {download_url}")
             
-            def reporthook(block_num, block_size, total_size):
+            def progress_callback(downloaded: int, total_size: int):
                 if total_size > 0:
-                    downloaded = block_num * block_size
                     download_fraction = min(downloaded / total_size, 1.0)
                     progress = download_fraction * 0.6
                     self._set_progress(progress, "Downloading update...")
                     self._notify_observer(observer)
             
-            urllib.request.urlretrieve(download_url, wheel_path, reporthook)  # nosec
+            success = self.network.download_file(
+                download_url, 
+                wheel_path, 
+                progress_callback=progress_callback
+            )
             
-            if wheel_path.exists() and wheel_path.stat().st_size > 0:
+            if success and wheel_path.exists() and wheel_path.stat().st_size > 0:
                 logger.info(f"Successfully downloaded update: {wheel_path}")
                 self._set_progress(0.6, "Download complete")
                 self._notify_observer(observer)
@@ -241,9 +244,6 @@ class UpdaterService:
                 logger.error("Downloaded file is empty or missing")
                 return None
                 
-        except urllib.error.URLError as e:
-            logger.error(f"Network error downloading update: {e}")
-            return None
         except Exception as e:
             logger.error(f"Unexpected error downloading update: {e}")
             return None
