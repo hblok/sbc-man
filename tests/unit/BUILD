@@ -427,3 +427,16 @@ py_test(
     ],
     size = "small",
 )
+
+
+
+py_test(
+    name = "test_progress_bar",
+    srcs = ["test_progress_bar.py"],
+    deps = [
+        "//sbcman/views/widgets:widgets",
+        "//tests:test_utils",
+        "@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
