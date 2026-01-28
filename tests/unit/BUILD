@@ -322,6 +322,28 @@ py_test(
 )
 
 py_test(
+    name = "test_updater_progress",
+    srcs = ["test_updater_progress.py"],
+    deps = [
+	"//sbcman/services",
+	"//tests:test_utils",
+	"@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
+    name = "test_installation_progress",
+    srcs = ["test_installation_progress.py"],
+    deps = [
+	"//sbcman/services",
+	"//tests:test_utils",
+	"@sbc_man_pip_deps//pygame_ce",
+    ],
+    size = "small",
+)
+
+py_test(
     name = "test_game_library_enhanced",
     srcs = ["test_game_library_enhanced.py"],
     deps = [
