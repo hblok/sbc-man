@@ -9,6 +9,9 @@ Provides a reusable progress bar widget for displaying download/installation pro
 
 import pygame
 from typing import Tuple
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ProgressBar:
@@ -62,6 +65,8 @@ class ProgressBar:
             progress: Progress value between 0.0 and 1.0
             message: Optional message to display above the progress bar
         """
+        logger.debug(f"progress {progress}")
+        
         clamped_progress = max(0.0, min(1.0, progress))
         font = self._get_font()
 
