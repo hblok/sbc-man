@@ -40,6 +40,7 @@ class UpdateState(base_state.BaseState):
 
         # Progress tracking
         self.progress = 0.0
+        self.progress_message = ""
 
     def on_enter(self, previous_state: Optional[base_state.BaseState]) -> None:
         logger.info("Entered update state")
@@ -218,6 +219,7 @@ class UpdateState(base_state.BaseState):
         self.stage = "downloading"
         self.message = "Downloading update..."
         self.progress = 0.0
+        self.progress_message = "Downloading update..."
         self.options = []
         self._update_message_display()
         self._update_options_list()
@@ -251,6 +253,7 @@ class UpdateState(base_state.BaseState):
         self.stage = "installing"
         self.message = "Installing update..."
         self.progress = 0.6  # Start at 60% (download complete)
+        self.progress_message = "Installing update..."
         self.options = []
         self._update_message_display()
         self._update_options_list()
@@ -316,7 +319,7 @@ class UpdateState(base_state.BaseState):
         self._render_message_area(surface, surface_width, surface_height)
 
         if self.stage in ["checking", "downloading", "installing"]:
-            self._render_progress_indicator(surface)
+            self._render_progress_indicator(surface, surface_width, surface_height)
 
         self._update_options_list()
         self.options_list.render(surface)
@@ -378,31 +381,23 @@ class UpdateState(base_state.BaseState):
         else:
             return (255, 255, 255)
 
-    def _render_progress_indicator(self, surface: pygame.Surface) -> None:
+    def _render_progress_indicator(self, surface: pygame.Surface,
+                                     surface_width: int, surface_height: int) -> None:
         """Render a progress bar showing download/installation progress."""
-        # Calculate progress bar dimensions
-        bar_width = min(400, surface.get_width() - 40)
-        bar_height = 20
-        bar_x = (surface.get_width() - bar_width) // 2
-        bar_y = self.options_list.y - 40
+        font_size = self._calc_font_size(surface_width, 18, 28, 36)
+        bar_width = min(surface_width - 100, 600)
+        bar_height = min(30, surface_height // 16)
+        bar_x = (surface_width - bar_width) // 2
+        bar_y = 120
 
-        # Draw background bar (dark gray)
-        pygame.draw.rect(surface, (60, 60, 60), 
-                        (bar_x, bar_y, bar_width, bar_height))
-
-        # Draw progress bar (green)
-        progress_width = int(bar_width * self.progress)
-        if progress_width > 0:
-            pygame.draw.rect(surface, (50, 200, 50), 
-                            (bar_x, bar_y, progress_width, bar_height))
-
-        # Draw progress percentage text
-        font_size = self._calc_font_size(surface.get_width(), 16, 20, 24)
-        font = pygame.font.Font(None, font_size)
-        percentage_text = f"{int(self.progress * 100)}%"
-        text_surface = font.render(percentage_text, True, (255, 255, 255))
-        text_rect = text_surface.get_rect(center=(bar_x + bar_width // 2, bar_y + bar_height + 15))
-        surface.blit(text_surface, text_rect)
+        progress_bar = widgets.ProgressBar(
+            x=bar_x,
+            y=bar_y,
+            width=bar_width,
+            height=bar_height,
+            font_size=font_size
+        )
+        progress_bar.render(surface, self.progress, self.progress_message)
 
     def _render_update_instructions(self, surface: pygame.Surface,
                                     surface_width: int, surface_height: int) -> None:
