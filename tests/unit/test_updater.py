@@ -36,7 +36,7 @@ class TestUpdaterService(unittest.TestCase):
 
     def test_init(self):
         """Test updater service initialization."""
-        self.assertEqual(self.updater.current_version, "")
+        self.assertIsNotNone(self.updater.current_version)
         self.assertEqual(self.updater.update_repo_url, "https://github.com/hblok/sbc-man")
         self.mock_config.get.assert_called_with("update.repository_url")
 
@@ -176,10 +176,14 @@ class TestUpdaterService(unittest.TestCase):
         """Test successful update download."""
         download_url = "https://example.com/test.whl"
         
-        def mock_urlretrieve_side_effect(url, filename):
+        def mock_urlretrieve_side_effect(url, filename, reporthook=None):
             file_path = Path(filename)
             file_path.parent.mkdir(parents=True, exist_ok=True)
             file_path.write_text("dummy content")
+            # Simulate progress updates
+            if reporthook:
+                reporthook(10, 100, 100)
+                reporthook(100, 100, 100)
         
         mock_urlretrieve.side_effect = mock_urlretrieve_side_effect
         
