@@ -233,20 +233,20 @@ class UpdateState(base_state.BaseState):
         self._update_options_list()
 
         try:
-            wheel_path = self.updater.download_update(
+            wheel_path = self.updater.start_update(
                 self.download_url,
-                progress_callback=self._update_progress
+#                progress_callback=self._update_progress
             )
 
-            if wheel_path:
-                self._start_installation(wheel_path)
-            else:
-                self.stage = "error"
-                self.message = "Failed to download update"
-                self.options = ["OK"]
-                self.selected_option = 0
-                self._update_message_display()
-                self._update_options_list()
+            # if wheel_path:
+            #     self._start_installation(wheel_path)
+            # else:
+            #     self.stage = "error"
+            #     self.message = "Failed to download update"
+            #     self.options = ["OK"]
+            #     self.selected_option = 0
+            #     self._update_message_display()
+            #     self._update_options_list()
 
         except Exception as e:
             logger.error(f"Error downloading update: {e}")
@@ -269,7 +269,7 @@ class UpdateState(base_state.BaseState):
         try:
             success, message = self.updater.install_update(
                 wheel_path,
-                progress_callback=self._update_progress
+#                progress_callback=self._update_progress
             )
 
             if success is True and message:
@@ -312,6 +312,8 @@ class UpdateState(base_state.BaseState):
     def render(self, surface: pygame.Surface) -> None:
         self._render_background(surface)
         surface_width, surface_height = self._get_surface_dimensions(surface)
+
+        logger.info(f"render, stage={self.stage}")
 
         if hasattr(self, 'options_list'):
             self._update_adaptive_layout(surface_width, surface_height)
