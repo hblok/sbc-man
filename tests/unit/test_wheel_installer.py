@@ -66,7 +66,7 @@ class TestWheelInstaller(unittest.TestCase):
             
             self.assertTrue(result)
             self.assertIn("pip", message.lower())
-            mock_install_pip.assert_called_once_with(temp_path)
+            mock_install_pip.assert_called_once_with(temp_path, None)
         finally:
             temp_path.unlink()
 
@@ -89,8 +89,8 @@ class TestWheelInstaller(unittest.TestCase):
             
             self.assertTrue(result)
             self.assertIn("extraction", message.lower())
-            mock_install_pip.assert_called_once_with(temp_path)
-            mock_install_extraction.assert_called_once_with(temp_path)
+            mock_install_pip.assert_called_once_with(temp_path, None)
+            mock_install_extraction.assert_called_once_with(temp_path, None)
         finally:
             temp_path.unlink()
 
