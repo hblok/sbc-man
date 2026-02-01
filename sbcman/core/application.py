@@ -141,7 +141,7 @@ class Application:
         self._ensure_data_directories()
         
         self.config_manager = ConfigManager(self.hw_config, self.app_paths)
-        self.game_library = GameLibrary(self.hw_config, self.app_paths)
+        self.game_library = GameLibrary(self.config_manager, self.hw_config, self.app_paths)
         self.input_handler = InputHandler(self.hw_config, self.app_paths)
         
         self.state_manager = StateManager(

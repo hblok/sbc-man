@@ -38,6 +38,9 @@ class ConfigManager:
         self.runtime_config: Dict[str, Any] = {}
 
         self.config_file = app_paths.config_file
+
+        logging.debug(f"config_file: {self.config_file}")
+        
         # Determine config file path
         #paths = hw_config.get("paths", {})
         #data_dir = Path(paths.get("data", "~/.local/share/sbc-man")).expanduser()
@@ -86,6 +89,7 @@ class ConfigManager:
         Returns:
             Configuration value or default
         """
+        logger.debug(f"get {key}")
         # Try runtime config first
         value = self._get_nested(self.runtime_config, key)
         if value is not None:
@@ -95,7 +99,8 @@ class ConfigManager:
         value = self._get_nested(self.hw_config, key)
         if value is not None:
             return value
-        
+
+        logger.warning(f"{key} NOT FOUND")
         return default
 
     def set(self, key: str, value: Any) -> None:

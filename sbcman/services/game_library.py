@@ -20,6 +20,7 @@ from .game_utils import game_to_dict, game_from_dict
 from .game_list_entry import GameListEntry, GameStatus
 from sbcman.path.paths import AppPaths
 from sbcman.services import network
+from sbcman.services import config_manager
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +34,8 @@ class GameLibrary:
     and persistence to JSON file.
     """
 
-    def __init__(self, hw_config: Dict[str, Any], app_paths: AppPaths):
+    def __init__(self, config: config_manager.ConfigManager, hw_config: Dict[str, Any], app_paths: AppPaths):
+        self.config = config
         self.hw_config = hw_config
         self.app_paths = app_paths
         self.games: List[game_pb2.Game] = []
@@ -43,6 +45,8 @@ class GameLibrary:
         
         self.local_games = self.load_games(self.local_games_file)
         self.games = self.local_games.copy()  # For test compatibility
+
+        self.game_list_url = config.get("games.game_list_url")
 
         if self.local_games:
             logger.info(f"GameLibrary initialized with {len(self.local_games)} games")
@@ -175,16 +179,11 @@ class GameLibrary:
 
     def get_available_games(self) -> List[game_pb2.Game]:
         """ Get all available (not installed) games. """
-
-        # TODO: Change to Max Games 
-        # https://hblok.github.io/sbc-man/games.json
-
         net = network.NetworkService()
-        url = "https://hblok.github.io/sbc-man/games.json"
         tmp_games_json = pathlib.Path(tempfile.mkdtemp()) / "games.json"
 
-        if net.check_url(url):
-            net.download_file(url, tmp_games_json)
+        if net.check_url(self.game_list_url):
+            net.download_file(self.game_list_url, tmp_games_json)
 
             with open(tmp_games_json) as f:
                 list_obj = json.load(f)

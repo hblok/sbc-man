@@ -21,5 +21,8 @@
     },
     "update": {
       "repository_url": "https://github.com/hblok/sbc-man"
+    },
+    "games": {
+      "game_list_url": "https://hblok.github.io/max_blok_games/games.json"
     }
 }
