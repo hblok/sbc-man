@@ -10,9 +10,9 @@
 set -e  # Exit on error (will be trapped)
 
 # --- Constants ---
-readonly APP_NAME="mygame"
-readonly APP_VERSION="1.0.0"
-readonly GITHUB_WHEEL_URL="https://github.com/username/repo/releases/download/v${APP_VERSION}/${APP_NAME}-${APP_VERSION}-py3-none-any.whl"
+readonly APP_NAME="sbcman"
+readonly APP_VERSION="0.0.57"
+readonly GITHUB_WHEEL_URL="https://github.com/hblok/sbc-man/releases/download/v${APP_VERSION}/${APP_NAME}-${APP_VERSION}-py3-none-any.whl"
 readonly PYGAME_MIN_VERSION="2.3.0"
 readonly PYTHON_MIN_VERSION="3.7"
 
@@ -99,7 +99,9 @@ show_progress() {
     printf "%${empty}s" | tr ' ' ' '
     printf "] %3d%% - %s" "$percent" "$message"
     
-    [ "$current" -eq "$total" ] && echo ""
+    if [ "$current" -eq "$total" ]; then
+	echo ""
+    fi
 }
 
 error_exit() {
@@ -723,7 +725,7 @@ main() {
     
     show_progress 5 10 "Checking disk space..."
     check_disk_space
-    
+
     show_progress 6 10 "Checking pip..."
     if ! check_pip; then
         install_pip || log "WARN" "Continuing without pip"
@@ -734,7 +736,7 @@ main() {
     
     show_progress 8 10 "Installing application..."
     install_app
-    
+    return 0
     show_progress 9 10 "Creating launcher..."
     create_launcher
     create_portmaster_metadata
@@ -753,8 +755,8 @@ main() {
 }
 
 # --- Error Handling ---
-trap 'error_exit "Installation failed at line $LINENO"' ERR
-trap cleanup EXIT
+#trap 'error_exit "Installation failed at line $LINENO"' ERR
+#trap cleanup EXIT
 
 # --- Entry Point ---
 
