@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # ============================================================================
-# Installer for Python Game/App on Portmaster (Handheld Consoles)
+# Installer for Max Bloks SBC-Manager on Portmaster
 # ============================================================================
-# Supports: Debian variants, TinaLinux/OpenWrt
+# Supports: Debian variants, TinaLinux/OpenWrt, etc.
 # Handles: Limited package managers, varying Python installations
 # ============================================================================
 
@@ -11,10 +11,13 @@ set -e  # Exit on error (will be trapped)
 
 # --- Constants ---
 readonly APP_NAME="sbcman"
-readonly APP_VERSION="0.0.57"
+readonly APP_MAIN_MODULE="maxbloks.sbcman.main"
+readonly APP_VERSION="0.0.57"  # TODO: Make dynamic
 readonly GITHUB_WHEEL_URL="https://github.com/hblok/sbc-man/releases/download/v${APP_VERSION}/${APP_NAME}-${APP_VERSION}-py3-none-any.whl"
 readonly PYGAME_MIN_VERSION="2.3.0"
 readonly PYTHON_MIN_VERSION="3.7"
+
+readonly FORCE_PYGAME="${FORCE_PYGAME:-0}"  # Set to 1 to install pygame instead of pygame-ce
 
 # --- Color Codes (if supported) ---
 if [ -t 1 ]; then
@@ -198,6 +201,7 @@ find_python() {
     show_status "Locating Python 3..."
     
     # Try common locations
+    # TODO: Make dynamic rather than hardcoded version
     local python_candidates=(
         "python3"
         "/usr/bin/python3"
@@ -362,32 +366,64 @@ install_pip() {
 
 # --- Pygame Installation ---
 
+
+
+# --- Pygame Installation ---
+
 install_pygame() {
-    show_status "Installing pygame-ce..."
+    show_status "Checking for pygame..."
+    
+    # Check if pygame is already installed
+    if $PYTHON_BIN -c "import pygame; print(pygame.version.ver)" 2>/dev/null; then
+        local installed_version=$($PYTHON_BIN -c "import pygame; print(pygame.version.ver)" 2>/dev/null)
+        log "INFO" "pygame is already installed (version: $installed_version)"
+        
+        # Check if it's pygame-ce
+        if $PYTHON_BIN -c "import pygame; pygame.version.SDL" 2>/dev/null | grep -q "CE" 2>/dev/null; then
+            log "INFO" "pygame-ce detected, skipping installation"
+        else
+            log "INFO" "pygame (classic) detected, skipping installation"
+        fi
+        
+        return 0
+    fi
+    
+    log "INFO" "pygame not found, proceeding with installation..."
+    
+    # Determine which pygame to install
+    local pygame_package="pygame-ce"
+    if [ "$FORCE_PYGAME" = "1" ]; then
+        pygame_package="pygame"
+        log "INFO" "FORCE_PYGAME flag set, will install classic pygame"
+    fi
+    
+    show_status "Installing ${pygame_package}..."
     
     # Method 1: Try pip install
     if check_pip; then
-        log "INFO" "Attempting to install pygame-ce via pip..."
+        log "INFO" "Attempting to install ${pygame_package} via pip..."
         
-        if $PYTHON_BIN -m pip install pygame-ce --user --no-warn-script-location 2>&1 | tee -a "$LOG_FILE"; then
-            log "INFO" "pygame-ce installed successfully via pip"
+        if $PYTHON_BIN -m pip install "$pygame_package" --user --no-warn-script-location 2>&1 | tee -a "$LOG_FILE"; then
+            log "INFO" "${pygame_package} installed successfully via pip"
             return 0
         fi
         
-        log "WARN" "pip install of pygame-ce failed, trying alternatives..."
-    fi
-    
-    # Method 2: Try regular pygame as fallback
-    if check_pip; then
-        log "INFO" "Attempting to install pygame (non-CE) via pip..."
+        log "WARN" "pip install of ${pygame_package} failed"
         
-        if $PYTHON_BIN -m pip install pygame --user --no-warn-script-location 2>&1 | tee -a "$LOG_FILE"; then
-            log "INFO" "pygame installed successfully via pip"
-            return 0
+        # If pygame-ce failed and we haven't tried regular pygame yet, try it
+        if [ "$pygame_package" = "pygame-ce" ]; then
+            log "INFO" "Attempting to install pygame (non-CE) as fallback..."
+            
+            if $PYTHON_BIN -m pip install pygame --user --no-warn-script-location 2>&1 | tee -a "$LOG_FILE"; then
+                log "INFO" "pygame installed successfully via pip"
+                return 0
+            fi
+            
+            log "WARN" "pip install of pygame also failed, trying alternatives..."
         fi
     fi
     
-    # Method 3: Try system package manager
+    # Method 2: Try system package manager
     log "INFO" "Attempting to install pygame via system package manager..."
     
     case "$SYSTEM_TYPE" in
@@ -409,30 +445,36 @@ install_pygame() {
             ;;
     esac
     
-    # Method 4: Check for bundled wheel
+    # Method 3: Check for bundled wheel (try pygame-ce first, then pygame)
     log "INFO" "Looking for bundled pygame wheel..."
-    local bundled_wheel="${SCRIPT_DIR}/wheels/pygame_ce-*-${WHEEL_ARCH}.whl"
     
-    if ls $bundled_wheel 1> /dev/null 2>&1; then
-        local wheel_file=$(ls $bundled_wheel | head -1)
-        log "INFO" "Found bundled wheel: $wheel_file"
+    local wheel_patterns=("pygame_ce-*-${WHEEL_ARCH}.whl" "pygame-*-${WHEEL_ARCH}.whl")
+    
+    for pattern in "${wheel_patterns[@]}"; do
+        local bundled_wheel="${SCRIPT_DIR}/wheels/${pattern}"
         
-        if check_pip; then
-            if $PYTHON_BIN -m pip install "$wheel_file" --user --no-warn-script-location 2>&1 | tee -a "$LOG_FILE"; then
-                log "INFO" "pygame-ce installed from bundled wheel"
-                return 0
-            fi
-        else
-            # Manual extraction
-            if extract_wheel "$wheel_file" "$SITE_PACKAGES"; then
-                log "INFO" "pygame-ce extracted from bundled wheel"
-                return 0
+        if ls $bundled_wheel 1> /dev/null 2>&1; then
+            local wheel_file=$(ls $bundled_wheel | head -1)
+            log "INFO" "Found bundled wheel: $wheel_file"
+            
+            if check_pip; then
+                if $PYTHON_BIN -m pip install "$wheel_file" --user --no-warn-script-location 2>&1 | tee -a "$LOG_FILE"; then
+                    log "INFO" "pygame installed from bundled wheel"
+                    return 0
+                fi
+            else
+                # Manual extraction
+                if extract_wheel "$wheel_file" "$SITE_PACKAGES"; then
+                    log "INFO" "pygame extracted from bundled wheel"
+                    return 0
+                fi
             fi
         fi
-    fi
+    done
     
-    error_exit "Failed to install pygame-ce. Please install it manually."
+    error_exit "Failed to install pygame. Please install it manually."
 }
+
 
 # --- Wheel Extraction ---
 
@@ -568,11 +610,16 @@ if [ -d "${INSTALL_DIR}" ] && [[ "${INSTALL_DIR}" == *"${APP_NAME}"* ]]; then
     export PYTHONPATH="${INSTALL_DIR}:\${PYTHONPATH}"
 fi
 
-# Set working directory
-cd "${PORTS_DIR}/${APP_NAME}"
+# TODO: Fix python version
+export PYTHONPATH=/mnt/SDCARD/System/lib/python3.11:/mnt/SDCARD/Apps/PortMaster/PortMaster/exlibs:/mnt/SDCARD/System/lib/python3.11/site-packages:$PYTHONPATH
+
+# GPU settings (TODO: Figure out compatability)
+export PYSDL2_DLL_PATH=/usr/lib
+export SDL_VIDEODRIVER=mali
+export SDL_RENDER_DRIVER=opengles2
 
 # Launch application
-exec "${PYTHON_BIN}" -m ${APP_NAME} "\$@"
+exec "${PYTHON_BIN}" -m ${APP_MAIN_MODULE} >> /tmp/${APP_NAME}.log 2>&1
 EOF
     
     chmod +x "$launcher"
@@ -736,10 +783,12 @@ main() {
     
     show_progress 8 10 "Installing application..."
     install_app
-    return 0
+
     show_progress 9 10 "Creating launcher..."
     create_launcher
-    create_portmaster_metadata
+    # TODO: IMAGE
+    # todo
+    #create_portmaster_metadata
     
     show_progress 10 10 "Verifying installation..."
     verify_install || log "WARN" "Some verification checks failed"
@@ -755,8 +804,8 @@ main() {
 }
 
 # --- Error Handling ---
-#trap 'error_exit "Installation failed at line $LINENO"' ERR
-#trap cleanup EXIT
+trap 'error_exit "Installation failed at line $LINENO"' ERR
+trap cleanup EXIT
 
 # --- Entry Point ---
 
@@ -771,11 +820,12 @@ Options:
     --help, -h          Show this help message
     --debug             Enable debug output
     --offline           Use bundled dependencies only (no downloads)
+    --force-pygame      Install classic pygame instead of pygame-ce
     
 Environment Variables:
     DEBUG=1             Enable debug mode
     OFFLINE_MODE=1      Enable offline mode
-    
+    FORCE_PYGAME=1      Force classic pygame installation	
 EOF
             exit 0
             ;;
@@ -787,6 +837,11 @@ EOF
             OFFLINE_MODE=1
             shift
             ;;
+        --force-pygame)
+            FORCE_PYGAME=1
+            shift
+            ;;
+	
         *)
             echo "Unknown option: $1"
             echo "Use --help for usage information"
