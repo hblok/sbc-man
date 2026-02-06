@@ -595,7 +595,7 @@ install_app() {
 create_launcher() {
     show_status "Creating launcher script..."
     
-    local launcher="${PORTS_DIR}/${APP_NAME}/${APP_NAME}.sh"
+    local launcher="${PORTS_DIR}/${APP_NAME}.sh"
     mkdir -p "${PORTS_DIR}/${APP_NAME}"
     
     log "INFO" "Creating launcher: $launcher"
@@ -611,7 +611,7 @@ if [ -d "${INSTALL_DIR}" ] && [[ "${INSTALL_DIR}" == *"${APP_NAME}"* ]]; then
 fi
 
 # TODO: Fix python version
-export PYTHONPATH=/mnt/SDCARD/System/lib/python3.11:/mnt/SDCARD/Apps/PortMaster/PortMaster/exlibs:/mnt/SDCARD/System/lib/python3.11/site-packages:$PYTHONPATH
+export PYTHONPATH=/mnt/SDCARD/System/lib/python3.11:/mnt/SDCARD/Apps/PortMaster/PortMaster/exlibs:/mnt/SDCARD/System/lib/python3.11/site-packages:\${PYTHONPATH}
 
 # GPU settings (TODO: Figure out compatability)
 export PYSDL2_DLL_PATH=/usr/lib
@@ -626,7 +626,8 @@ EOF
     log "INFO" "Launcher created and made executable"
     
     # Create a symlink in the main PORTS directory for easy access
-    ln -sf "${PORTS_DIR}/${APP_NAME}/${APP_NAME}.sh" "${PORTS_DIR}/${APP_NAME}.sh" 2>/dev/null || true
+    # This will typically not work on FAT file systems
+    #ln -sf "${PORTS_DIR}/${APP_NAME}/${APP_NAME}.sh" "${PORTS_DIR}/${APP_NAME}.sh" 2>/dev/null || true
 }
 
 create_portmaster_metadata() {
@@ -693,7 +694,7 @@ verify_install() {
     fi
     
     # Check launcher exists
-    if [ -f "${PORTS_DIR}/${APP_NAME}/${APP_NAME}.sh" ]; then
+    if [ -f "${PORTS_DIR}/${APP_NAME}.sh" ]; then
         log "INFO" "✓ Launcher script exists"
     else
         log "ERROR" "✗ Launcher script missing"
