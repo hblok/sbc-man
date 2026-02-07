@@ -11,7 +11,7 @@ set -e  # Exit on error (will be trapped)
 
 # --- Constants ---
 readonly APP_NAME="sbcman"
-readonly APP_MAIN_MODULE="maxbloks.sbcman.main"
+readonly APP_MAIN_MODULE="sbcman.main"
 readonly APP_VERSION="0.0.57"  # TODO: Make dynamic
 readonly GITHUB_WHEEL_URL="https://github.com/hblok/sbc-man/releases/download/v${APP_VERSION}/${APP_NAME}-${APP_VERSION}-py3-none-any.whl"
 readonly PYGAME_MIN_VERSION="2.3.0"
